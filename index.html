@@ -16,6 +16,7 @@
       --track: rgba(0, 0, 0, 0.12);
       --track-disabled: rgba(0, 0, 0, 0.06);
       --thumb: rgba(0, 0, 0, 0.72);
+      --peer-blue: #2f78ff;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -58,10 +59,9 @@
       touch-action: none;
     }
 
-    .gear-btn {
+    .gear-btn,
+    .peer-btn {
       position: fixed;
-      top: calc(env(safe-area-inset-top, 0px) + 10px);
-      right: calc(env(safe-area-inset-right, 0px) + 10px);
       width: 46px;
       height: 46px;
       border-radius: 50%;
@@ -80,7 +80,18 @@
       text-shadow: none;
     }
 
-    .gear-btn span {
+    .gear-btn {
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+      right: calc(env(safe-area-inset-right, 0px) + 10px);
+    }
+
+    .peer-btn {
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+      left: calc(env(safe-area-inset-left, 0px) + 10px);
+    }
+
+    .gear-btn span,
+    .peer-btn .peer-icon {
       font-size: 20px;
       font-weight: 400;
       line-height: 1;
@@ -91,8 +102,76 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Symbol", sans-serif;
     }
 
-    .gear-btn:active {
+    .gear-btn:active,
+    .peer-btn:active {
       transform: scale(0.97);
+    }
+
+    .peer-btn.hidden {
+      display: none;
+    }
+
+    .peer-btn.searching {
+      border-color: var(--peer-blue);
+      color: var(--peer-blue);
+    }
+
+    .peer-btn.connected {
+      background: var(--peer-blue);
+      border-color: var(--peer-blue);
+      color: #fff;
+    }
+
+    .peer-btn.connected .peer-icon {
+      color: #fff;
+    }
+
+    .peer-icon {
+      display: block;
+      width: 20px;
+      text-align: center;
+    }
+
+    .peer-spinner {
+      display: none;
+      position: relative;
+      width: 20px;
+      height: 20px;
+    }
+
+    .peer-btn.searching .peer-icon {
+      display: none;
+    }
+
+    .peer-btn.searching .peer-spinner {
+      display: block;
+      animation: peer-spin 0.9s linear infinite;
+    }
+
+    .peer-spinner span {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 4px;
+      height: 4px;
+      margin: -2px 0 0 -2px;
+      border-radius: 50%;
+      background: currentColor;
+      transform-origin: 0 0;
+    }
+
+    .peer-spinner span:nth-child(1) { transform: translate(0, -8px); opacity: 1; }
+    .peer-spinner span:nth-child(2) { transform: translate(5.5px, -5.5px); opacity: 0.82; }
+    .peer-spinner span:nth-child(3) { transform: translate(8px, 0); opacity: 0.64; }
+    .peer-spinner span:nth-child(4) { transform: translate(5.5px, 5.5px); opacity: 0.46; }
+    .peer-spinner span:nth-child(5) { transform: translate(0, 8px); opacity: 0.34; }
+    .peer-spinner span:nth-child(6) { transform: translate(-5.5px, 5.5px); opacity: 0.46; }
+    .peer-spinner span:nth-child(7) { transform: translate(-8px, 0); opacity: 0.64; }
+    .peer-spinner span:nth-child(8) { transform: translate(-5.5px, -5.5px); opacity: 0.82; }
+
+    @keyframes peer-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     .overlay {
@@ -429,6 +508,14 @@
     <span>⛭</span>
   </button>
 
+  <button class="peer-btn hidden" id="peerButton" aria-label="ローカル通信">
+    <span class="peer-icon">☋</span>
+    <span class="peer-spinner" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+    </span>
+  </button>
+
   <div class="overlay" id="overlay" aria-hidden="true">
     <div class="panel" role="dialog" aria-modal="true" aria-label="設定">
       <div class="panel-header">
@@ -517,6 +604,19 @@
       </div>
 
       <div class="setting-block">
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="main">ローカル通信ボタンを表示</div>
+            <div class="sub">左上に通信ボタンを出します</div>
+          </div>
+          <label class="switch" aria-label="ローカル通信ボタンを表示">
+            <input type="checkbox" id="peerButtonToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="setting-block">
         <div class="footer-actions">
           <button class="danger-btn" id="resetSettings">設定をリセット</button>
         </div>
@@ -532,6 +632,8 @@
       const overlay = document.getElementById('overlay');
       const openSettings = document.getElementById('openSettings');
       const closeSettings = document.getElementById('closeSettings');
+
+      const peerButton = document.getElementById('peerButton');
 
       const bgMode = document.getElementById('bgMode');
       const bgCustomWrap = document.getElementById('bgCustomWrap');
@@ -549,9 +651,13 @@
       const spacingRange = document.getElementById('spacingRange');
       const spacingValue = document.getElementById('spacingValue');
 
+      const peerButtonToggle = document.getElementById('peerButtonToggle');
+
       const resetSettings = document.getElementById('resetSettings');
 
-      const STORAGE_KEY = 'touch_effect_settings_v3';
+      const STORAGE_KEY = 'touch_effect_settings_v4';
+      const COMM_CHANNEL_NAME = 'touch_effect_peer_v1';
+      const COMM_STORAGE_KEY = 'touch_effect_peer_v1_msg';
 
       const defaults = {
         bgMode: 'system',
@@ -564,7 +670,9 @@
         gridEnabled: false,
         gridMode: 'system',
         gridCustom: '#e8e8e8',
-        gridSpacing: 36
+        gridSpacing: 36,
+
+        peerButtonVisible: false
       };
 
       const settings = { ...defaults };
@@ -591,6 +699,25 @@
       const LASSO_HIT_RADIUS = 18;
       const LASSO_IGNORE_RECENT_SEGMENTS = 10;
       const LASSO_COOLDOWN = 140;
+
+      let selfPeerId = makeId();
+      let peerState = 'off';
+      let remotePeerId = null;
+      let peerChannel = null;
+      let peerPulseTimer = null;
+      let peerWatchTimer = null;
+      let peerLastSeenAt = 0;
+      const seenPackets = new Set();
+      const seenPacketQueue = [];
+
+      function makeId() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+          return window.crypto.randomUUID();
+        }
+        const bytes = new Uint8Array(16);
+        (window.crypto || window.msCrypto).getRandomValues(bytes);
+        return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+      }
 
       function clamp(v, min, max) {
         return Math.min(max, Math.max(min, v));
@@ -694,6 +821,8 @@
           if (typeof data.gridSpacing === 'number' && isFinite(data.gridSpacing)) {
             settings.gridSpacing = clamp(Math.round(data.gridSpacing), 18, 100);
           }
+
+          if (typeof data.peerButtonVisible === 'boolean') settings.peerButtonVisible = data.peerButtonVisible;
         } catch (_) {}
       }
 
@@ -710,7 +839,7 @@
         document.documentElement.style.setProperty('--track-disabled', darkMode ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)');
         document.documentElement.style.setProperty('--thumb', darkMode ? 'rgba(255, 255, 255, 0.78)' : 'rgba(0, 0, 0, 0.72)');
 
-        document.body.style.background = resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000');
+        document.body.style.background = getBgColor();
       }
 
       function resize() {
@@ -742,6 +871,22 @@
 
         spacingRange.value = String(settings.gridSpacing);
         spacingValue.textContent = String(settings.gridSpacing);
+
+        peerButtonToggle.checked = settings.peerButtonVisible;
+      }
+
+      function updatePeerButtonUi() {
+        peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
+        peerButton.classList.toggle('searching', peerState === 'searching');
+        peerButton.classList.toggle('connected', peerState === 'connected');
+
+        if (peerState === 'searching') {
+          peerButton.setAttribute('aria-label', 'ローカル通信を停止');
+        } else if (peerState === 'connected') {
+          peerButton.setAttribute('aria-label', 'ローカル通信を切断');
+        } else {
+          peerButton.setAttribute('aria-label', 'ローカル通信');
+        }
       }
 
       function openOverlay() {
@@ -779,7 +924,244 @@
         return normalizeHexColor(settings.loopColor) || defaults.loopColor;
       }
 
-      function addTapEffect(x, y) {
+      function broadcastPacket(packet) {
+        const data = {
+          ...packet,
+          id: makeId(),
+          sender: selfPeerId,
+          ts: Date.now()
+        };
+
+        try {
+          if (peerChannel) peerChannel.postMessage(data);
+        } catch (_) {}
+
+        try {
+          localStorage.setItem(COMM_STORAGE_KEY, JSON.stringify(data));
+        } catch (_) {}
+
+        return data;
+      }
+
+      function rememberPacket(id) {
+        if (!id || seenPackets.has(id)) return false;
+        seenPackets.add(id);
+        seenPacketQueue.push(id);
+        if (seenPacketQueue.length > 300) {
+          const old = seenPacketQueue.shift();
+          if (old) seenPackets.delete(old);
+        }
+        return true;
+      }
+
+      function setPeerState(nextState, nextRemoteId = remotePeerId) {
+        peerState = nextState;
+        remotePeerId = nextRemoteId || null;
+        peerLastSeenAt = Date.now();
+        updatePeerButtonUi();
+      }
+
+      function startPeerTimers() {
+        stopPeerTimers();
+
+        peerPulseTimer = window.setInterval(() => {
+          if (peerState === 'searching') {
+            broadcastPacket({ type: 'search' });
+          } else if (peerState === 'connected') {
+            broadcastPacket({ type: 'keepalive', target: remotePeerId });
+          }
+        }, 1000);
+
+        peerWatchTimer = window.setInterval(() => {
+          if (peerState !== 'connected') return;
+          if (!peerLastSeenAt) return;
+          if (Date.now() - peerLastSeenAt > 6500) {
+            remotePeerId = null;
+            setPeerState('searching');
+            broadcastPacket({ type: 'search' });
+          }
+        }, 1000);
+      }
+
+      function stopPeerTimers() {
+        if (peerPulseTimer) {
+          clearInterval(peerPulseTimer);
+          peerPulseTimer = null;
+        }
+        if (peerWatchTimer) {
+          clearInterval(peerWatchTimer);
+          peerWatchTimer = null;
+        }
+      }
+
+      function startPeerSearch() {
+        if (!settings.peerButtonVisible) return;
+        peerLastSeenAt = Date.now();
+        setPeerState('searching', null);
+        startPeerTimers();
+        broadcastPacket({ type: 'search' });
+      }
+
+      function disconnectPeer(sendGoodbye = true) {
+        const oldRemote = remotePeerId;
+        if (sendGoodbye && oldRemote) {
+          broadcastPacket({ type: 'goodbye', target: oldRemote });
+        }
+        remotePeerId = null;
+        peerLastSeenAt = 0;
+        peerState = 'off';
+        stopPeerTimers();
+        updatePeerButtonUi();
+      }
+
+      function connectPeer(remoteId) {
+        remotePeerId = remoteId;
+        peerLastSeenAt = Date.now();
+        peerState = 'connected';
+        startPeerTimers();
+        updatePeerButtonUi();
+      }
+
+      function togglePeerConnection() {
+        if (!settings.peerButtonVisible) return;
+        if (peerState === 'off') {
+          startPeerSearch();
+          return;
+        }
+        disconnectPeer(true);
+      }
+
+      function applyRemoteEffect(kind, payload) {
+        if (!payload || typeof payload !== 'object') return;
+
+        if (kind === 'tap') {
+          if (typeof payload.x === 'number' && typeof payload.y === 'number') {
+            addTapEffect(payload.x, payload.y, false);
+          }
+          return;
+        }
+
+        if (kind === 'swipe') {
+          const from = payload.from;
+          const to = payload.to;
+          const dir = payload.dir;
+          if (
+            from && to && dir &&
+            typeof from.x === 'number' && typeof from.y === 'number' &&
+            typeof to.x === 'number' && typeof to.y === 'number' &&
+            typeof dir.x === 'number' && typeof dir.y === 'number'
+          ) {
+            createSwipeEffect(from.x, from.y, dir.x * 100, dir.y * 100, false, {
+              forceFrom: from,
+              forceTo: to,
+              forceRadius: typeof payload.radius === 'number' ? payload.radius : undefined
+            });
+          }
+          return;
+        }
+
+        if (kind === 'loop') {
+          if (Array.isArray(payload.points)) {
+            const points = payload.points
+              .filter(p => p && typeof p.x === 'number' && typeof p.y === 'number')
+              .map(p => ({ x: p.x, y: p.y }));
+            if (points.length >= 3) createLoopEffect(points, false);
+          }
+        }
+      }
+
+      function handlePeerPacket(packet) {
+        if (!packet || typeof packet !== 'object') return;
+        if (packet.sender === selfPeerId) return;
+        if (!rememberPacket(packet.id)) return;
+
+        const now = Date.now();
+
+        if (packet.type === 'search') {
+          if (!settings.peerButtonVisible || peerState === 'off') return;
+          peerLastSeenAt = now;
+
+          if (!remotePeerId || remotePeerId === packet.sender) {
+            if (peerState === 'searching') {
+              connectPeer(packet.sender);
+              broadcastPacket({ type: 'found', target: packet.sender });
+            } else if (peerState === 'connected') {
+              if (remotePeerId === packet.sender) {
+                peerLastSeenAt = now;
+              }
+            }
+          }
+          return;
+        }
+
+        if (packet.type === 'found') {
+          if (peerState === 'searching' && packet.target === selfPeerId) {
+            connectPeer(packet.sender);
+          } else if (peerState === 'connected' && remotePeerId === packet.sender) {
+            peerLastSeenAt = now;
+          }
+          return;
+        }
+
+        if (packet.type === 'keepalive') {
+          if (peerState === 'off') return;
+          if (packet.target && packet.target !== selfPeerId) return;
+          if (remotePeerId && packet.sender !== remotePeerId) return;
+          if (!remotePeerId) remotePeerId = packet.sender;
+          peerLastSeenAt = now;
+          return;
+        }
+
+        if (packet.type === 'goodbye') {
+          if (remotePeerId && packet.sender === remotePeerId) {
+            if (settings.peerButtonVisible) {
+              remotePeerId = null;
+              setPeerState('searching', null);
+              broadcastPacket({ type: 'search' });
+            } else {
+              disconnectPeer(false);
+            }
+          }
+          return;
+        }
+
+        if (packet.type === 'effect') {
+          if (peerState === 'off') return;
+          if (packet.target && packet.target !== selfPeerId) return;
+          if (remotePeerId && packet.sender !== remotePeerId) return;
+          if (!remotePeerId) remotePeerId = packet.sender;
+          peerLastSeenAt = now;
+          applyRemoteEffect(packet.kind, packet.payload);
+        }
+      }
+
+      function setupPeerTransport() {
+        if ('BroadcastChannel' in window) {
+          try {
+            peerChannel = new BroadcastChannel(COMM_CHANNEL_NAME);
+            peerChannel.onmessage = (ev) => handlePeerPacket(ev.data);
+          } catch (_) {
+            peerChannel = null;
+          }
+        }
+
+        window.addEventListener('storage', (ev) => {
+          if (ev.key !== COMM_STORAGE_KEY || !ev.newValue) return;
+          try {
+            handlePeerPacket(JSON.parse(ev.newValue));
+          } catch (_) {}
+        });
+
+        window.addEventListener('beforeunload', () => {
+          if (peerState !== 'off' && remotePeerId) {
+            try {
+              broadcastPacket({ type: 'goodbye', target: remotePeerId });
+            } catch (_) {}
+          }
+        });
+      }
+
+      function addTapEffect(x, y, broadcast = true) {
         effects.push({
           type: 'tap',
           x,
@@ -787,9 +1169,18 @@
           start: nowMs(),
           duration: 650
         });
+
+        if (broadcast && peerState === 'connected' && remotePeerId && settings.peerButtonVisible) {
+          broadcastPacket({
+            type: 'effect',
+            kind: 'tap',
+            target: remotePeerId,
+            payload: { x, y }
+          });
+        }
       }
 
-      function createSwipeEffect(startX, startY, dirX, dirY) {
+      function createSwipeEffect(startX, startY, dirX, dirY, broadcast = true, forced = null) {
         const len = Math.hypot(dirX, dirY) || 1;
         dirX /= len;
         dirY /= len;
@@ -808,31 +1199,38 @@
           }
         }
 
-        if (Math.abs(dirX) > 1e-6) {
-          let t = (minX - startX) / dirX;
-          pushCandidate(t, minX, startY + dirY * t);
-          t = (maxX - startX) / dirX;
-          pushCandidate(t, maxX, startY + dirY * t);
-        }
-
-        if (Math.abs(dirY) > 1e-6) {
-          let t = (minY - startY) / dirY;
-          pushCandidate(t, startX + dirX * t, minY);
-          t = (maxY - startY) / dirY;
-          pushCandidate(t, startX + dirX * t, maxY);
-        }
-
-        if (hits.length < 2) {
+        if (forced && forced.forceFrom && forced.forceTo) {
           hits.push(
-            { t: -400, x: startX - dirX * 400, y: startY - dirY * 400 },
-            { t: 400, x: startX + dirX * 400, y: startY + dirY * 400 }
+            { t: 0, x: forced.forceFrom.x, y: forced.forceFrom.y },
+            { t: 1, x: forced.forceTo.x, y: forced.forceTo.y }
           );
         } else {
-          hits.sort((a, b) => a.t - b.t);
+          if (Math.abs(dirX) > 1e-6) {
+            let t = (minX - startX) / dirX;
+            pushCandidate(t, minX, startY + dirY * t);
+            t = (maxX - startX) / dirX;
+            pushCandidate(t, maxX, startY + dirY * t);
+          }
+
+          if (Math.abs(dirY) > 1e-6) {
+            let t = (minY - startY) / dirY;
+            pushCandidate(t, startX + dirX * t, minY);
+            t = (maxY - startY) / dirY;
+            pushCandidate(t, startX + dirX * t, maxY);
+          }
+
+          if (hits.length < 2) {
+            hits.push(
+              { t: -400, x: startX - dirX * 400, y: startY - dirY * 400 },
+              { t: 400, x: startX + dirX * 400, y: startY + dirY * 400 }
+            );
+          } else {
+            hits.sort((a, b) => a.t - b.t);
+          }
         }
 
-        const first = hits[0];
-        const last = hits[hits.length - 1];
+        const first = forced && forced.forceFrom ? forced.forceFrom : hits[0];
+        const last = forced && forced.forceTo ? forced.forceTo : hits[hits.length - 1];
         const travel = distance(first.x, first.y, last.x, last.y);
         const duration = clamp(460 + travel * 0.12, 520, 900);
 
@@ -843,19 +1241,47 @@
           from: { x: first.x, y: first.y },
           to: { x: last.x, y: last.y },
           dir: { x: dirX, y: dirY },
-          radius: clamp(Math.min(w, h) * 0.045, 18, 38)
+          radius: typeof (forced && forced.forceRadius) === 'number'
+            ? forced.forceRadius
+            : clamp(Math.min(w, h) * 0.045, 18, 38)
         });
+
+        if (broadcast && peerState === 'connected' && remotePeerId && settings.peerButtonVisible) {
+          broadcastPacket({
+            type: 'effect',
+            kind: 'swipe',
+            target: remotePeerId,
+            payload: {
+              from: { x: first.x, y: first.y },
+              to: { x: last.x, y: last.y },
+              dir: { x: dirX, y: dirY },
+              radius: typeof (forced && forced.forceRadius) === 'number'
+                ? forced.forceRadius
+                : clamp(Math.min(w, h) * 0.045, 18, 38)
+            }
+          });
+        }
       }
 
-      function createLoopEffect(points) {
+      function createLoopEffect(points, broadcast = true) {
         if (points.length < 3) return;
 
+        const copy = points.map(p => ({ x: p.x, y: p.y }));
         effects.push({
           type: 'loop',
           start: nowMs(),
           duration: 420,
-          points: points.map(p => ({ x: p.x, y: p.y }))
+          points: copy
         });
+
+        if (broadcast && peerState === 'connected' && remotePeerId && settings.peerButtonVisible) {
+          broadcastPacket({
+            type: 'effect',
+            kind: 'loop',
+            target: remotePeerId,
+            payload: { points: copy }
+          });
+        }
       }
 
       function detectLoop(points, currentX, currentY) {
@@ -1042,6 +1468,7 @@
       function applyAndSave() {
         document.body.style.background = getBgColor();
         syncSettingsUi();
+        updatePeerButtonUi();
         saveSettings();
       }
 
@@ -1053,6 +1480,7 @@
         try {
           localStorage.removeItem(STORAGE_KEY);
         } catch (_) {}
+        if (peerState !== 'off') disconnectPeer(false);
         applyAndSave();
       }
 
@@ -1105,6 +1533,13 @@
         saveSettings();
       });
 
+      peerButtonToggle.addEventListener('change', () => {
+        settings.peerButtonVisible = peerButtonToggle.checked;
+        if (!settings.peerButtonVisible) disconnectPeer(false);
+        updatePeerButtonUi();
+        saveSettings();
+      });
+
       resetSettings.addEventListener('click', () => {
         resetAllSettings();
       });
@@ -1119,6 +1554,10 @@
 
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) closeOverlay();
+      });
+
+      peerButton.addEventListener('click', () => {
+        togglePeerConnection();
       });
 
       canvas.addEventListener('pointerdown', (e) => {
@@ -1200,6 +1639,12 @@
       resize();
       syncSettingsUi();
       document.body.style.background = getBgColor();
+      updatePeerButtonUi();
+      setupPeerTransport();
+
+      if (settings.peerButtonVisible) {
+        updatePeerButtonUi();
+      }
 
       if (darkMql) {
         if (typeof darkMql.addEventListener === 'function') {
