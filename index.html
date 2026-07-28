@@ -1,38 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
   <title>Touch Effects</title>
   <style>
-    :root {
-      color-scheme: light dark;
-      --bg-light: #ffffff;
-      --bg-dark: #000000;
-    }
     html, body {
+      margin: 0;
       width: 100%;
       height: 100%;
-      margin: 0;
       overflow: hidden;
       touch-action: none;
-      -webkit-user-select: none;
       user-select: none;
-      -webkit-touch-callout: none;
-      background: var(--bg-light);
+      -webkit-user-select: none;
+      overscroll-behavior: none;
+      background: #fff;
+      color-scheme: light dark;
     }
+
     @media (prefers-color-scheme: dark) {
       html, body {
-        background: var(--bg-dark);
+        background: #000;
       }
     }
+
     canvas {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
       display: block;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
     }
   </style>
 </head>
@@ -44,387 +41,399 @@
       const canvas = document.getElementById('c');
       const ctx = canvas.getContext('2d', { alpha: true });
 
-      let dpr = 1;
       let w = 0;
       let h = 0;
-      let darkMode = matchMedia('(prefers-color-scheme: dark)').matches;
+      let dpr = 1;
 
-      const greenBursts = [];
-      const blueOrbs = [];
-      const redFills = [];
-      const pointers = new Map();
+      const effects = [];
+      let activePointerId = null;
+
+      let strokePoints = [];
+      let strokeTimes = [];
+      let pointerDownTime = 0;
+      let pointerDownPos = { x: 0, y: 0 };
+      let lastMovePos = { x: 0, y: 0 };
+      let lastLoopAt = 0;
+      let lassoLocked = false;
+
+      const SWIPE_MIN_DISTANCE = 42;
+      const TAP_MAX_DISTANCE = 12;
+      const TAP_MAX_TIME = 320;
+      const LASSO_MIN_POINTS = 20;
+      const LASSO_HIT_RADIUS = 18;
+      const LASSO_IGNORE_RECENT_SEGMENTS = 10;
+      const LASSO_COOLDOWN = 140;
+
+      const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const nowMs = () => performance.now();
+
+      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+      const easeOutQuad = (t) => 1 - (1 - t) * (1 - t);
+      const easeOutSine = (t) => Math.sin((t * Math.PI) / 2);
 
       function resize() {
-        dpr = Math.max(1, window.devicePixelRatio || 1);
+        dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
         w = window.innerWidth;
         h = window.innerHeight;
-
         canvas.width = Math.floor(w * dpr);
         canvas.height = Math.floor(h * dpr);
         canvas.style.width = w + 'px';
         canvas.style.height = h + 'px';
-
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
       }
 
-      function bgColor() {
-        return darkMode ? '#000000' : '#ffffff';
+      function dist2(ax, ay, bx, by) {
+        const dx = ax - bx;
+        const dy = ay - by;
+        return dx * dx + dy * dy;
       }
 
-      function addGreenBurst(x, y) {
-        greenBursts.push({
+      function distance(ax, ay, bx, by) {
+        return Math.hypot(ax - bx, ay - by);
+      }
+
+      function pointToSegmentDistance(px, py, ax, ay, bx, by) {
+        const abx = bx - ax;
+        const aby = by - ay;
+        const apx = px - ax;
+        const apy = py - ay;
+        const abLen2 = abx * abx + aby * aby;
+
+        if (abLen2 === 0) return Math.hypot(px - ax, py - ay);
+
+        let t = (apx * abx + apy * aby) / abLen2;
+        t = clamp(t, 0, 1);
+
+        const cx = ax + abx * t;
+        const cy = ay + aby * t;
+        return Math.hypot(px - cx, py - cy);
+      }
+
+      function addTapEffect(x, y) {
+        effects.push({
+          type: 'tap',
           x,
           y,
-          t: 0,
-          dur: 520,
-          maxR: Math.max(w, h) * 0.22
+          start: nowMs(),
+          duration: 650
         });
       }
 
-      function addRedFill(points) {
-        if (!points || points.length < 3) return;
-        redFills.push({
-          points: points.map(p => ({ x: p.x, y: p.y })),
-          t: 0,
-          dur: 420
-        });
-      }
+      function createSwipeEffect(startX, startY, dirX, dirY) {
+        const len = Math.hypot(dirX, dirY) || 1;
+        dirX /= len;
+        dirY /= len;
 
-      function intersectionToEdge(x, y, dx, dy) {
-        const hits = [];
+        const pad = 80;
+        const minX = -pad;
+        const minY = -pad;
+        const maxX = w + pad;
+        const maxY = h + pad;
 
-        if (dx !== 0) {
-          const t1 = (0 - x) / dx;
-          const t2 = (w - x) / dx;
-          if (t1 > 0) hits.push(t1);
-          if (t2 > 0) hits.push(t2);
-        }
+        const candidates = [];
 
-        if (dy !== 0) {
-          const t3 = (0 - y) / dy;
-          const t4 = (h - y) / dy;
-          if (t3 > 0) hits.push(t3);
-          if (t4 > 0) hits.push(t4);
-        }
-
-        const valid = hits.filter(v => Number.isFinite(v) && v > 0);
-        const t = valid.length ? Math.min(...valid) : 1;
-
-        return {
-          x: x + dx * t,
-          y: y + dy * t
-        };
-      }
-
-      function addBlueOrbFromSwipe(startX, startY, dx, dy, speedPxPerMs) {
-        const len = Math.hypot(dx, dy) || 1;
-        const ux = dx / len;
-        const uy = dy / len;
-
-        const back = intersectionToEdge(startX, startY, -ux, -uy);
-        const forward = intersectionToEdge(startX, startY, ux, uy);
-
-        const sx = back.x;
-        const sy = back.y;
-        const ex = forward.x;
-        const ey = forward.y;
-
-        const totalDx = ex - sx;
-        const totalDy = ey - sy;
-        const dist = Math.hypot(totalDx, totalDy);
-
-        const dur = Math.max(700, Math.min(1600, (dist / Math.max(0.15, speedPxPerMs)) * 0.75));
-
-        blueOrbs.push({
-          sx,
-          sy,
-          dx: totalDx,
-          dy: totalDy,
-          t: 0,
-          dur,
-          r: Math.max(18, Math.min(34, Math.min(w, h) * 0.04)),
-          trail: [],
-          trailTimer: 0
-        });
-      }
-
-      function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
-        const vx = x2 - x1;
-        const vy = y2 - y1;
-        const wx = px - x1;
-        const wy = py - y1;
-
-        const c1 = vx * wx + vy * wy;
-        if (c1 <= 0) return Math.hypot(px - x1, py - y1);
-
-        const c2 = vx * vx + vy * vy;
-        if (c2 <= c1) return Math.hypot(px - x2, py - y2);
-
-        const b = c1 / c2;
-        const bx = x1 + b * vx;
-        const by = y1 + b * vy;
-        return Math.hypot(px - bx, py - by);
-      }
-
-      function detectLoop(state, x, y) {
-        const pts = state.points;
-        if (pts.length < 40) return -1;
-
-        const minGap = 18;
-        const threshold = 16;
-
-        for (let i = 0; i < pts.length - minGap - 1; i++) {
-          const a = pts[i];
-          const b = pts[i + 1];
-          const d = pointToSegmentDistance(x, y, a.x, a.y, b.x, b.y);
-          if (d < threshold) return i;
-        }
-
-        return -1;
-      }
-
-      function startPointer(id, x, y) {
-        pointers.set(id, {
-          id,
-          startX: x,
-          startY: y,
-          lastX: x,
-          lastY: y,
-          downTime: performance.now(),
-          moved: false,
-          loopTriggered: false,
-          points: [{ x, y }],
-          lastPointTime: performance.now()
-        });
-
-        addGreenBurst(x, y);
-      }
-
-      function movePointer(id, x, y) {
-        const state = pointers.get(id);
-        if (!state) return;
-
-        const dx = x - state.lastX;
-        const dy = y - state.lastY;
-        const step = Math.hypot(dx, dy);
-
-        if (step > 1.5) {
-          state.moved = true;
-          state.points.push({ x, y });
-          state.lastX = x;
-          state.lastY = y;
-          state.lastPointTime = performance.now();
-        } else {
-          state.lastX = x;
-          state.lastY = y;
-        }
-
-        if (!state.loopTriggered) {
-          const loopIndex = detectLoop(state, x, y);
-          if (loopIndex >= 0) {
-            state.loopTriggered = true;
-            const closed = state.points.slice(loopIndex);
-            if (closed.length >= 3) {
-              addRedFill(closed);
-            }
+        function pushIfValid(t, x, y) {
+          if (x >= minX - 0.5 && x <= maxX + 0.5 && y >= minY - 0.5 && y <= maxY + 0.5) {
+            candidates.push({ t, x, y });
           }
         }
-      }
 
-      function endPointer(id, x, y) {
-        const state = pointers.get(id);
-        if (!state) return;
-
-        const totalDx = x - state.startX;
-        const totalDy = y - state.startY;
-        const dist = Math.hypot(totalDx, totalDy);
-        const dt = Math.max(1, performance.now() - state.downTime);
-        const speed = dist / dt;
-
-        if (!state.loopTriggered && dist > 28) {
-          addBlueOrbFromSwipe(state.startX, state.startY, totalDx, totalDy, speed);
+        if (Math.abs(dirX) > 1e-6) {
+          let t = (minX - startX) / dirX;
+          pushIfValid(t, minX, startY + dirY * t);
+          t = (maxX - startX) / dirX;
+          pushIfValid(t, maxX, startY + dirY * t);
         }
 
-        pointers.delete(id);
+        if (Math.abs(dirY) > 1e-6) {
+          let t = (minY - startY) / dirY;
+          pushIfValid(t, startX + dirX * t, minY);
+          t = (maxY - startY) / dirY;
+          pushIfValid(t, startX + dirX * t, maxY);
+        }
+
+        if (candidates.length < 2) {
+          candidates.push(
+            { t: -400, x: startX - dirX * 400, y: startY - dirY * 400 },
+            { t: 400, x: startX + dirX * 400, y: startY + dirY * 400 }
+          );
+        } else {
+          candidates.sort((a, b) => a.t - b.t);
+        }
+
+        const first = candidates[0];
+        const last = candidates[candidates.length - 1];
+
+        const travel = distance(first.x, first.y, last.x, last.y);
+        const duration = clamp(460 + travel * 0.12, 520, 900);
+
+        effects.push({
+          type: 'swipe',
+          start: nowMs(),
+          duration,
+          from: { x: first.x, y: first.y },
+          to: { x: last.x, y: last.y },
+          dir: { x: dirX, y: dirY },
+          radius: clamp(Math.min(w, h) * 0.045, 18, 38)
+        });
       }
 
-      function cancelPointer(id) {
-        pointers.delete(id);
+      function createLoopEffect(points) {
+        if (points.length < 3) return;
+
+        const copy = points.map(p => ({ x: p.x, y: p.y }));
+        effects.push({
+          type: 'loop',
+          start: nowMs(),
+          duration: 420,
+          points: copy
+        });
       }
 
-      window.addEventListener('resize', resize, { passive: true });
-      matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', (e) => {
-        darkMode = e.matches;
-      });
+      function detectLoop(points, currentX, currentY) {
+        if (points.length < LASSO_MIN_POINTS) return false;
+        const n = points.length;
 
-      canvas.addEventListener('pointerdown', (e) => {
-        canvas.setPointerCapture?.(e.pointerId);
-        startPointer(e.pointerId, e.clientX, e.clientY);
-      });
+        const startIndex = Math.max(0, n - 1 - LASSO_IGNORE_RECENT_SEGMENTS);
 
-      canvas.addEventListener('pointermove', (e) => {
-        movePointer(e.pointerId, e.clientX, e.clientY);
-      });
+        for (let i = 0; i < startIndex - 1; i++) {
+          const a = points[i];
+          const b = points[i + 1];
+          const d = pointToSegmentDistance(currentX, currentY, a.x, a.y, b.x, b.y);
+          if (d <= LASSO_HIT_RADIUS) {
+            let traveled = 0;
+            for (let k = i; k < n - 1; k++) {
+              traveled += distance(points[k].x, points[k].y, points[k + 1].x, points[k + 1].y);
+              if (traveled > 40) break;
+            }
+            if (traveled > 40) return true;
+          }
+        }
 
-      canvas.addEventListener('pointerup', (e) => {
-        endPointer(e.pointerId, e.clientX, e.clientY);
-      });
+        return false;
+      }
 
-      canvas.addEventListener('pointercancel', (e) => {
-        cancelPointer(e.pointerId);
-      });
+      function drawTap(effect, t) {
+        const p = clamp((t - effect.start) / effect.duration, 0, 1);
+        if (p >= 1) return;
 
-      canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        const e = easeOutCubic(p);
+        const alpha = 0.33 * Math.pow(1 - p, 1.7);
+        const radius = lerp(10, Math.max(w, h) * 0.22, e);
 
-      function drawGreenBurst(item) {
-        const p = item.t / item.dur;
-        if (p >= 1) return false;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.shadowBlur = radius * 0.22;
+        ctx.shadowColor = 'rgba(70, 255, 120, 0.55)';
 
-        const easeOut = 1 - Math.pow(1 - p, 3);
-        const radius = item.maxR * easeOut;
-        const alpha = Math.max(0, 0.34 * (1 - p));
-
-        const g = ctx.createRadialGradient(item.x, item.y, 0, item.x, item.y, radius);
-        g.addColorStop(0, `rgba(0, 255, 0, ${alpha})`);
-        g.addColorStop(0.45, `rgba(0, 255, 0, ${alpha * 0.55})`);
-        g.addColorStop(1, 'rgba(0, 255, 0, 0)');
+        const g = ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, radius);
+        g.addColorStop(0.00, 'rgba(70, 255, 120, 0.90)');
+        g.addColorStop(0.28, 'rgba(60, 235, 110, 0.58)');
+        g.addColorStop(0.68, 'rgba(50, 220, 100, 0.25)');
+        g.addColorStop(1.00, 'rgba(50, 220, 100, 0)');
 
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(item.x, item.y, radius, 0, Math.PI * 2);
+        ctx.arc(effect.x, effect.y, radius, 0, Math.PI * 2);
         ctx.fill();
 
-        return true;
+        ctx.restore();
       }
 
-      function drawRedFill(item) {
-        const p = item.t / item.dur;
-        if (p >= 1) return false;
+      function drawSwipe(effect, t) {
+        const p = clamp((t - effect.start) / effect.duration, 0, 1);
+        if (p >= 1) return;
 
-        const alpha = Math.max(0, 0.28 * (1 - p));
-        const scale = 0.98 + p * 0.02;
+        const e = easeOutCubic(p);
+        const x = lerp(effect.from.x, effect.to.x, e);
+        const y = lerp(effect.from.y, effect.to.y, e);
+
+        const trailSteps = 16;
+        const trailSpacing = effect.radius * 0.82;
 
         ctx.save();
-        ctx.translate(0, 0);
-        ctx.scale(scale, scale);
+        ctx.globalCompositeOperation = 'source-over';
 
-        ctx.beginPath();
-        const pts = item.points;
-        ctx.moveTo(pts[0].x / scale, pts[0].y / scale);
-        for (let i = 1; i < pts.length; i++) {
-          ctx.lineTo(pts[i].x / scale, pts[i].y / scale);
-        }
-        ctx.closePath();
-        ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
-        ctx.fill();
-        ctx.restore();
+        for (let i = trailSteps; i >= 0; i--) {
+          const back = i * trailSpacing;
+          const px = x - effect.dir.x * back;
+          const py = y - effect.dir.y * back;
+          const a = 0.24 * Math.pow(1 - i / (trailSteps + 1), 2.2) * Math.pow(1 - p, 0.35);
+          if (a <= 0.001) continue;
 
-        return true;
-      }
+          const r = effect.radius * (1 + (trailSteps - i) * 0.02);
 
-      function drawBlueOrb(item, now, dt) {
-        const p = item.t / item.dur;
-        if (p >= 1) return false;
-
-        const ease = p < 0.5
-          ? 2 * p * p
-          : 1 - Math.pow(-2 * p + 2, 2) / 2;
-
-        const x = item.sx + item.dx * ease;
-        const y = item.sy + item.dy * ease;
-
-        item.trailTimer += dt;
-        if (item.trailTimer >= 18) {
-          item.trailTimer = 0;
-          item.trail.push({
-            x,
-            y,
-            life: 0
-          });
-          if (item.trail.length > 18) item.trail.shift();
-        }
-
-        for (let i = 0; i < item.trail.length; i++) {
-          const t = item.trail[i];
-          t.life += dt;
-        }
-
-        for (let i = item.trail.length - 1; i >= 0; i--) {
-          const t = item.trail[i];
-          const ap = Math.max(0, 1 - t.life / 320);
-          if (ap <= 0) {
-            item.trail.splice(i, 1);
-            continue;
-          }
-
-          const rr = item.r * (0.65 + (i / Math.max(1, item.trail.length)) * 0.2);
-          ctx.fillStyle = `rgba(0, 120, 255, ${ap * 0.22})`;
+          ctx.globalAlpha = a;
+          ctx.shadowBlur = r * 0.35;
+          ctx.shadowColor = 'rgba(90, 150, 255, 0.55)';
+          ctx.fillStyle = 'rgba(110, 165, 255, 1)';
           ctx.beginPath();
-          ctx.arc(t.x, t.y, rr, 0, Math.PI * 2);
+          ctx.arc(px, py, r, 0, Math.PI * 2);
           ctx.fill();
         }
 
-        const orbAlpha = Math.max(0, 0.42 * (1 - p));
-        const pulse = 1 + Math.sin(p * Math.PI * 3) * 0.05;
-        const radius = item.r * pulse;
-
-        const g = ctx.createRadialGradient(x, y, 0, x, y, radius * 1.8);
-        g.addColorStop(0, `rgba(0, 150, 255, ${orbAlpha})`);
-        g.addColorStop(0.35, `rgba(0, 150, 255, ${orbAlpha * 0.55})`);
-        g.addColorStop(1, 'rgba(0, 150, 255, 0)');
-
-        ctx.fillStyle = g;
+        ctx.globalAlpha = 0.42 * Math.pow(1 - p, 0.7);
+        ctx.shadowBlur = effect.radius * 0.6;
+        ctx.shadowColor = 'rgba(110, 165, 255, 0.45)';
+        ctx.fillStyle = 'rgba(110, 165, 255, 1)';
         ctx.beginPath();
-        ctx.arc(x, y, radius * 1.35, 0, Math.PI * 2);
+        ctx.arc(x, y, effect.radius * 1.02, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = `rgba(0, 150, 255, ${orbAlpha * 0.5})`;
-        ctx.beginPath();
-        ctx.arc(x, y, radius * 0.75, 0, Math.PI * 2);
-        ctx.fill();
-
-        return true;
+        ctx.restore();
       }
 
-      let last = performance.now();
+      function drawLoop(effect, t) {
+        const p = clamp((t - effect.start) / effect.duration, 0, 1);
+        if (p >= 1) return;
+        if (effect.points.length < 3) return;
 
-      function frame(now) {
-        const dt = Math.min(32, now - last);
-        last = now;
+        const alpha = 0.34 * Math.pow(1 - p, 2.0);
+        const blur = 8 * Math.pow(1 - p, 0.55);
 
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.save();
         ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = bgColor();
-        ctx.fillRect(0, 0, w, h);
+        ctx.globalAlpha = alpha;
+        ctx.shadowBlur = blur;
+        ctx.shadowColor = 'rgba(255, 60, 60, 0.40)';
+        ctx.fillStyle = 'rgba(255, 78, 78, 1)';
 
-        for (let i = greenBursts.length - 1; i >= 0; i--) {
-          greenBursts[i].t += dt;
-          if (!drawGreenBurst(greenBursts[i])) {
-            greenBursts.splice(i, 1);
+        ctx.beginPath();
+        ctx.moveTo(effect.points[0].x, effect.points[0].y);
+        for (let i = 1; i < effect.points.length; i++) {
+          ctx.lineTo(effect.points[i].x, effect.points[i].y);
+        }
+        ctx.closePath();
+
+        ctx.fill('evenodd');
+
+        ctx.restore();
+      }
+
+      function render() {
+        const t = nowMs();
+
+        ctx.clearRect(0, 0, w, h);
+
+        for (let i = 0; i < effects.length; i++) {
+          const e = effects[i];
+          if (e.type === 'tap') drawTap(e, t);
+          else if (e.type === 'swipe') drawSwipe(e, t);
+          else if (e.type === 'loop') drawLoop(e, t);
+        }
+
+        for (let i = effects.length - 1; i >= 0; i--) {
+          const e = effects[i];
+          if (t - e.start >= e.duration) effects.splice(i, 1);
+        }
+
+        requestAnimationFrame(render);
+      }
+
+      function setPointFromEvent(e) {
+        return { x: e.clientX, y: e.clientY };
+      }
+
+      canvas.addEventListener('pointerdown', (e) => {
+        if (activePointerId !== null) return;
+        activePointerId = e.pointerId;
+        canvas.setPointerCapture(activePointerId);
+
+        const p = setPointFromEvent(e);
+        pointerDownTime = nowMs();
+        pointerDownPos = { x: p.x, y: p.y };
+        lastMovePos = { x: p.x, y: p.y };
+        strokePoints = [p];
+        strokeTimes = [pointerDownTime];
+        lassoLocked = false;
+
+        e.preventDefault();
+      }, { passive: false });
+
+      canvas.addEventListener('pointermove', (e) => {
+        if (activePointerId !== e.pointerId) return;
+        const p = setPointFromEvent(e);
+        const t = nowMs();
+
+        if (distance(p.x, p.y, lastMovePos.x, lastMovePos.y) >= 2.2) {
+          strokePoints.push(p);
+          strokeTimes.push(t);
+          lastMovePos = p;
+        }
+
+        if (!lassoLocked && t - lastLoopAt >= LASSO_COOLDOWN) {
+          if (detectLoop(strokePoints, p.x, p.y)) {
+            createLoopEffect(strokePoints);
+            lastLoopAt = t;
+            lassoLocked = true;
+
+            const keep = strokePoints[strokePoints.length - 1];
+            strokePoints = [keep];
+            strokeTimes = [t];
           }
         }
 
-        for (let i = blueOrbs.length - 1; i >= 0; i--) {
-          blueOrbs[i].t += dt;
-          if (!drawBlueOrb(blueOrbs[i], now, dt)) {
-            blueOrbs.splice(i, 1);
-          }
+        e.preventDefault();
+      }, { passive: false });
+
+      function finishPointer(e) {
+        if (activePointerId !== e.pointerId) return;
+
+        const t = nowMs();
+        const totalMove = distance(pointerDownPos.x, pointerDownPos.y, lastMovePos.x, lastMovePos.y);
+        const elapsed = t - pointerDownTime;
+
+        if (lassoLocked) {
+          activePointerId = null;
+          strokePoints = [];
+          strokeTimes = [];
+          e.preventDefault();
+          return;
         }
 
-        for (let i = redFills.length - 1; i >= 0; i--) {
-          redFills[i].t += dt;
-          if (!drawRedFill(redFills[i])) {
-            redFills.splice(i, 1);
-          }
+        if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
+          addTapEffect(lastMovePos.x, lastMovePos.y);
+        } else if (totalMove >= SWIPE_MIN_DISTANCE) {
+          const dx = lastMovePos.x - pointerDownPos.x;
+          const dy = lastMovePos.y - pointerDownPos.y;
+          createSwipeEffect(lastMovePos.x, lastMovePos.y, dx, dy);
         }
 
-        requestAnimationFrame(frame);
+        activePointerId = null;
+        strokePoints = [];
+        strokeTimes = [];
+        e.preventDefault();
+      }
+
+      canvas.addEventListener('pointerup', finishPointer, { passive: false });
+      canvas.addEventListener('pointercancel', finishPointer, { passive: false });
+      canvas.addEventListener('lostpointercapture', () => {
+        activePointerId = null;
+        strokePoints = [];
+        strokeTimes = [];
+        lassoLocked = false;
+      });
+
+      window.addEventListener('resize', resize);
+
+      const mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+      if (mql) {
+        const updateTheme = () => {
+          document.documentElement.style.background = '';
+          document.body.style.background = '';
+        };
+
+        if (typeof mql.addEventListener === 'function') {
+          mql.addEventListener('change', updateTheme);
+        } else if (typeof mql.addListener === 'function') {
+          mql.addListener(updateTheme);
+        }
       }
 
       resize();
-      requestAnimationFrame(frame);
+      requestAnimationFrame(render);
     })();
   </script>
 </body>
