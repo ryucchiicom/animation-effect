@@ -17,448 +17,530 @@
       --track-disabled: rgba(0, 0, 0, 0.06);
       --thumb: rgba(0, 0, 0, 0.72);
     }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #000;
-    --edge: #fafafa;
-    --panel-bg: rgba(0, 0, 0, 0.82);
-    --panel-border: rgba(255, 255, 255, 0.16);
-    --text: #f5f5f5;
-    --muted: rgba(245, 245, 245, 0.45);
-    --track: rgba(255, 255, 255, 0.14);
-    --track-disabled: rgba(255, 255, 255, 0.07);
-    --thumb: rgba(255, 255, 255, 0.78);
-  }
-}
-html, body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: var(--bg);
-  color-scheme: light dark;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  overscroll-behavior: none;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-body {
-  position: relative;
-  background: var(--bg);
-}
-canvas {
-  display: block;
-  width: 100vw;
-  height: 100vh;
-  touch-action: none;
-}
-.gear-btn {
-  position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 10px);
-  right: calc(env(safe-area-inset-right, 0px) + 10px);
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  border: 1.7px solid var(--edge);
-  background: transparent;
-  color: transparent;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  z-index: 20;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-appearance: none;
-  appearance: none;
-  box-sizing: border-box;
-  text-shadow: none;
-}
-.gear-btn span {
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 1;
-  transform: translateY(-0.5px);
-  color: var(--edge);
-  -webkit-text-stroke: 0;
-  text-shadow: none;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Symbol", sans-serif;
-}
-.gear-btn:active {
-  transform: scale(0.97);
-}
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.26);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 18px;
-  box-sizing: border-box;
-}
-.overlay.open {
-  display: flex;
-}
-.panel {
-  width: min(92vw, 460px);
-  max-height: min(84vh, 680px);
-  overflow: auto;
-  border-radius: 26px;
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
-  color: var(--text);
-  padding: 18px 18px 16px;
-  box-sizing: border-box;
-}
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-.panel-title {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-.close-btn {
-  appearance: none;
-  border: 1.5px solid var(--edge);
-  background: transparent;
-  color: var(--text);
-  border-radius: 999px;
-  min-width: 42px;
-  height: 36px;
-  padding: 0 14px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.close-btn:active {
-  transform: scale(0.98);
-}
-.setting-block {
-  padding: 14px 0 4px;
-  border-top: 1px solid rgba(127, 127, 127, 0.16);
-}
-.setting-block:first-of-type {
-  border-top: 0;
-  padding-top: 0;
-}
-.setting-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.setting-label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-.setting-label .main {
-  font-size: 15px;
-  font-weight: 650;
-  line-height: 1.2;
-}
-.setting-label .sub {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.3;
-}
-.switch {
-  position: relative;
-  width: 56px;
-  height: 34px;
-  flex: 0 0 auto;
-}
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-  position: absolute;
-}
-.slider {
-  position: absolute;
-  inset: 0;
-  background: rgba(127, 127, 127, 0.18);
-  border: 1px solid var(--panel-border);
-  border-radius: 999px;
-  transition: 0.2s ease;
-  cursor: pointer;
-}
-.slider::before {
-  content: "";
-  position: absolute;
-  left: 4px;
-  top: 4px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--thumb);
-  transition: 0.2s ease;
-}
-.switch input:checked + .slider {
-  background: rgba(55, 180, 90, 0.22);
-}
-.switch input:checked + .slider::before {
-  transform: translateX(22px);
-}
-.control-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: space-between;
-  margin-top: 10px;
-}
-.mode-select {
-  width: 128px;
-  height: 36px;
-  border-radius: 12px;
-  border: 1px solid var(--panel-border);
-  background: transparent;
-  color: var(--text);
-  padding: 0 10px;
-  font-size: 14px;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-}
-.hex-input {
-  width: 100%;
-  box-sizing: border-box;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid var(--panel-border);
-  background: transparent;
-  color: var(--text);
-  padding: 0 12px;
-  font-size: 14px;
-  outline: none;
-}
-.hex-input::placeholder {
-  color: var(--muted);
-}
-.sub-input-wrap {
-  margin-top: 10px;
-}
-.disabled {
-  opacity: 0.34;
-  pointer-events: none;
-}
-.range-wrap {
-  margin-top: 12px;
-  padding-left: 2px;
-}
-.range-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-.range-title {
-  font-size: 13px;
-  font-weight: 650;
-}
-.range-value {
-  font-size: 12px;
-  color: var(--muted);
-}
-input[type="range"] {
-  width: 100%;
-  margin: 0;
-  appearance: none;
-  -webkit-appearance: none;
-  background: transparent;
-  height: 28px;
-  outline: none;
-}
-input[type="range"]::-webkit-slider-runnable-track {
-  height: 7px;
-  border-radius: 999px;
-  background: var(--track);
-}
-.disabled input[type="range"]::-webkit-slider-runnable-track {
-  background: var(--track-disabled);
-}
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  margin-top: -7.5px;
-  background: var(--thumb);
-  border: 0;
-  box-shadow: 0 0 0 3px rgba(127, 127, 127, 0.15);
-}
-input[type="range"]::-moz-range-track {
-  height: 7px;
-  border-radius: 999px;
-  background: var(--track);
-}
-.disabled input[type="range"]::-moz-range-track {
-  background: var(--track-disabled);
-}
-input[type="range"]::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--thumb);
-  border: 0;
-  box-shadow: 0 0 0 3px rgba(127, 127, 127, 0.15);
-}
-.hint {
-  margin-top: 12px;
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--muted);
-}
-.effect-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  margin-top: 12px;
-}
-.effect-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 0 0;
-}
-.effect-item + .effect-item {
-  border-top: 1px solid rgba(127, 127, 127, 0.12);
-  padding-top: 12px;
-}
-.effect-name {
-  font-size: 13px;
-  font-weight: 650;
-}
-.effect-desc {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.35;
-}
-.hidden {
-  display: none !important;
-}
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #000;
+        --edge: #fafafa;
+        --panel-bg: rgba(0, 0, 0, 0.82);
+        --panel-border: rgba(255, 255, 255, 0.16);
+        --text: #f5f5f5;
+        --muted: rgba(245, 245, 245, 0.45);
+        --track: rgba(255, 255, 255, 0.14);
+        --track-disabled: rgba(255, 255, 255, 0.07);
+        --thumb: rgba(255, 255, 255, 0.78);
+      }
+    }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color-scheme: light dark;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      overscroll-behavior: none;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      position: relative;
+      background: var(--bg);
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+    }
+
+    .gear-btn {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+      right: calc(env(safe-area-inset-right, 0px) + 10px);
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1.7px solid var(--edge);
+      background: transparent;
+      color: transparent;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      z-index: 20;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-appearance: none;
+      appearance: none;
+      box-sizing: border-box;
+      text-shadow: none;
+    }
+
+    .gear-btn span {
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1;
+      transform: translateY(-0.5px);
+      color: var(--edge);
+      -webkit-text-stroke: 0;
+      text-shadow: none;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Symbol", sans-serif;
+    }
+
+    .gear-btn:active {
+      transform: scale(0.97);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.26);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 18px;
+      box-sizing: border-box;
+    }
+
+    .overlay.open {
+      display: flex;
+    }
+
+    .panel {
+      width: min(92vw, 460px);
+      max-height: min(84vh, 680px);
+      overflow: auto;
+      border-radius: 26px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+      color: var(--text);
+      padding: 18px 18px 16px;
+      box-sizing: border-box;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .close-btn {
+      appearance: none;
+      border: 1.5px solid var(--edge);
+      background: transparent;
+      color: var(--text);
+      border-radius: 999px;
+      min-width: 42px;
+      height: 36px;
+      padding: 0 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .close-btn:active {
+      transform: scale(0.98);
+    }
+
+    .setting-block {
+      padding: 14px 0 4px;
+      border-top: 1px solid rgba(127, 127, 127, 0.16);
+    }
+
+    .setting-block:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .setting-label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .setting-label .main {
+      font-size: 15px;
+      font-weight: 650;
+      line-height: 1.2;
+    }
+
+    .setting-label .sub {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .switch {
+      position: relative;
+      width: 56px;
+      height: 34px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(127, 127, 127, 0.18);
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--thumb);
+      transition: 0.2s ease;
+    }
+
+    .switch input:checked + .slider {
+      background: rgba(55, 180, 90, 0.22);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(22px);
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .mode-select {
+      width: 128px;
+      height: 36px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      padding: 0 10px;
+      font-size: 14px;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .hex-input {
+      width: 100%;
+      box-sizing: border-box;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      padding: 0 12px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .hex-input::placeholder {
+      color: var(--muted);
+    }
+
+    .sub-input-wrap {
+      margin-top: 10px;
+    }
+
+    .disabled {
+      opacity: 0.34;
+      pointer-events: none;
+    }
+
+    .range-wrap {
+      margin-top: 12px;
+      padding-left: 2px;
+    }
+
+    .range-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .range-title {
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .range-value {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      height: 28px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 7px;
+      border-radius: 999px;
+      background: var(--track);
+    }
+
+    .disabled input[type="range"]::-webkit-slider-runnable-track {
+      background: var(--track-disabled);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      margin-top: -7.5px;
+      background: var(--thumb);
+      border: 0;
+      box-shadow: 0 0 0 3px rgba(127, 127, 127, 0.15);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 7px;
+      border-radius: 999px;
+      background: var(--track);
+    }
+
+    .disabled input[type="range"]::-moz-range-track {
+      background: var(--track-disabled);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--thumb);
+      border: 0;
+      box-shadow: 0 0 0 3px rgba(127, 127, 127, 0.15);
+    }
+
+    .effect-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .effect-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 0 0;
+    }
+
+    .effect-item + .effect-item {
+      border-top: 1px solid rgba(127, 127, 127, 0.12);
+      padding-top: 12px;
+    }
+
+    .effect-name {
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .effect-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .danger-btn {
+      appearance: none;
+      border: 1.5px solid rgba(220, 40, 40, 0.55);
+      background: transparent;
+      color: #d23636;
+      border-radius: 14px;
+      min-width: 0;
+      height: 40px;
+      padding: 0 14px;
+      font-size: 14px;
+      font-weight: 650;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      flex: 1 1 auto;
+    }
+
+    .danger-btn:active {
+      transform: scale(0.98);
+    }
+
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
   <canvas id="c"></canvas>
+
   <button class="gear-btn" id="openSettings" aria-label="設定を開く">
     <span>⛭</span>
   </button>
+
   <div class="overlay" id="overlay" aria-hidden="true">
     <div class="panel" role="dialog" aria-modal="true" aria-label="設定">
       <div class="panel-header">
         <div class="panel-title">設定</div>
         <button class="close-btn" id="closeSettings">戻る</button>
       </div>
-  <div class="setting-block">
-    <div class="setting-row">
-      <div class="setting-label">
-        <div class="main">背景色</div>
-        <div class="sub">システム / 白 / 黒 / カスタム</div>
-      </div>
-      <select class="mode-select" id="bgMode">
-        <option value="system">システム</option>
-        <option value="white">白</option>
-        <option value="black">黒</option>
-        <option value="custom">カスタム</option>
-      </select>
-    </div>
-    <div class="sub-input-wrap hidden" id="bgCustomWrap">
-      <input class="hex-input" id="bgCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ffffff" />
-    </div>
-  </div>
-  <div class="setting-block">
-    <div class="setting-label">
-      <div class="main">色</div>
-      <div class="sub">タップ / スワイプ / 囲い の色をカラーコードで指定</div>
-    </div>
-    <div class="effect-grid">
-      <div class="effect-item">
-        <div class="effect-name">タップの色</div>
-        <input class="hex-input" id="tapColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#46ff78" />
-        <div class="effect-desc">半透明の緑の広がり</div>
-      </div>
-      <div class="effect-item">
-        <div class="effect-name">スワイプの色</div>
-        <input class="hex-input" id="swipeColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#6ea5ff" />
-        <div class="effect-desc">青い円と残像</div>
-      </div>
-      <div class="effect-item">
-        <div class="effect-name">囲いの色</div>
-        <input class="hex-input" id="loopColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ff4e4e" />
-        <div class="effect-desc">囲った時に出る赤</div>
-      </div>
-    </div>
-  </div>
-  <div class="setting-block">
-    <div class="setting-row">
-      <div class="setting-label">
-        <div class="main">グリッドを表示</div>
-        <div class="sub">ONで背景に格子を出します</div>
-      </div>
-      <label class="switch" aria-label="グリッドを表示">
-        <input type="checkbox" id="gridToggle" />
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div id="gridDetails">
-      <div class="range-wrap">
-        <div class="range-head">
-          <div class="range-title">間隔</div>
-          <div class="range-value"><span id="spacingValue">36</span>px</div>
+
+      <div class="setting-block">
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="main">背景色</div>
+            <div class="sub">システム / 白 / 黒 / カスタム</div>
+          </div>
+          <select class="mode-select" id="bgMode">
+            <option value="system">システム</option>
+            <option value="white">白</option>
+            <option value="black">黒</option>
+            <option value="custom">カスタム</option>
+          </select>
         </div>
-        <input type="range" id="spacingRange" min="18" max="100" step="1" value="36" />
+        <div class="sub-input-wrap hidden" id="bgCustomWrap">
+          <input class="hex-input" id="bgCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ffffff" />
+        </div>
       </div>
-      <div class="control-row">
+
+      <div class="setting-block">
         <div class="setting-label">
-          <div class="main" style="font-size: 13px;">グリッド色</div>
-          <div class="sub">システム / 白 / 黒 / カスタム</div>
+          <div class="main">色</div>
+          <div class="sub">タップ / スワイプ / 囲い の色をカラーコードで指定</div>
         </div>
-        <select class="mode-select" id="gridMode">
-          <option value="system">システム</option>
-          <option value="white">白</option>
-          <option value="black">黒</option>
-          <option value="custom">カスタム</option>
-        </select>
+
+        <div class="effect-grid">
+          <div class="effect-item">
+            <div class="effect-name">タップの色</div>
+            <input class="hex-input" id="tapColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#46ff78" />
+          </div>
+          <div class="effect-item">
+            <div class="effect-name">スワイプの色</div>
+            <input class="hex-input" id="swipeColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#6ea5ff" />
+          </div>
+          <div class="effect-item">
+            <div class="effect-name">囲いの色</div>
+            <input class="hex-input" id="loopColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ff4e4e" />
+          </div>
+        </div>
       </div>
-      <div class="sub-input-wrap hidden" id="gridCustomWrap">
-        <input class="hex-input" id="gridCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#e8e8e8" />
+
+      <div class="setting-block">
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="main">グリッドを表示</div>
+            <div class="sub">ONで背景に格子を出します</div>
+          </div>
+          <label class="switch" aria-label="グリッドを表示">
+            <input type="checkbox" id="gridToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div id="gridDetails">
+          <div class="range-wrap">
+            <div class="range-head">
+              <div class="range-title">間隔</div>
+              <div class="range-value"><span id="spacingValue">36</span>px</div>
+            </div>
+            <input type="range" id="spacingRange" min="18" max="100" step="1" value="36" />
+          </div>
+
+          <div class="control-row">
+            <div class="setting-label">
+              <div class="main" style="font-size: 13px;">グリッド色</div>
+              <div class="sub">システム / 白 / 黒 / カスタム</div>
+            </div>
+            <select class="mode-select" id="gridMode">
+              <option value="system">システム</option>
+              <option value="white">白</option>
+              <option value="black">黒</option>
+              <option value="custom">カスタム</option>
+            </select>
+          </div>
+
+          <div class="sub-input-wrap hidden" id="gridCustomWrap">
+            <input class="hex-input" id="gridCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#e8e8e8" />
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-block">
+        <div class="footer-actions">
+          <button class="danger-btn" id="resetSettings">設定をリセット</button>
+        </div>
       </div>
     </div>
-    <div class="hint">
-      グリッドはライトモードでは白寄りのグレー、ダークモードでは黒寄りのグレーで表示されます。<br />
-      色エフェクトは少しだけ透明度を下げて見えやすくしています。
-    </div>
   </div>
-</div>
-  </div>
+
   <script>
     (() => {
       const canvas = document.getElementById('c');
       const ctx = canvas.getContext('2d', { alpha: true });
+
       const overlay = document.getElementById('overlay');
       const openSettings = document.getElementById('openSettings');
       const closeSettings = document.getElementById('closeSettings');
+
       const bgMode = document.getElementById('bgMode');
       const bgCustomWrap = document.getElementById('bgCustomWrap');
       const bgCustomInput = document.getElementById('bgCustomInput');
+
       const tapColorInput = document.getElementById('tapColorInput');
       const swipeColorInput = document.getElementById('swipeColorInput');
       const loopColorInput = document.getElementById('loopColorInput');
+
       const gridToggle = document.getElementById('gridToggle');
       const gridDetails = document.getElementById('gridDetails');
       const gridMode = document.getElementById('gridMode');
@@ -466,24 +548,34 @@ input[type="range"]::-moz-range-thumb {
       const gridCustomInput = document.getElementById('gridCustomInput');
       const spacingRange = document.getElementById('spacingRange');
       const spacingValue = document.getElementById('spacingValue');
+
+      const resetSettings = document.getElementById('resetSettings');
+
       const STORAGE_KEY = 'touch_effect_settings_v3';
+
       const defaults = {
         bgMode: 'system',
         bgCustom: '#ffffff',
+
         tapColor: '#46ff78',
         swipeColor: '#6ea5ff',
         loopColor: '#ff4e4e',
+
         gridEnabled: false,
         gridMode: 'system',
         gridCustom: '#e8e8e8',
         gridSpacing: 36
       };
+
       const settings = { ...defaults };
+
       let w = 0;
       let h = 0;
       let dpr = 1;
       let darkMode = false;
+
       const effects = [];
+
       let activePointerId = null;
       let pointerDownTime = 0;
       let pointerDownPos = { x: 0, y: 0 };
@@ -491,6 +583,7 @@ input[type="range"]::-moz-range-thumb {
       let strokePoints = [];
       let pointerHadLoop = false;
       let lastLoopAt = 0;
+
       const SWIPE_MIN_DISTANCE = 42;
       const TAP_MAX_DISTANCE = 12;
       const TAP_MAX_TIME = 320;
@@ -498,52 +591,67 @@ input[type="range"]::-moz-range-thumb {
       const LASSO_HIT_RADIUS = 18;
       const LASSO_IGNORE_RECENT_SEGMENTS = 10;
       const LASSO_COOLDOWN = 140;
+
       function clamp(v, min, max) {
         return Math.min(max, Math.max(min, v));
       }
+
       function lerp(a, b, t) {
         return a + (b - a) * t;
       }
+
       function nowMs() {
         return performance.now();
       }
+
       function easeOutCubic(t) {
         return 1 - Math.pow(1 - t, 3);
       }
+
       function distance(ax, ay, bx, by) {
         return Math.hypot(ax - bx, ay - by);
       }
+
       function pointToSegmentDistance(px, py, ax, ay, bx, by) {
         const abx = bx - ax;
         const aby = by - ay;
         const apx = px - ax;
         const apy = py - ay;
         const abLen2 = abx * abx + aby * aby;
+
         if (abLen2 === 0) return Math.hypot(px - ax, py - ay);
+
         let t = (apx * abx + apy * aby) / abLen2;
         t = clamp(t, 0, 1);
+
         const cx = ax + abx * t;
         const cy = ay + aby * t;
         return Math.hypot(px - cx, py - cy);
       }
+
       function isValidMode(value) {
         return value === 'system' || value === 'white' || value === 'black' || value === 'custom';
       }
+
       function normalizeHexColor(raw) {
         if (typeof raw !== 'string') return null;
         let s = raw.trim();
         if (!s) return null;
         if (s[0] === '#') s = s.slice(1);
         if (!/^[0-9a-fA-F]+$/.test(s)) return null;
+
         if (s.length === 3 || s.length === 4) {
           s = s.split('').map(ch => ch + ch).join('');
         }
+
         if (s.length !== 6 && s.length !== 8) return null;
         return '#' + s.toLowerCase();
       }
+
       function hexToRgba(rawHex, alphaOverride = 1) {
         const hex = normalizeHexColor(rawHex);
         if (!hex) return null;
+
         const s = hex.slice(1);
         const r = parseInt(s.slice(0, 2), 16);
         const g = parseInt(s.slice(2, 4), 16);
@@ -551,6 +659,7 @@ input[type="range"]::-moz-range-thumb {
         const a = s.length === 8 ? parseInt(s.slice(6, 8), 16) / 255 : 1;
         return `rgba(${r}, ${g}, ${b}, ${clamp(a * alphaOverride, 0, 1)})`;
       }
+
       function resolveModeColor(mode, customRaw, lightHex, darkHex) {
         const fallback = darkMode ? darkHex : lightHex;
         if (mode === 'system') return fallback;
@@ -559,21 +668,26 @@ input[type="range"]::-moz-range-thumb {
         if (mode === 'custom') return normalizeHexColor(customRaw) || fallback;
         return fallback;
       }
+
       function saveSettings() {
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
         } catch (_) {}
       }
+
       function loadSettings() {
         try {
           const raw = localStorage.getItem(STORAGE_KEY);
           if (!raw) return;
           const data = JSON.parse(raw);
+
           if (isValidMode(data.bgMode)) settings.bgMode = data.bgMode;
           if (typeof data.bgCustom === 'string') settings.bgCustom = data.bgCustom;
+
           if (typeof data.tapColor === 'string') settings.tapColor = data.tapColor;
           if (typeof data.swipeColor === 'string') settings.swipeColor = data.swipeColor;
           if (typeof data.loopColor === 'string') settings.loopColor = data.loopColor;
+
           if (typeof data.gridEnabled === 'boolean') settings.gridEnabled = data.gridEnabled;
           if (isValidMode(data.gridMode)) settings.gridMode = data.gridMode;
           if (typeof data.gridCustom === 'string') settings.gridCustom = data.gridCustom;
@@ -582,8 +696,10 @@ input[type="range"]::-moz-range-thumb {
           }
         } catch (_) {}
       }
+
       function updateTheme() {
         darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
         document.documentElement.style.setProperty('--bg', darkMode ? '#000' : '#fff');
         document.documentElement.style.setProperty('--edge', darkMode ? '#fafafa' : '#111');
         document.documentElement.style.setProperty('--panel-bg', darkMode ? 'rgba(0, 0, 0, 0.82)' : 'rgba(255, 255, 255, 0.84)');
@@ -593,8 +709,10 @@ input[type="range"]::-moz-range-thumb {
         document.documentElement.style.setProperty('--track', darkMode ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.12)');
         document.documentElement.style.setProperty('--track-disabled', darkMode ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)');
         document.documentElement.style.setProperty('--thumb', darkMode ? 'rgba(255, 255, 255, 0.78)' : 'rgba(0, 0, 0, 0.72)');
+
         document.body.style.background = resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000');
       }
+
       function resize() {
         dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
         w = window.innerWidth;
@@ -605,32 +723,41 @@ input[type="range"]::-moz-range-thumb {
         canvas.style.height = h + 'px';
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
+
       function syncSettingsUi() {
         bgMode.value = settings.bgMode;
         bgCustomInput.value = settings.bgCustom;
         bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
+
         tapColorInput.value = settings.tapColor;
         swipeColorInput.value = settings.swipeColor;
         loopColorInput.value = settings.loopColor;
+
         gridToggle.checked = settings.gridEnabled;
         gridDetails.classList.toggle('disabled', !settings.gridEnabled);
+
         gridMode.value = settings.gridMode;
         gridCustomInput.value = settings.gridCustom;
         gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
+
         spacingRange.value = String(settings.gridSpacing);
         spacingValue.textContent = String(settings.gridSpacing);
       }
+
       function openOverlay() {
         overlay.classList.add('open');
         overlay.setAttribute('aria-hidden', 'false');
       }
+
       function closeOverlay() {
         overlay.classList.remove('open');
         overlay.setAttribute('aria-hidden', 'true');
       }
+
       function getBgColor() {
         return resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000');
       }
+
       function getGridBaseColor() {
         return resolveModeColor(
           settings.gridMode,
@@ -639,15 +766,19 @@ input[type="range"]::-moz-range-thumb {
           darkMode ? '#262626' : '#e8e8e8'
         );
       }
+
       function getTapBaseColor() {
         return normalizeHexColor(settings.tapColor) || defaults.tapColor;
       }
+
       function getSwipeBaseColor() {
         return normalizeHexColor(settings.swipeColor) || defaults.swipeColor;
       }
+
       function getLoopBaseColor() {
         return normalizeHexColor(settings.loopColor) || defaults.loopColor;
       }
+
       function addTapEffect(x, y) {
         effects.push({
           type: 'tap',
@@ -657,33 +788,40 @@ input[type="range"]::-moz-range-thumb {
           duration: 650
         });
       }
+
       function createSwipeEffect(startX, startY, dirX, dirY) {
         const len = Math.hypot(dirX, dirY) || 1;
         dirX /= len;
         dirY /= len;
+
         const pad = 90;
         const minX = -pad;
         const minY = -pad;
         const maxX = w + pad;
         const maxY = h + pad;
+
         const hits = [];
+
         function pushCandidate(t, x, y) {
           if (x >= minX - 0.5 && x <= maxX + 0.5 && y >= minY - 0.5 && y <= maxY + 0.5) {
             hits.push({ t, x, y });
           }
         }
+
         if (Math.abs(dirX) > 1e-6) {
           let t = (minX - startX) / dirX;
           pushCandidate(t, minX, startY + dirY * t);
           t = (maxX - startX) / dirX;
           pushCandidate(t, maxX, startY + dirY * t);
         }
+
         if (Math.abs(dirY) > 1e-6) {
           let t = (minY - startY) / dirY;
           pushCandidate(t, startX + dirX * t, minY);
           t = (maxY - startY) / dirY;
           pushCandidate(t, startX + dirX * t, maxY);
         }
+
         if (hits.length < 2) {
           hits.push(
             { t: -400, x: startX - dirX * 400, y: startY - dirY * 400 },
@@ -692,10 +830,12 @@ input[type="range"]::-moz-range-thumb {
         } else {
           hits.sort((a, b) => a.t - b.t);
         }
+
         const first = hits[0];
         const last = hits[hits.length - 1];
         const travel = distance(first.x, first.y, last.x, last.y);
         const duration = clamp(460 + travel * 0.12, 520, 900);
+
         effects.push({
           type: 'swipe',
           start: nowMs(),
@@ -706,8 +846,10 @@ input[type="range"]::-moz-range-thumb {
           radius: clamp(Math.min(w, h) * 0.045, 18, 38)
         });
       }
+
       function createLoopEffect(points) {
         if (points.length < 3) return;
+
         effects.push({
           type: 'loop',
           start: nowMs(),
@@ -715,10 +857,13 @@ input[type="range"]::-moz-range-thumb {
           points: points.map(p => ({ x: p.x, y: p.y }))
         });
       }
+
       function detectLoop(points, currentX, currentY) {
         if (points.length < LASSO_MIN_POINTS) return false;
+
         const n = points.length;
         const safeEnd = Math.max(0, n - 1 - LASSO_IGNORE_RECENT_SEGMENTS);
+
         for (let i = 0; i < safeEnd - 1; i++) {
           const a = points[i];
           const b = points[i + 1];
@@ -732,16 +877,21 @@ input[type="range"]::-moz-range-thumb {
             if (traveled > 40) return true;
           }
         }
+
         return false;
       }
+
       function drawGrid() {
         if (!settings.gridEnabled) return;
+
         const baseColor = getGridBaseColor();
         const lineLow = hexToRgba(baseColor, 0.40) || (darkMode ? 'rgba(34,34,34,0.40)' : 'rgba(232,232,232,0.40)');
         const lineHigh = hexToRgba(baseColor, 0.56) || (darkMode ? 'rgba(58,58,58,0.56)' : 'rgba(210,210,210,0.56)');
+
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
         ctx.lineWidth = 1;
+
         for (let x = 0; x <= w + settings.gridSpacing; x += settings.gridSpacing) {
           const isAccent = Math.round(x / settings.gridSpacing) % 4 === 0;
           ctx.strokeStyle = isAccent ? lineHigh : lineLow;
@@ -750,6 +900,7 @@ input[type="range"]::-moz-range-thumb {
           ctx.lineTo(Math.floor(x) + 0.5, h);
           ctx.stroke();
         }
+
         for (let y = 0; y <= h + settings.gridSpacing; y += settings.gridSpacing) {
           const isAccent = Math.round(y / settings.gridSpacing) % 4 === 0;
           ctx.strokeStyle = isAccent ? lineHigh : lineLow;
@@ -758,49 +909,63 @@ input[type="range"]::-moz-range-thumb {
           ctx.lineTo(w, Math.floor(y) + 0.5);
           ctx.stroke();
         }
+
         ctx.restore();
       }
+
       function drawTap(effect, t) {
         const p = clamp((t - effect.start) / effect.duration, 0, 1);
         if (p >= 1) return;
+
         const e = easeOutCubic(p);
         const radius = lerp(10, Math.max(w, h) * 0.22, e);
         const alpha = 0.34 * Math.pow(1 - p, 1.7);
         const baseColor = getTapBaseColor();
+
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.globalCompositeOperation = 'source-over';
         ctx.shadowBlur = radius * 0.22;
         ctx.shadowColor = hexToRgba(baseColor, 0.55) || 'rgba(70, 255, 120, 0.55)';
+
         const g = ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, radius);
         g.addColorStop(0.00, hexToRgba(baseColor, 0.92) || 'rgba(70, 255, 120, 0.92)');
         g.addColorStop(0.28, hexToRgba(baseColor, 0.60) || 'rgba(60, 235, 110, 0.60)');
         g.addColorStop(0.68, hexToRgba(baseColor, 0.25) || 'rgba(50, 220, 100, 0.25)');
         g.addColorStop(1.00, hexToRgba(baseColor, 0.00) || 'rgba(50, 220, 100, 0)');
+
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(effect.x, effect.y, radius, 0, Math.PI * 2);
         ctx.fill();
+
         ctx.restore();
       }
+
       function drawSwipe(effect, t) {
         const p = clamp((t - effect.start) / effect.duration, 0, 1);
         if (p >= 1) return;
+
         const e = easeOutCubic(p);
         const x = lerp(effect.from.x, effect.to.x, e);
         const y = lerp(effect.from.y, effect.to.y, e);
+
         const trailSteps = 16;
         const trailSpacing = effect.radius * 0.82;
         const baseColor = getSwipeBaseColor();
+
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
+
         for (let i = trailSteps; i >= 0; i--) {
           const back = i * trailSpacing;
           const px = x - effect.dir.x * back;
           const py = y - effect.dir.y * back;
           const a = 0.24 * Math.pow(1 - i / (trailSteps + 1), 2.2) * Math.pow(1 - p, 0.35);
           if (a <= 0.001) continue;
+
           const r = effect.radius * (1 + (trailSteps - i) * 0.02);
+
           ctx.globalAlpha = a;
           ctx.shadowBlur = r * 0.35;
           ctx.shadowColor = hexToRgba(baseColor, 0.55) || 'rgba(90, 150, 255, 0.55)';
@@ -809,6 +974,7 @@ input[type="range"]::-moz-range-thumb {
           ctx.arc(px, py, r, 0, Math.PI * 2);
           ctx.fill();
         }
+
         ctx.globalAlpha = 0.45 * Math.pow(1 - p, 0.7);
         ctx.shadowBlur = effect.radius * 0.6;
         ctx.shadowColor = hexToRgba(baseColor, 0.45) || 'rgba(110, 165, 255, 0.45)';
@@ -816,21 +982,26 @@ input[type="range"]::-moz-range-thumb {
         ctx.beginPath();
         ctx.arc(x, y, effect.radius * 1.02, 0, Math.PI * 2);
         ctx.fill();
+
         ctx.restore();
       }
+
       function drawLoop(effect, t) {
         const p = clamp((t - effect.start) / effect.duration, 0, 1);
         if (p >= 1) return;
         if (effect.points.length < 3) return;
+
         const alpha = 0.36 * Math.pow(1 - p, 2.0);
         const blur = 8 * Math.pow(1 - p, 0.55);
         const baseColor = getLoopBaseColor();
+
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = alpha;
         ctx.shadowBlur = blur;
         ctx.shadowColor = hexToRgba(baseColor, 0.40) || 'rgba(255, 60, 60, 0.40)';
         ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(255, 78, 78, 1)';
+
         ctx.beginPath();
         ctx.moveTo(effect.points[0].x, effect.points[0].y);
         for (let i = 1; i < effect.points.length; i++) {
@@ -838,99 +1009,146 @@ input[type="range"]::-moz-range-thumb {
         }
         ctx.closePath();
         ctx.fill('evenodd');
+
         ctx.restore();
       }
+
       function render() {
         const t = nowMs();
+
         ctx.fillStyle = getBgColor();
         ctx.fillRect(0, 0, w, h);
+
         drawGrid();
+
         for (let i = 0; i < effects.length; i++) {
           const effect = effects[i];
           if (effect.type === 'tap') drawTap(effect, t);
           else if (effect.type === 'swipe') drawSwipe(effect, t);
           else if (effect.type === 'loop') drawLoop(effect, t);
         }
+
         for (let i = effects.length - 1; i >= 0; i--) {
           if (t - effects[i].start >= effects[i].duration) effects.splice(i, 1);
         }
+
         requestAnimationFrame(render);
       }
+
       function getPoint(e) {
         return { x: e.clientX, y: e.clientY };
       }
+
       function applyAndSave() {
         document.body.style.background = getBgColor();
         syncSettingsUi();
         saveSettings();
       }
+
+      function resetAllSettings() {
+        const ok = window.confirm('設定を初期状態に戻します。よろしいですか？');
+        if (!ok) return;
+
+        Object.assign(settings, defaults);
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch (_) {}
+        applyAndSave();
+      }
+
       bgMode.addEventListener('change', () => {
         settings.bgMode = bgMode.value;
+        bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
         applyAndSave();
       });
+
       bgCustomInput.addEventListener('input', () => {
         settings.bgCustom = bgCustomInput.value.trim();
         applyAndSave();
       });
+
       tapColorInput.addEventListener('input', () => {
         settings.tapColor = tapColorInput.value.trim();
         saveSettings();
       });
+
       swipeColorInput.addEventListener('input', () => {
         settings.swipeColor = swipeColorInput.value.trim();
         saveSettings();
       });
+
       loopColorInput.addEventListener('input', () => {
         settings.loopColor = loopColorInput.value.trim();
         saveSettings();
       });
+
       gridToggle.addEventListener('change', () => {
         settings.gridEnabled = gridToggle.checked;
-        applyAndSave();
+        gridDetails.classList.toggle('disabled', !settings.gridEnabled);
+        saveSettings();
       });
+
       gridMode.addEventListener('change', () => {
         settings.gridMode = gridMode.value;
-        applyAndSave();
+        gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
+        saveSettings();
       });
+
       gridCustomInput.addEventListener('input', () => {
         settings.gridCustom = gridCustomInput.value.trim();
-        applyAndSave();
+        saveSettings();
       });
+
       spacingRange.addEventListener('input', () => {
         settings.gridSpacing = clamp(Number(spacingRange.value) || 36, 18, 100);
         spacingValue.textContent = String(settings.gridSpacing);
         saveSettings();
       });
+
+      resetSettings.addEventListener('click', () => {
+        resetAllSettings();
+      });
+
       openSettings.addEventListener('click', () => {
         openOverlay();
       });
+
       closeSettings.addEventListener('click', () => {
         closeOverlay();
       });
+
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) closeOverlay();
       });
+
       canvas.addEventListener('pointerdown', (e) => {
         if (overlay.classList.contains('open')) return;
         if (activePointerId !== null) return;
+
         activePointerId = e.pointerId;
         canvas.setPointerCapture(activePointerId);
+
         const p = getPoint(e);
         pointerDownTime = nowMs();
         pointerDownPos = { x: p.x, y: p.y };
         lastPos = { x: p.x, y: p.y };
         strokePoints = [p];
         pointerHadLoop = false;
+
         e.preventDefault();
       }, { passive: false });
+
       canvas.addEventListener('pointermove', (e) => {
         if (activePointerId !== e.pointerId) return;
+
         const p = getPoint(e);
         const t = nowMs();
+
         if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
           strokePoints.push(p);
           lastPos = p;
         }
+
         if (t - lastLoopAt >= LASSO_COOLDOWN) {
           if (detectLoop(strokePoints, p.x, p.y)) {
             createLoopEffect(strokePoints);
@@ -939,13 +1157,17 @@ input[type="range"]::-moz-range-thumb {
             strokePoints = [p];
           }
         }
+
         e.preventDefault();
       }, { passive: false });
+
       function finishPointer(e) {
         if (activePointerId !== e.pointerId) return;
+
         const p = getPoint(e);
         const elapsed = nowMs() - pointerDownTime;
         const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
+
         if (!pointerHadLoop) {
           if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
             addTapEffect(p.x, p.y);
@@ -955,11 +1177,14 @@ input[type="range"]::-moz-range-thumb {
             createSwipeEffect(p.x, p.y, dx, dy);
           }
         }
+
         activePointerId = null;
         strokePoints = [];
         pointerHadLoop = false;
+
         e.preventDefault();
       }
+
       canvas.addEventListener('pointerup', finishPointer, { passive: false });
       canvas.addEventListener('pointercancel', finishPointer, { passive: false });
       canvas.addEventListener('lostpointercapture', () => {
@@ -967,12 +1192,15 @@ input[type="range"]::-moz-range-thumb {
         strokePoints = [];
         pointerHadLoop = false;
       });
+
       const darkMql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
       loadSettings();
       updateTheme();
       resize();
       syncSettingsUi();
       document.body.style.background = getBgColor();
+
       if (darkMql) {
         if (typeof darkMql.addEventListener === 'function') {
           darkMql.addEventListener('change', updateTheme);
@@ -980,9 +1208,11 @@ input[type="range"]::-moz-range-thumb {
           darkMql.addListener(updateTheme);
         }
       }
+
       window.addEventListener('resize', () => {
         resize();
       });
+
       requestAnimationFrame(render);
     })();
   </script>
