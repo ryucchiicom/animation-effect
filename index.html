@@ -6,6 +6,24 @@
   <meta name="color-scheme" content="light dark" />
   <title>Touch Effects</title>
   <style>
+    :root {
+      --bg-light: #ffffff;
+      --bg-dark: #000000;
+      --panel-light: rgba(255, 255, 255, 0.78);
+      --panel-dark: rgba(16, 16, 16, 0.78);
+      --text-light: #111111;
+      --text-dark: #f5f5f5;
+      --muted-light: rgba(17, 17, 17, 0.55);
+      --muted-dark: rgba(245, 245, 245, 0.55);
+      --border-light: rgba(0, 0, 0, 0.10);
+      --border-dark: rgba(255, 255, 255, 0.12);
+      --accent: rgba(70, 255, 120, 1);
+      --accent-blue: rgba(110, 165, 255, 1);
+      --accent-red: rgba(255, 78, 78, 1);
+      --grid-light: rgba(230, 230, 230, 0.12);
+      --grid-dark: rgba(28, 28, 28, 0.16);
+    }
+
     html, body {
       margin: 0;
       width: 100%;
@@ -15,14 +33,21 @@
       user-select: none;
       -webkit-user-select: none;
       overscroll-behavior: none;
-      background: #fff;
       color-scheme: light dark;
+      background: var(--bg-light);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    @media (prefers-color-scheme: dark) {
-      html, body {
-        background: #000;
-      }
+    html.theme-dark, body.theme-dark {
+      background: var(--bg-dark);
+    }
+
+    html.theme-light, body.theme-light {
+      background: var(--bg-light);
+    }
+
+    body.main {
+      position: relative;
     }
 
     canvas {
@@ -31,13 +56,440 @@
       height: 100vh;
       touch-action: none;
     }
+
+    .gear {
+      position: fixed;
+      top: calc(12px + env(safe-area-inset-top));
+      right: calc(12px + env(safe-area-inset-right));
+      z-index: 10;
+      padding: 10px 12px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 13px;
+      line-height: 1;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border-light);
+      background: var(--panel-light);
+      color: var(--text-light);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.10);
+    }
+
+    html.theme-dark .gear {
+      border-color: var(--border-dark);
+      background: var(--panel-dark);
+      color: var(--text-dark);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.30);
+    }
+
+    .gear:active {
+      transform: scale(0.98);
+    }
+
+    .settingsPage {
+      width: 100vw;
+      height: 100vh;
+      box-sizing: border-box;
+      padding:
+        calc(18px + env(safe-area-inset-top))
+        calc(18px + env(safe-area-inset-right))
+        calc(18px + env(safe-area-inset-bottom))
+        calc(18px + env(safe-area-inset-left));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    html.theme-dark .settingsPage {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .settingsCard {
+      width: min(640px, 100%);
+      border-radius: 24px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border-light);
+      background: var(--panel-light);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    html.theme-dark .settingsCard {
+      border-color: var(--border-dark);
+      background: var(--panel-dark);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.34);
+    }
+
+    .settingsHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .settingsTitle {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+
+    .backLink {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1;
+      border: 1px solid var(--border-light);
+      background: rgba(255, 255, 255, 0.45);
+      color: var(--text-light);
+    }
+
+    html.theme-dark .backLink {
+      border-color: var(--border-dark);
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--text-dark);
+    }
+
+    .settingBlock {
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid var(--border-light);
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    html.theme-dark .settingBlock {
+      border-color: var(--border-dark);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .toggleRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 16px;
+    }
+
+    .toggleLabel {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggleLabel input {
+      width: 18px;
+      height: 18px;
+      accent-color: #4fd36f;
+      margin: 0;
+    }
+
+    .statusPill {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid var(--border-light);
+      background: rgba(255, 255, 255, 0.35);
+      color: var(--muted-light);
+    }
+
+    html.theme-dark .statusPill {
+      border-color: var(--border-dark);
+      background: rgba(0, 0, 0, 0.28);
+      color: var(--muted-dark);
+    }
+
+    .spacingWrap {
+      margin-top: 14px;
+      transition: opacity 0.18s ease, filter 0.18s ease;
+    }
+
+    .spacingWrap.disabled {
+      opacity: 0.35;
+      filter: saturate(0.7);
+    }
+
+    .spacingHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: inherit;
+    }
+
+    .spacingBar {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 10px;
+      border-radius: 999px;
+      outline: none;
+      background: linear-gradient(90deg, rgba(110,165,255,0.20), rgba(70,255,120,0.32));
+      border: 1px solid var(--border-light);
+    }
+
+    html.theme-dark .spacingBar {
+      border-color: var(--border-dark);
+      background: linear-gradient(90deg, rgba(110,165,255,0.20), rgba(70,255,120,0.24));
+    }
+
+    .spacingBar::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    html.theme-dark .spacingBar::-webkit-slider-thumb {
+      background: #d9d9d9;
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .spacingBar::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted-light);
+    }
+
+    html.theme-dark .hint {
+      color: var(--muted-dark);
+    }
+
+    .preview {
+      margin-top: 16px;
+      border-radius: 18px;
+      overflow: hidden;
+      height: 160px;
+      border: 1px solid var(--border-light);
+      background:
+        repeating-linear-gradient(
+          90deg,
+          var(--grid-preview) 0,
+          var(--grid-preview) 1px,
+          transparent 1px,
+          transparent var(--preview-size)
+        ),
+        repeating-linear-gradient(
+          180deg,
+          var(--grid-preview) 0,
+          var(--grid-preview) 1px,
+          transparent 1px,
+          transparent var(--preview-size)
+        );
+    }
+
+    html.theme-dark .preview {
+      border-color: var(--border-dark);
+    }
+
+    .preview.light {
+      --grid-preview: rgba(230, 230, 230, 0.52);
+      background-color: #ffffff;
+    }
+
+    .preview.dark {
+      --grid-preview: rgba(28, 28, 28, 0.60);
+      background-color: #000000;
+    }
+
+    .previewContent {
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 14px;
+      box-sizing: border-box;
+      background:
+        radial-gradient(circle at 26% 40%, rgba(70,255,120,0.18), transparent 28%),
+        radial-gradient(circle at 68% 48%, rgba(110,165,255,0.18), transparent 28%),
+        radial-gradient(circle at 44% 72%, rgba(255,78,78,0.16), transparent 28%);
+    }
+
+    .previewTag {
+      font-size: 12px;
+      line-height: 1;
+      padding: 7px 9px;
+      border-radius: 999px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.24);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      color: #111;
+    }
+
+    html.theme-dark .previewTag {
+      background: rgba(0, 0, 0, 0.26);
+      border-color: rgba(255, 255, 255, 0.10);
+      color: #f5f5f5;
+    }
+
+    .footerNote {
+      margin-top: 14px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted-light);
+    }
+
+    html.theme-dark .footerNote {
+      color: var(--muted-dark);
+    }
   </style>
 </head>
 <body>
-  <canvas id="c"></canvas>
-
   <script>
-    (() => {
+    (function () {
+      const KEY_GRID_ENABLED = 'touchfx_grid_enabled';
+      const KEY_GRID_SPACING = 'touchfx_grid_spacing';
+
+      const isSettingsPage = location.pathname.split('/').filter(Boolean).pop() === 's';
+      const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      function getTheme() {
+        return prefersDark() ? 'dark' : 'light';
+      }
+
+      function applyThemeClass() {
+        const theme = getTheme();
+        document.documentElement.classList.toggle('theme-dark', theme === 'dark');
+        document.documentElement.classList.toggle('theme-light', theme === 'light');
+        document.body.classList.toggle('theme-dark', theme === 'dark');
+        document.body.classList.toggle('theme-light', theme === 'light');
+        return theme;
+      }
+
+      function loadSettings() {
+        const enabledRaw = localStorage.getItem(KEY_GRID_ENABLED);
+        const spacingRaw = localStorage.getItem(KEY_GRID_SPACING);
+
+        let gridEnabled = enabledRaw === null ? true : enabledRaw === '1';
+        let gridSpacing = spacingRaw === null ? 36 : Number(spacingRaw);
+
+        if (!Number.isFinite(gridSpacing)) gridSpacing = 36;
+        gridSpacing = Math.max(18, Math.min(96, Math.round(gridSpacing)));
+
+        return { gridEnabled, gridSpacing };
+      }
+
+      function saveSettings(settings) {
+        localStorage.setItem(KEY_GRID_ENABLED, settings.gridEnabled ? '1' : '0');
+        localStorage.setItem(KEY_GRID_SPACING, String(settings.gridSpacing));
+      }
+
+      const settings = loadSettings();
+      const theme = applyThemeClass();
+
+      if (isSettingsPage) {
+        document.body.innerHTML = `
+          <div class="settingsPage">
+            <div class="settingsCard">
+              <div class="settingsHead">
+                <h1 class="settingsTitle">設定</h1>
+                <a class="backLink" href="./">戻る</a>
+              </div>
+
+              <div class="settingBlock">
+                <div class="toggleRow">
+                  <label class="toggleLabel">
+                    <input id="gridEnabled" type="checkbox" />
+                    <span>格子状の線を表示</span>
+                  </label>
+                  <span id="gridStatus" class="statusPill"></span>
+                </div>
+
+                <div id="spacingWrap" class="spacingWrap">
+                  <div class="spacingHead">
+                    <span>間隔</span>
+                    <span id="spacingValue"></span>
+                  </div>
+                  <input id="spacingBar" class="spacingBar" type="range" min="18" max="96" step="1" />
+                  <div class="hint">OFFのときは薄文字・薄バーになって、設定できない感じになります。</div>
+                </div>
+
+                <div class="preview ${theme}">
+                  <div class="previewContent">
+                    <div class="previewTag">grid preview</div>
+                    <div class="previewTag">tap / swipe / loop</div>
+                  </div>
+                </div>
+
+                <div class="footerNote">
+                  グリッドはライトモードでは白寄りのグレー、ダークモードでは黒寄りのグレーで表示されます。<br>
+                  色のあるエフェクトは、それより目立つ濃さで重なります。
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const gridEnabledEl = document.getElementById('gridEnabled');
+        const spacingWrapEl = document.getElementById('spacingWrap');
+        const spacingBarEl = document.getElementById('spacingBar');
+        const spacingValueEl = document.getElementById('spacingValue');
+        const gridStatusEl = document.getElementById('gridStatus');
+        const previewEl = document.querySelector('.preview');
+
+        function syncSettingsUI() {
+          gridEnabledEl.checked = settings.gridEnabled;
+          spacingBarEl.value = String(settings.gridSpacing);
+          spacingBarEl.disabled = !settings.gridEnabled;
+          spacingWrapEl.classList.toggle('disabled', !settings.gridEnabled);
+
+          const previewSize = Math.max(12, Math.round(settings.gridSpacing / 2));
+          previewEl.style.setProperty('--preview-size', `${previewSize}px`);
+
+          spacingValueEl.textContent = `${settings.gridSpacing}px`;
+          gridStatusEl.textContent = settings.gridEnabled ? 'ON' : 'OFF';
+        }
+
+        gridEnabledEl.addEventListener('change', () => {
+          settings.gridEnabled = gridEnabledEl.checked;
+          saveSettings(settings);
+          syncSettingsUI();
+        });
+
+        spacingBarEl.addEventListener('input', () => {
+          settings.gridSpacing = Number(spacingBarEl.value);
+          saveSettings(settings);
+          syncSettingsUI();
+        });
+
+        syncSettingsUI();
+        return;
+      }
+
+      document.body.classList.add('main');
+
+      document.body.innerHTML = `
+        <a class="gear" href="./s">設定</a>
+        <canvas id="c"></canvas>
+      `;
+
       const canvas = document.getElementById('c');
       const ctx = canvas.getContext('2d', { alpha: true });
 
@@ -49,12 +501,10 @@
       let activePointerId = null;
 
       let strokePoints = [];
-      let strokeTimes = [];
       let pointerDownTime = 0;
       let pointerDownPos = { x: 0, y: 0 };
       let lastMovePos = { x: 0, y: 0 };
       let lastLoopAt = 0;
-      let lassoLocked = false;
 
       const SWIPE_MIN_DISTANCE = 42;
       const TAP_MAX_DISTANCE = 12;
@@ -62,15 +512,15 @@
       const LASSO_MIN_POINTS = 20;
       const LASSO_HIT_RADIUS = 18;
       const LASSO_IGNORE_RECENT_SEGMENTS = 10;
-      const LASSO_COOLDOWN = 140;
+      const LASSO_COOLDOWN = 70;
 
       const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
       const lerp = (a, b, t) => a + (b - a) * t;
       const nowMs = () => performance.now();
 
-      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-      const easeOutQuad = (t) => 1 - (1 - t) * (1 - t);
-      const easeOutSine = (t) => Math.sin((t * Math.PI) / 2);
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
 
       function resize() {
         dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
@@ -81,12 +531,6 @@
         canvas.style.width = w + 'px';
         canvas.style.height = h + 'px';
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      }
-
-      function dist2(ax, ay, bx, by) {
-        const dx = ax - bx;
-        const dy = ay - by;
-        return dx * dx + dy * dy;
       }
 
       function distance(ax, ay, bx, by) {
@@ -164,7 +608,6 @@
 
         const first = candidates[0];
         const last = candidates[candidates.length - 1];
-
         const travel = distance(first.x, first.y, last.x, last.y);
         const duration = clamp(460 + travel * 0.12, 520, 900);
 
@@ -214,12 +657,41 @@
         return false;
       }
 
+      function drawGrid() {
+        const enabled = settings.gridEnabled;
+        if (!enabled) return;
+
+        const spacing = clamp(settings.gridSpacing, 18, 96);
+        const themeDark = getTheme() === 'dark';
+        const color = themeDark ? 'rgba(28, 28, 28, 0.16)' : 'rgba(230, 230, 230, 0.12)';
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+
+        ctx.beginPath();
+
+        for (let x = 0.5; x <= w; x += spacing) {
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, h);
+        }
+
+        for (let y = 0.5; y <= h; y += spacing) {
+          ctx.moveTo(0, y);
+          ctx.lineTo(w, y);
+        }
+
+        ctx.stroke();
+        ctx.restore();
+      }
+
       function drawTap(effect, t) {
         const p = clamp((t - effect.start) / effect.duration, 0, 1);
         if (p >= 1) return;
 
         const e = easeOutCubic(p);
-        const alpha = 0.33 * Math.pow(1 - p, 1.7);
+        const alpha = 0.34 * Math.pow(1 - p, 1.7);
         const radius = lerp(10, Math.max(w, h) * 0.22, e);
 
         ctx.save();
@@ -306,7 +778,6 @@
           ctx.lineTo(effect.points[i].x, effect.points[i].y);
         }
         ctx.closePath();
-
         ctx.fill('evenodd');
 
         ctx.restore();
@@ -316,6 +787,8 @@
         const t = nowMs();
 
         ctx.clearRect(0, 0, w, h);
+
+        drawGrid();
 
         for (let i = 0; i < effects.length; i++) {
           const e = effects[i];
@@ -346,32 +819,26 @@
         pointerDownPos = { x: p.x, y: p.y };
         lastMovePos = { x: p.x, y: p.y };
         strokePoints = [p];
-        strokeTimes = [pointerDownTime];
-        lassoLocked = false;
 
         e.preventDefault();
       }, { passive: false });
 
       canvas.addEventListener('pointermove', (e) => {
         if (activePointerId !== e.pointerId) return;
+
         const p = setPointFromEvent(e);
         const t = nowMs();
 
         if (distance(p.x, p.y, lastMovePos.x, lastMovePos.y) >= 2.2) {
           strokePoints.push(p);
-          strokeTimes.push(t);
           lastMovePos = p;
         }
 
-        if (!lassoLocked && t - lastLoopAt >= LASSO_COOLDOWN) {
+        if (t - lastLoopAt >= LASSO_COOLDOWN) {
           if (detectLoop(strokePoints, p.x, p.y)) {
             createLoopEffect(strokePoints);
             lastLoopAt = t;
-            lassoLocked = true;
-
-            const keep = strokePoints[strokePoints.length - 1];
-            strokePoints = [keep];
-            strokeTimes = [t];
+            strokePoints = [p];
           }
         }
 
@@ -385,14 +852,6 @@
         const totalMove = distance(pointerDownPos.x, pointerDownPos.y, lastMovePos.x, lastMovePos.y);
         const elapsed = t - pointerDownTime;
 
-        if (lassoLocked) {
-          activePointerId = null;
-          strokePoints = [];
-          strokeTimes = [];
-          e.preventDefault();
-          return;
-        }
-
         if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
           addTapEffect(lastMovePos.x, lastMovePos.y);
         } else if (totalMove >= SWIPE_MIN_DISTANCE) {
@@ -403,7 +862,6 @@
 
         activePointerId = null;
         strokePoints = [];
-        strokeTimes = [];
         e.preventDefault();
       }
 
@@ -412,8 +870,6 @@
       canvas.addEventListener('lostpointercapture', () => {
         activePointerId = null;
         strokePoints = [];
-        strokeTimes = [];
-        lassoLocked = false;
       });
 
       window.addEventListener('resize', resize);
@@ -421,8 +877,7 @@
       const mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
       if (mql) {
         const updateTheme = () => {
-          document.documentElement.style.background = '';
-          document.body.style.background = '';
+          applyThemeClass();
         };
 
         if (typeof mql.addEventListener === 'function') {
