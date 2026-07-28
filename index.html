@@ -16,8 +16,6 @@
       --track: rgba(0, 0, 0, 0.12);
       --track-disabled: rgba(0, 0, 0, 0.06);
       --thumb: rgba(0, 0, 0, 0.72);
-      --grid-light: rgba(232, 232, 232, 0.42);
-      --grid-dark: rgba(34, 34, 34, 0.42);
     }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -107,7 +105,7 @@ canvas {
 }
 .panel {
   width: min(92vw, 460px);
-  max-height: min(84vh, 640px);
+  max-height: min(84vh, 680px);
   overflow: auto;
   border-radius: 26px;
   background: var(--panel-bg);
@@ -149,6 +147,10 @@ canvas {
 .setting-block {
   padding: 14px 0 4px;
   border-top: 1px solid rgba(127, 127, 127, 0.16);
+}
+.setting-block:first-of-type {
+  border-top: 0;
+  padding-top: 0;
 }
 .setting-row {
   display: flex;
@@ -210,6 +212,48 @@ canvas {
 .switch input:checked + .slider::before {
   transform: translateX(22px);
 }
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.mode-select {
+  width: 128px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: var(--text);
+  padding: 0 10px;
+  font-size: 14px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.hex-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: var(--text);
+  padding: 0 12px;
+  font-size: 14px;
+  outline: none;
+}
+.hex-input::placeholder {
+  color: var(--muted);
+}
+.sub-input-wrap {
+  margin-top: 10px;
+}
+.disabled {
+  opacity: 0.34;
+  pointer-events: none;
+}
 .range-wrap {
   margin-top: 12px;
   padding-left: 2px;
@@ -229,10 +273,6 @@ canvas {
   font-size: 12px;
   color: var(--muted);
 }
-.range-wrap.disabled {
-  opacity: 0.34;
-  pointer-events: none;
-}
 input[type="range"] {
   width: 100%;
   margin: 0;
@@ -247,7 +287,7 @@ input[type="range"]::-webkit-slider-runnable-track {
   border-radius: 999px;
   background: var(--track);
 }
-.range-wrap.disabled input[type="range"]::-webkit-slider-runnable-track {
+.disabled input[type="range"]::-webkit-slider-runnable-track {
   background: var(--track-disabled);
 }
 input[type="range"]::-webkit-slider-thumb {
@@ -266,7 +306,7 @@ input[type="range"]::-moz-range-track {
   border-radius: 999px;
   background: var(--track);
 }
-.range-wrap.disabled input[type="range"]::-moz-range-track {
+.disabled input[type="range"]::-moz-range-track {
   background: var(--track-disabled);
 }
 input[type="range"]::-moz-range-thumb {
@@ -282,6 +322,31 @@ input[type="range"]::-moz-range-thumb {
   font-size: 12px;
   line-height: 1.45;
   color: var(--muted);
+}
+.effect-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.effect-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0 0;
+}
+.effect-item + .effect-item {
+  border-top: 1px solid rgba(127, 127, 127, 0.12);
+  padding-top: 12px;
+}
+.effect-name {
+  font-size: 13px;
+  font-weight: 650;
+}
+.effect-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
 }
 .hidden {
   display: none !important;
@@ -302,24 +367,81 @@ input[type="range"]::-moz-range-thumb {
   <div class="setting-block">
     <div class="setting-row">
       <div class="setting-label">
-        <div class="main">格子状の線を表示</div>
+        <div class="main">背景色</div>
+        <div class="sub">システム / 白 / 黒 / カスタム</div>
+      </div>
+      <select class="mode-select" id="bgMode">
+        <option value="system">システム</option>
+        <option value="white">白</option>
+        <option value="black">黒</option>
+        <option value="custom">カスタム</option>
+      </select>
+    </div>
+    <div class="sub-input-wrap hidden" id="bgCustomWrap">
+      <input class="hex-input" id="bgCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ffffff" />
+    </div>
+  </div>
+  <div class="setting-block">
+    <div class="setting-label">
+      <div class="main">色</div>
+      <div class="sub">タップ / スワイプ / 囲い の色をカラーコードで指定</div>
+    </div>
+    <div class="effect-grid">
+      <div class="effect-item">
+        <div class="effect-name">タップの色</div>
+        <input class="hex-input" id="tapColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#46ff78" />
+        <div class="effect-desc">半透明の緑の広がり</div>
+      </div>
+      <div class="effect-item">
+        <div class="effect-name">スワイプの色</div>
+        <input class="hex-input" id="swipeColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#6ea5ff" />
+        <div class="effect-desc">青い円と残像</div>
+      </div>
+      <div class="effect-item">
+        <div class="effect-name">囲いの色</div>
+        <input class="hex-input" id="loopColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ff4e4e" />
+        <div class="effect-desc">囲った時に出る赤</div>
+      </div>
+    </div>
+  </div>
+  <div class="setting-block">
+    <div class="setting-row">
+      <div class="setting-label">
+        <div class="main">グリッドを表示</div>
         <div class="sub">ONで背景に格子を出します</div>
       </div>
-      <label class="switch" aria-label="格子状の線を表示">
+      <label class="switch" aria-label="グリッドを表示">
         <input type="checkbox" id="gridToggle" />
         <span class="slider"></span>
       </label>
     </div>
-    <div class="range-wrap" id="spacingWrap">
-      <div class="range-head">
-        <div class="range-title">間隔</div>
-        <div class="range-value"><span id="spacingValue">36</span>px</div>
+    <div id="gridDetails">
+      <div class="range-wrap">
+        <div class="range-head">
+          <div class="range-title">間隔</div>
+          <div class="range-value"><span id="spacingValue">36</span>px</div>
+        </div>
+        <input type="range" id="spacingRange" min="18" max="100" step="1" value="36" />
       </div>
-      <input type="range" id="spacingRange" min="18" max="100" step="1" value="36" />
+      <div class="control-row">
+        <div class="setting-label">
+          <div class="main" style="font-size: 13px;">グリッド色</div>
+          <div class="sub">システム / 白 / 黒 / カスタム</div>
+        </div>
+        <select class="mode-select" id="gridMode">
+          <option value="system">システム</option>
+          <option value="white">白</option>
+          <option value="black">黒</option>
+          <option value="custom">カスタム</option>
+        </select>
+      </div>
+      <div class="sub-input-wrap hidden" id="gridCustomWrap">
+        <input class="hex-input" id="gridCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#e8e8e8" />
+      </div>
     </div>
     <div class="hint">
-      格子はライトモードでは白寄りのグレー、ダークモードでは黒寄りのグレーで表示されます。<br />
-      色が出るエフェクトはそれより少しはっきり見えるようにしています。
+      グリッドはライトモードでは白寄りのグレー、ダークモードでは黒寄りのグレーで表示されます。<br />
+      色エフェクトは少しだけ透明度を下げて見えやすくしています。
     </div>
   </div>
 </div>
@@ -331,11 +453,32 @@ input[type="range"]::-moz-range-thumb {
       const overlay = document.getElementById('overlay');
       const openSettings = document.getElementById('openSettings');
       const closeSettings = document.getElementById('closeSettings');
+      const bgMode = document.getElementById('bgMode');
+      const bgCustomWrap = document.getElementById('bgCustomWrap');
+      const bgCustomInput = document.getElementById('bgCustomInput');
+      const tapColorInput = document.getElementById('tapColorInput');
+      const swipeColorInput = document.getElementById('swipeColorInput');
+      const loopColorInput = document.getElementById('loopColorInput');
       const gridToggle = document.getElementById('gridToggle');
+      const gridDetails = document.getElementById('gridDetails');
+      const gridMode = document.getElementById('gridMode');
+      const gridCustomWrap = document.getElementById('gridCustomWrap');
+      const gridCustomInput = document.getElementById('gridCustomInput');
       const spacingRange = document.getElementById('spacingRange');
       const spacingValue = document.getElementById('spacingValue');
-      const spacingWrap = document.getElementById('spacingWrap');
-      const STORAGE_KEY = 'touch_effect_settings_v2';
+      const STORAGE_KEY = 'touch_effect_settings_v3';
+      const defaults = {
+        bgMode: 'system',
+        bgCustom: '#ffffff',
+        tapColor: '#46ff78',
+        swipeColor: '#6ea5ff',
+        loopColor: '#ff4e4e',
+        gridEnabled: false,
+        gridMode: 'system',
+        gridCustom: '#e8e8e8',
+        gridSpacing: 36
+      };
+      const settings = { ...defaults };
       let w = 0;
       let h = 0;
       let dpr = 1;
@@ -346,10 +489,8 @@ input[type="range"]::-moz-range-thumb {
       let pointerDownPos = { x: 0, y: 0 };
       let lastPos = { x: 0, y: 0 };
       let strokePoints = [];
-      let sessionHadLoop = false;
+      let pointerHadLoop = false;
       let lastLoopAt = 0;
-      let gridEnabled = false;
-      let gridSpacing = 36;
       const SWIPE_MIN_DISTANCE = 42;
       const TAP_MAX_DISTANCE = 12;
       const TAP_MAX_TIME = 320;
@@ -385,12 +526,42 @@ input[type="range"]::-moz-range-thumb {
         const cy = ay + aby * t;
         return Math.hypot(px - cx, py - cy);
       }
+      function isValidMode(value) {
+        return value === 'system' || value === 'white' || value === 'black' || value === 'custom';
+      }
+      function normalizeHexColor(raw) {
+        if (typeof raw !== 'string') return null;
+        let s = raw.trim();
+        if (!s) return null;
+        if (s[0] === '#') s = s.slice(1);
+        if (!/^[0-9a-fA-F]+$/.test(s)) return null;
+        if (s.length === 3 || s.length === 4) {
+          s = s.split('').map(ch => ch + ch).join('');
+        }
+        if (s.length !== 6 && s.length !== 8) return null;
+        return '#' + s.toLowerCase();
+      }
+      function hexToRgba(rawHex, alphaOverride = 1) {
+        const hex = normalizeHexColor(rawHex);
+        if (!hex) return null;
+        const s = hex.slice(1);
+        const r = parseInt(s.slice(0, 2), 16);
+        const g = parseInt(s.slice(2, 4), 16);
+        const b = parseInt(s.slice(4, 6), 16);
+        const a = s.length === 8 ? parseInt(s.slice(6, 8), 16) / 255 : 1;
+        return `rgba(${r}, ${g}, ${b}, ${clamp(a * alphaOverride, 0, 1)})`;
+      }
+      function resolveModeColor(mode, customRaw, lightHex, darkHex) {
+        const fallback = darkMode ? darkHex : lightHex;
+        if (mode === 'system') return fallback;
+        if (mode === 'white') return '#ffffff';
+        if (mode === 'black') return '#000000';
+        if (mode === 'custom') return normalizeHexColor(customRaw) || fallback;
+        return fallback;
+      }
       function saveSettings() {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            gridEnabled,
-            gridSpacing
-          }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
         } catch (_) {}
       }
       function loadSettings() {
@@ -398,9 +569,16 @@ input[type="range"]::-moz-range-thumb {
           const raw = localStorage.getItem(STORAGE_KEY);
           if (!raw) return;
           const data = JSON.parse(raw);
-          if (typeof data.gridEnabled === 'boolean') gridEnabled = data.gridEnabled;
+          if (isValidMode(data.bgMode)) settings.bgMode = data.bgMode;
+          if (typeof data.bgCustom === 'string') settings.bgCustom = data.bgCustom;
+          if (typeof data.tapColor === 'string') settings.tapColor = data.tapColor;
+          if (typeof data.swipeColor === 'string') settings.swipeColor = data.swipeColor;
+          if (typeof data.loopColor === 'string') settings.loopColor = data.loopColor;
+          if (typeof data.gridEnabled === 'boolean') settings.gridEnabled = data.gridEnabled;
+          if (isValidMode(data.gridMode)) settings.gridMode = data.gridMode;
+          if (typeof data.gridCustom === 'string') settings.gridCustom = data.gridCustom;
           if (typeof data.gridSpacing === 'number' && isFinite(data.gridSpacing)) {
-            gridSpacing = clamp(Math.round(data.gridSpacing), 18, 100);
+            settings.gridSpacing = clamp(Math.round(data.gridSpacing), 18, 100);
           }
         } catch (_) {}
       }
@@ -415,6 +593,7 @@ input[type="range"]::-moz-range-thumb {
         document.documentElement.style.setProperty('--track', darkMode ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.12)');
         document.documentElement.style.setProperty('--track-disabled', darkMode ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)');
         document.documentElement.style.setProperty('--thumb', darkMode ? 'rgba(255, 255, 255, 0.78)' : 'rgba(0, 0, 0, 0.72)');
+        document.body.style.background = resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000');
       }
       function resize() {
         dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
@@ -426,6 +605,21 @@ input[type="range"]::-moz-range-thumb {
         canvas.style.height = h + 'px';
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
+      function syncSettingsUi() {
+        bgMode.value = settings.bgMode;
+        bgCustomInput.value = settings.bgCustom;
+        bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
+        tapColorInput.value = settings.tapColor;
+        swipeColorInput.value = settings.swipeColor;
+        loopColorInput.value = settings.loopColor;
+        gridToggle.checked = settings.gridEnabled;
+        gridDetails.classList.toggle('disabled', !settings.gridEnabled);
+        gridMode.value = settings.gridMode;
+        gridCustomInput.value = settings.gridCustom;
+        gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
+        spacingRange.value = String(settings.gridSpacing);
+        spacingValue.textContent = String(settings.gridSpacing);
+      }
       function openOverlay() {
         overlay.classList.add('open');
         overlay.setAttribute('aria-hidden', 'false');
@@ -434,11 +628,25 @@ input[type="range"]::-moz-range-thumb {
         overlay.classList.remove('open');
         overlay.setAttribute('aria-hidden', 'true');
       }
-      function syncGridUi() {
-        spacingWrap.classList.toggle('disabled', !gridEnabled);
-        spacingValue.textContent = String(gridSpacing);
-        gridToggle.checked = gridEnabled;
-        spacingRange.value = String(gridSpacing);
+      function getBgColor() {
+        return resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000');
+      }
+      function getGridBaseColor() {
+        return resolveModeColor(
+          settings.gridMode,
+          settings.gridCustom,
+          darkMode ? '#262626' : '#e8e8e8',
+          darkMode ? '#262626' : '#e8e8e8'
+        );
+      }
+      function getTapBaseColor() {
+        return normalizeHexColor(settings.tapColor) || defaults.tapColor;
+      }
+      function getSwipeBaseColor() {
+        return normalizeHexColor(settings.swipeColor) || defaults.swipeColor;
+      }
+      function getLoopBaseColor() {
+        return normalizeHexColor(settings.loopColor) || defaults.loopColor;
       }
       function addTapEffect(x, y) {
         effects.push({
@@ -527,23 +735,24 @@ input[type="range"]::-moz-range-thumb {
         return false;
       }
       function drawGrid() {
-        if (!gridEnabled) return;
-        const lightGrid = darkMode ? 'rgba(34, 34, 34, 0.40)' : 'rgba(232, 232, 232, 0.44)';
-        const accentGrid = darkMode ? 'rgba(58, 58, 58, 0.56)' : 'rgba(210, 210, 210, 0.58)';
+        if (!settings.gridEnabled) return;
+        const baseColor = getGridBaseColor();
+        const lineLow = hexToRgba(baseColor, 0.40) || (darkMode ? 'rgba(34,34,34,0.40)' : 'rgba(232,232,232,0.40)');
+        const lineHigh = hexToRgba(baseColor, 0.56) || (darkMode ? 'rgba(58,58,58,0.56)' : 'rgba(210,210,210,0.56)');
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
         ctx.lineWidth = 1;
-        for (let x = 0; x <= w + gridSpacing; x += gridSpacing) {
-          const isAccent = Math.round(x / gridSpacing) % 4 === 0;
-          ctx.strokeStyle = isAccent ? accentGrid : lightGrid;
+        for (let x = 0; x <= w + settings.gridSpacing; x += settings.gridSpacing) {
+          const isAccent = Math.round(x / settings.gridSpacing) % 4 === 0;
+          ctx.strokeStyle = isAccent ? lineHigh : lineLow;
           ctx.beginPath();
           ctx.moveTo(Math.floor(x) + 0.5, 0);
           ctx.lineTo(Math.floor(x) + 0.5, h);
           ctx.stroke();
         }
-        for (let y = 0; y <= h + gridSpacing; y += gridSpacing) {
-          const isAccent = Math.round(y / gridSpacing) % 4 === 0;
-          ctx.strokeStyle = isAccent ? accentGrid : lightGrid;
+        for (let y = 0; y <= h + settings.gridSpacing; y += settings.gridSpacing) {
+          const isAccent = Math.round(y / settings.gridSpacing) % 4 === 0;
+          ctx.strokeStyle = isAccent ? lineHigh : lineLow;
           ctx.beginPath();
           ctx.moveTo(0, Math.floor(y) + 0.5);
           ctx.lineTo(w, Math.floor(y) + 0.5);
@@ -557,16 +766,17 @@ input[type="range"]::-moz-range-thumb {
         const e = easeOutCubic(p);
         const radius = lerp(10, Math.max(w, h) * 0.22, e);
         const alpha = 0.34 * Math.pow(1 - p, 1.7);
+        const baseColor = getTapBaseColor();
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.globalCompositeOperation = 'source-over';
         ctx.shadowBlur = radius * 0.22;
-        ctx.shadowColor = 'rgba(70, 255, 120, 0.55)';
+        ctx.shadowColor = hexToRgba(baseColor, 0.55) || 'rgba(70, 255, 120, 0.55)';
         const g = ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, radius);
-        g.addColorStop(0.00, 'rgba(70, 255, 120, 0.92)');
-        g.addColorStop(0.28, 'rgba(60, 235, 110, 0.60)');
-        g.addColorStop(0.68, 'rgba(50, 220, 100, 0.25)');
-        g.addColorStop(1.00, 'rgba(50, 220, 100, 0)');
+        g.addColorStop(0.00, hexToRgba(baseColor, 0.92) || 'rgba(70, 255, 120, 0.92)');
+        g.addColorStop(0.28, hexToRgba(baseColor, 0.60) || 'rgba(60, 235, 110, 0.60)');
+        g.addColorStop(0.68, hexToRgba(baseColor, 0.25) || 'rgba(50, 220, 100, 0.25)');
+        g.addColorStop(1.00, hexToRgba(baseColor, 0.00) || 'rgba(50, 220, 100, 0)');
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(effect.x, effect.y, radius, 0, Math.PI * 2);
@@ -581,6 +791,7 @@ input[type="range"]::-moz-range-thumb {
         const y = lerp(effect.from.y, effect.to.y, e);
         const trailSteps = 16;
         const trailSpacing = effect.radius * 0.82;
+        const baseColor = getSwipeBaseColor();
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
         for (let i = trailSteps; i >= 0; i--) {
@@ -592,16 +803,16 @@ input[type="range"]::-moz-range-thumb {
           const r = effect.radius * (1 + (trailSteps - i) * 0.02);
           ctx.globalAlpha = a;
           ctx.shadowBlur = r * 0.35;
-          ctx.shadowColor = 'rgba(90, 150, 255, 0.55)';
-          ctx.fillStyle = 'rgba(110, 165, 255, 1)';
+          ctx.shadowColor = hexToRgba(baseColor, 0.55) || 'rgba(90, 150, 255, 0.55)';
+          ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(110, 165, 255, 1)';
           ctx.beginPath();
           ctx.arc(px, py, r, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.globalAlpha = 0.45 * Math.pow(1 - p, 0.7);
         ctx.shadowBlur = effect.radius * 0.6;
-        ctx.shadowColor = 'rgba(110, 165, 255, 0.45)';
-        ctx.fillStyle = 'rgba(110, 165, 255, 1)';
+        ctx.shadowColor = hexToRgba(baseColor, 0.45) || 'rgba(110, 165, 255, 0.45)';
+        ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(110, 165, 255, 1)';
         ctx.beginPath();
         ctx.arc(x, y, effect.radius * 1.02, 0, Math.PI * 2);
         ctx.fill();
@@ -613,12 +824,13 @@ input[type="range"]::-moz-range-thumb {
         if (effect.points.length < 3) return;
         const alpha = 0.36 * Math.pow(1 - p, 2.0);
         const blur = 8 * Math.pow(1 - p, 0.55);
+        const baseColor = getLoopBaseColor();
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = alpha;
         ctx.shadowBlur = blur;
-        ctx.shadowColor = 'rgba(255, 60, 60, 0.40)';
-        ctx.fillStyle = 'rgba(255, 78, 78, 1)';
+        ctx.shadowColor = hexToRgba(baseColor, 0.40) || 'rgba(255, 60, 60, 0.40)';
+        ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(255, 78, 78, 1)';
         ctx.beginPath();
         ctx.moveTo(effect.points[0].x, effect.points[0].y);
         for (let i = 1; i < effect.points.length; i++) {
@@ -630,7 +842,8 @@ input[type="range"]::-moz-range-thumb {
       }
       function render() {
         const t = nowMs();
-        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = getBgColor();
+        ctx.fillRect(0, 0, w, h);
         drawGrid();
         for (let i = 0; i < effects.length; i++) {
           const effect = effects[i];
@@ -646,62 +859,47 @@ input[type="range"]::-moz-range-thumb {
       function getPoint(e) {
         return { x: e.clientX, y: e.clientY };
       }
-      canvas.addEventListener('pointerdown', (e) => {
-        if (overlay.classList.contains('open')) return;
-        if (activePointerId !== null) return;
-        activePointerId = e.pointerId;
-        canvas.setPointerCapture(activePointerId);
-        const p = getPoint(e);
-        pointerDownTime = nowMs();
-        pointerDownPos = { x: p.x, y: p.y };
-        lastPos = { x: p.x, y: p.y };
-        strokePoints = [p];
-        sessionHadLoop = false;
-        e.preventDefault();
-      }, { passive: false });
-      canvas.addEventListener('pointermove', (e) => {
-        if (activePointerId !== e.pointerId) return;
-        const p = getPoint(e);
-        const t = nowMs();
-        if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
-          strokePoints.push(p);
-          lastPos = p;
-        }
-        if (!sessionHadLoop && t - lastLoopAt >= LASSO_COOLDOWN) {
-          if (detectLoop(strokePoints, p.x, p.y)) {
-            createLoopEffect(strokePoints);
-            lastLoopAt = t;
-            sessionHadLoop = true;
-            strokePoints = [p];
-          }
-        }
-        e.preventDefault();
-      }, { passive: false });
-      function finishPointer(e) {
-        if (activePointerId !== e.pointerId) return;
-        const p = getPoint(e);
-        const elapsed = nowMs() - pointerDownTime;
-        const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
-        if (!sessionHadLoop) {
-          if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
-            addTapEffect(p.x, p.y);
-          } else if (totalMove >= SWIPE_MIN_DISTANCE) {
-            const dx = p.x - pointerDownPos.x;
-            const dy = p.y - pointerDownPos.y;
-            createSwipeEffect(p.x, p.y, dx, dy);
-          }
-        }
-        activePointerId = null;
-        strokePoints = [];
-        sessionHadLoop = false;
-        e.preventDefault();
+      function applyAndSave() {
+        document.body.style.background = getBgColor();
+        syncSettingsUi();
+        saveSettings();
       }
-      canvas.addEventListener('pointerup', finishPointer, { passive: false });
-      canvas.addEventListener('pointercancel', finishPointer, { passive: false });
-      canvas.addEventListener('lostpointercapture', () => {
-        activePointerId = null;
-        strokePoints = [];
-        sessionHadLoop = false;
+      bgMode.addEventListener('change', () => {
+        settings.bgMode = bgMode.value;
+        applyAndSave();
+      });
+      bgCustomInput.addEventListener('input', () => {
+        settings.bgCustom = bgCustomInput.value.trim();
+        applyAndSave();
+      });
+      tapColorInput.addEventListener('input', () => {
+        settings.tapColor = tapColorInput.value.trim();
+        saveSettings();
+      });
+      swipeColorInput.addEventListener('input', () => {
+        settings.swipeColor = swipeColorInput.value.trim();
+        saveSettings();
+      });
+      loopColorInput.addEventListener('input', () => {
+        settings.loopColor = loopColorInput.value.trim();
+        saveSettings();
+      });
+      gridToggle.addEventListener('change', () => {
+        settings.gridEnabled = gridToggle.checked;
+        applyAndSave();
+      });
+      gridMode.addEventListener('change', () => {
+        settings.gridMode = gridMode.value;
+        applyAndSave();
+      });
+      gridCustomInput.addEventListener('input', () => {
+        settings.gridCustom = gridCustomInput.value.trim();
+        applyAndSave();
+      });
+      spacingRange.addEventListener('input', () => {
+        settings.gridSpacing = clamp(Number(spacingRange.value) || 36, 18, 100);
+        spacingValue.textContent = String(settings.gridSpacing);
+        saveSettings();
       });
       openSettings.addEventListener('click', () => {
         openOverlay();
@@ -712,21 +910,69 @@ input[type="range"]::-moz-range-thumb {
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) closeOverlay();
       });
-      gridToggle.addEventListener('change', () => {
-        gridEnabled = gridToggle.checked;
-        syncGridUi();
-        saveSettings();
+      canvas.addEventListener('pointerdown', (e) => {
+        if (overlay.classList.contains('open')) return;
+        if (activePointerId !== null) return;
+        activePointerId = e.pointerId;
+        canvas.setPointerCapture(activePointerId);
+        const p = getPoint(e);
+        pointerDownTime = nowMs();
+        pointerDownPos = { x: p.x, y: p.y };
+        lastPos = { x: p.x, y: p.y };
+        strokePoints = [p];
+        pointerHadLoop = false;
+        e.preventDefault();
+      }, { passive: false });
+      canvas.addEventListener('pointermove', (e) => {
+        if (activePointerId !== e.pointerId) return;
+        const p = getPoint(e);
+        const t = nowMs();
+        if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
+          strokePoints.push(p);
+          lastPos = p;
+        }
+        if (t - lastLoopAt >= LASSO_COOLDOWN) {
+          if (detectLoop(strokePoints, p.x, p.y)) {
+            createLoopEffect(strokePoints);
+            lastLoopAt = t;
+            pointerHadLoop = true;
+            strokePoints = [p];
+          }
+        }
+        e.preventDefault();
+      }, { passive: false });
+      function finishPointer(e) {
+        if (activePointerId !== e.pointerId) return;
+        const p = getPoint(e);
+        const elapsed = nowMs() - pointerDownTime;
+        const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
+        if (!pointerHadLoop) {
+          if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
+            addTapEffect(p.x, p.y);
+          } else if (totalMove >= SWIPE_MIN_DISTANCE) {
+            const dx = p.x - pointerDownPos.x;
+            const dy = p.y - pointerDownPos.y;
+            createSwipeEffect(p.x, p.y, dx, dy);
+          }
+        }
+        activePointerId = null;
+        strokePoints = [];
+        pointerHadLoop = false;
+        e.preventDefault();
+      }
+      canvas.addEventListener('pointerup', finishPointer, { passive: false });
+      canvas.addEventListener('pointercancel', finishPointer, { passive: false });
+      canvas.addEventListener('lostpointercapture', () => {
+        activePointerId = null;
+        strokePoints = [];
+        pointerHadLoop = false;
       });
-      spacingRange.addEventListener('input', () => {
-        gridSpacing = Number(spacingRange.value);
-        syncGridUi();
-        saveSettings();
-      });
-      window.addEventListener('resize', resize);
       const darkMql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-      updateTheme();
       loadSettings();
-      syncGridUi();
+      updateTheme();
+      resize();
+      syncSettingsUi();
+      document.body.style.background = getBgColor();
       if (darkMql) {
         if (typeof darkMql.addEventListener === 'function') {
           darkMql.addEventListener('change', updateTheme);
@@ -734,7 +980,9 @@ input[type="range"]::-moz-range-thumb {
           darkMql.addListener(updateTheme);
         }
       }
-      resize();
+      window.addEventListener('resize', () => {
+        resize();
+      });
       requestAnimationFrame(render);
     })();
   </script>
