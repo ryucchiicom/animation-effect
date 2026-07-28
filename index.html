@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
   <title>Touch Effects</title>
+
   <style>
     :root {
       --bg: #fff;
@@ -17,6 +18,8 @@
       --track-disabled: rgba(0, 0, 0, 0.06);
       --thumb: rgba(0, 0, 0, 0.72);
       --peer-blue: #2f78ff;
+      --peer-red: #d63b3b;
+      --button-border: rgba(127, 127, 127, 0.18);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -194,7 +197,7 @@
 
     .panel {
       width: min(92vw, 460px);
-      max-height: min(84vh, 680px);
+      max-height: min(88vh, 720px);
       overflow: auto;
       border-radius: 26px;
       background: var(--panel-bg);
@@ -340,20 +343,31 @@
       -webkit-appearance: none;
     }
 
-    .hex-input {
+    .hex-input,
+    .peer-textarea {
       width: 100%;
       box-sizing: border-box;
-      height: 38px;
       border-radius: 12px;
       border: 1px solid var(--panel-border);
       background: transparent;
       color: var(--text);
-      padding: 0 12px;
+      padding: 10px 12px;
       font-size: 14px;
       outline: none;
     }
 
-    .hex-input::placeholder {
+    .hex-input {
+      height: 38px;
+    }
+
+    .peer-textarea {
+      min-height: 92px;
+      resize: none;
+      line-height: 1.35;
+    }
+
+    .hex-input::placeholder,
+    .peer-textarea::placeholder {
       color: var(--muted);
     }
 
@@ -476,11 +490,13 @@
       margin-top: 14px;
     }
 
-    .danger-btn {
+    .danger-btn,
+    .peer-action-btn,
+    .peer-copy-btn {
       appearance: none;
-      border: 1.5px solid rgba(220, 40, 40, 0.55);
+      border: 1.5px solid var(--button-border);
       background: transparent;
-      color: #d23636;
+      color: var(--text);
       border-radius: 14px;
       min-width: 0;
       height: 40px;
@@ -489,17 +505,129 @@
       font-weight: 650;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    .peer-action-btn {
+      width: 100%;
+      height: 44px;
+      margin-top: 10px;
+    }
+
+    .danger-btn:active,
+    .peer-action-btn:active,
+    .peer-copy-btn:active {
+      transform: scale(0.98);
+    }
+
+    .danger-btn {
+      border-color: rgba(220, 40, 40, 0.55);
+      color: #d23636;
       flex: 1 1 auto;
     }
 
-    .danger-btn:active {
+    .peer-action-btn.danger {
+      border-color: rgba(220, 40, 40, 0.55);
+      color: #d23636;
+    }
+
+    .peer-choice-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .peer-choice-btn {
+      width: 100%;
+      height: 48px;
+      border-radius: 16px;
+      border: 1.5px solid var(--button-border);
+      background: transparent;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 650;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .peer-choice-btn:active {
       transform: scale(0.98);
+    }
+
+    .peer-choice-btn.primary {
+      border-color: rgba(47, 120, 255, 0.45);
+      color: var(--peer-blue);
+    }
+
+    .peer-section {
+      margin-top: 12px;
+    }
+
+    .peer-qr-box {
+      width: 240px;
+      height: 240px;
+      margin: 0 auto;
+      border-radius: 18px;
+      background: #fff;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .peer-qr-box canvas {
+      width: 240px;
+      height: 240px;
+    }
+
+    .peer-scan-video {
+      width: 100%;
+      max-height: 260px;
+      border-radius: 18px;
+      background: #000;
+      display: block;
+      object-fit: cover;
+      border: 1px solid var(--panel-border);
+    }
+
+    .peer-help {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .peer-status {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+      margin-top: 2px;
+    }
+
+    .peer-mode {
+      font-size: 13px;
+      font-weight: 650;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .peer-inline-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .peer-inline-row > * {
+      flex: 1 1 auto;
     }
 
     .hidden {
       display: none !important;
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
 </head>
 <body>
   <canvas id="c"></canvas>
@@ -516,7 +644,7 @@
     </span>
   </button>
 
-  <div class="overlay" id="overlay" aria-hidden="true">
+  <div class="overlay" id="settingsOverlay" aria-hidden="true">
     <div class="panel" role="dialog" aria-modal="true" aria-label="設定">
       <div class="panel-header">
         <div class="panel-title">設定</div>
@@ -624,16 +752,124 @@
     </div>
   </div>
 
+  <div class="overlay" id="peerModeOverlay" aria-hidden="true">
+    <div class="panel" role="dialog" aria-modal="true" aria-label="ローカル通信の選択">
+      <div class="panel-header">
+        <div class="panel-title">ローカル通信</div>
+        <button class="close-btn" id="closePeerMode">戻る</button>
+      </div>
+
+      <div class="peer-choice-grid">
+        <button class="peer-choice-btn primary" id="peerWifiBtn">Wi-Fiで通信</button>
+        <button class="peer-choice-btn" id="peerShowQrBtn">QRコードを表示</button>
+        <button class="peer-choice-btn" id="peerScanQrBtn">QRコードを読み取り</button>
+        <button class="peer-choice-btn" id="peerModeCancelBtn">キャンセル</button>
+      </div>
+
+      <div class="peer-help">
+        つなぎ方を選ぶ画面。<br />
+        途中で止めるときは、もう一度ボタンを押すかキャンセルを押します。
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="peerSessionOverlay" aria-hidden="true">
+    <div class="panel" role="dialog" aria-modal="true" aria-label="ローカル通信の接続">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title" id="peerSessionTitle">ローカル通信</div>
+          <div class="peer-status" id="peerSessionStatus">準備中</div>
+        </div>
+        <button class="close-btn" id="closePeerSession">戻る</button>
+      </div>
+
+      <div class="peer-section" id="peerCodeSection">
+        <div class="peer-mode" id="peerCodeModeLabel">コードを表示</div>
+        <div class="peer-qr-box">
+          <canvas id="peerQrCanvas" width="240" height="240"></canvas>
+        </div>
+        <div class="peer-help">下のコードを相手に渡してください。QRが使えない時は文字でも使えます。</div>
+        <textarea class="peer-textarea" id="peerCodeText" readonly></textarea>
+        <div class="peer-inline-row">
+          <button class="peer-copy-btn" id="copyPeerCode">コピー</button>
+          <button class="peer-copy-btn" id="peerCodeCloseBtn">閉じる</button>
+        </div>
+      </div>
+
+      <div class="peer-section hidden" id="peerScanSection">
+        <div class="peer-mode">QRコードを読み取り</div>
+        <video class="peer-scan-video" id="peerScanVideo" playsinline autoplay muted></video>
+        <div class="peer-help">カメラで相手のQRを読み取ります。うまくいかない時は下の入力欄に文字を貼り付けても大丈夫です。</div>
+        <textarea class="peer-textarea" id="peerScanInput" placeholder="ここにコードを貼り付けてもOK"></textarea>
+        <div class="peer-inline-row">
+          <button class="peer-copy-btn" id="submitPeerScan">読み取る</button>
+          <button class="peer-copy-btn" id="cancelPeerScan">キャンセル</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="peerActionOverlay" aria-hidden="true">
+    <div class="panel" role="dialog" aria-modal="true" aria-label="接続済みの操作">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">接続済み</div>
+          <div class="peer-status" id="peerActionStatus">設定を送るか受け取るか選べます</div>
+        </div>
+        <button class="close-btn" id="closePeerAction">戻る</button>
+      </div>
+
+      <button class="peer-action-btn" id="sendSettingsBtn">設定を送信</button>
+      <button class="peer-action-btn" id="receiveSettingsBtn">設定を受信</button>
+      <button class="peer-action-btn danger" id="disconnectPeerBtn">接続を切断</button>
+
+      <div class="peer-help">
+        「設定を送信」と「設定を受信」が10秒以内にそろうと、送信側の設定が受信側に反映されます。
+      </div>
+    </div>
+  </div>
+
   <script>
     (() => {
       const canvas = document.getElementById('c');
       const ctx = canvas.getContext('2d', { alpha: true });
 
-      const overlay = document.getElementById('overlay');
+      const settingsOverlay = document.getElementById('settingsOverlay');
       const openSettings = document.getElementById('openSettings');
       const closeSettings = document.getElementById('closeSettings');
 
       const peerButton = document.getElementById('peerButton');
+      const peerModeOverlay = document.getElementById('peerModeOverlay');
+      const closePeerMode = document.getElementById('closePeerMode');
+      const peerWifiBtn = document.getElementById('peerWifiBtn');
+      const peerShowQrBtn = document.getElementById('peerShowQrBtn');
+      const peerScanQrBtn = document.getElementById('peerScanQrBtn');
+      const peerModeCancelBtn = document.getElementById('peerModeCancelBtn');
+
+      const peerSessionOverlay = document.getElementById('peerSessionOverlay');
+      const peerSessionTitle = document.getElementById('peerSessionTitle');
+      const peerSessionStatus = document.getElementById('peerSessionStatus');
+      const closePeerSession = document.getElementById('closePeerSession');
+      const peerCodeCloseBtn = document.getElementById('peerCodeCloseBtn');
+
+      const peerCodeSection = document.getElementById('peerCodeSection');
+      const peerScanSection = document.getElementById('peerScanSection');
+      const peerCodeModeLabel = document.getElementById('peerCodeModeLabel');
+      const peerQrCanvas = document.getElementById('peerQrCanvas');
+      const peerCodeText = document.getElementById('peerCodeText');
+      const copyPeerCode = document.getElementById('copyPeerCode');
+
+      const peerScanVideo = document.getElementById('peerScanVideo');
+      const peerScanInput = document.getElementById('peerScanInput');
+      const submitPeerScan = document.getElementById('submitPeerScan');
+      const cancelPeerScan = document.getElementById('cancelPeerScan');
+
+      const peerActionOverlay = document.getElementById('peerActionOverlay');
+      const peerActionStatus = document.getElementById('peerActionStatus');
+      const closePeerAction = document.getElementById('closePeerAction');
+      const sendSettingsBtn = document.getElementById('sendSettingsBtn');
+      const receiveSettingsBtn = document.getElementById('receiveSettingsBtn');
+      const disconnectPeerBtn = document.getElementById('disconnectPeerBtn');
 
       const bgMode = document.getElementById('bgMode');
       const bgCustomWrap = document.getElementById('bgCustomWrap');
@@ -652,12 +888,9 @@
       const spacingValue = document.getElementById('spacingValue');
 
       const peerButtonToggle = document.getElementById('peerButtonToggle');
-
       const resetSettings = document.getElementById('resetSettings');
 
-      const STORAGE_KEY = 'touch_effect_settings_v4';
-      const COMM_CHANNEL_NAME = 'touch_effect_peer_v1';
-      const COMM_STORAGE_KEY = 'touch_effect_peer_v1_msg';
+      const STORAGE_KEY = 'touch_effect_settings_v5';
 
       const defaults = {
         bgMode: 'system',
@@ -700,15 +933,27 @@
       const LASSO_IGNORE_RECENT_SEGMENTS = 10;
       const LASSO_COOLDOWN = 140;
 
+      const COMM_LABEL = 'touch_effect_peer_v1';
+
       let selfPeerId = makeId();
-      let peerState = 'off';
-      let remotePeerId = null;
-      let peerChannel = null;
-      let peerPulseTimer = null;
-      let peerWatchTimer = null;
-      let peerLastSeenAt = 0;
-      const seenPackets = new Set();
-      const seenPacketQueue = [];
+
+      let peerState = 'off'; // off | searching | connected
+      let peerConnection = null;
+      let peerDataChannel = null;
+      let peerRole = null; // offerer | answerer | null
+      let peerSessionMode = null; // wifi | show-qr | scan-qr
+      let peerSessionCode = '';
+      let peerQrScanner = null;
+      let peerScannerActive = false;
+      let peerScannerStream = null;
+      let peerScannerPollTimer = null;
+
+      let outgoingSettingsTimer = null;
+      let outgoingSettingsToken = null;
+      let outgoingSettingsExpireAt = 0;
+      let receiveArmedUntil = 0;
+      let lastIncomingSettingsPacket = null;
+      const appliedIncomingTokens = new Set();
 
       function makeId() {
         if (window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -883,20 +1128,20 @@
         if (peerState === 'searching') {
           peerButton.setAttribute('aria-label', 'ローカル通信を停止');
         } else if (peerState === 'connected') {
-          peerButton.setAttribute('aria-label', 'ローカル通信を切断');
+          peerButton.setAttribute('aria-label', '接続済みの操作を開く');
         } else {
           peerButton.setAttribute('aria-label', 'ローカル通信');
         }
       }
 
-      function openOverlay() {
-        overlay.classList.add('open');
-        overlay.setAttribute('aria-hidden', 'false');
+      function openOverlay(el) {
+        el.classList.add('open');
+        el.setAttribute('aria-hidden', 'false');
       }
 
-      function closeOverlay() {
-        overlay.classList.remove('open');
-        overlay.setAttribute('aria-hidden', 'true');
+      function closeOverlay(el) {
+        el.classList.remove('open');
+        el.setAttribute('aria-hidden', 'true');
       }
 
       function getBgColor() {
@@ -924,241 +1169,64 @@
         return normalizeHexColor(settings.loopColor) || defaults.loopColor;
       }
 
-      function broadcastPacket(packet) {
-        const data = {
-          ...packet,
-          id: makeId(),
-          sender: selfPeerId,
-          ts: Date.now()
+      function cleanSettingsSnapshot() {
+        return {
+          bgMode: settings.bgMode,
+          bgCustom: settings.bgCustom,
+          tapColor: settings.tapColor,
+          swipeColor: settings.swipeColor,
+          loopColor: settings.loopColor,
+          gridEnabled: settings.gridEnabled,
+          gridMode: settings.gridMode,
+          gridCustom: settings.gridCustom,
+          gridSpacing: settings.gridSpacing,
+          peerButtonVisible: settings.peerButtonVisible
         };
+      }
 
+      function applySettingsSnapshot(snapshot) {
+        if (!snapshot || typeof snapshot !== 'object') return;
+
+        if (isValidMode(snapshot.bgMode)) settings.bgMode = snapshot.bgMode;
+        if (typeof snapshot.bgCustom === 'string') settings.bgCustom = snapshot.bgCustom;
+
+        if (typeof snapshot.tapColor === 'string') settings.tapColor = snapshot.tapColor;
+        if (typeof snapshot.swipeColor === 'string') settings.swipeColor = snapshot.swipeColor;
+        if (typeof snapshot.loopColor === 'string') settings.loopColor = snapshot.loopColor;
+
+        if (typeof snapshot.gridEnabled === 'boolean') settings.gridEnabled = snapshot.gridEnabled;
+        if (isValidMode(snapshot.gridMode)) settings.gridMode = snapshot.gridMode;
+        if (typeof snapshot.gridCustom === 'string') settings.gridCustom = snapshot.gridCustom;
+        if (typeof snapshot.gridSpacing === 'number' && isFinite(snapshot.gridSpacing)) {
+          settings.gridSpacing = clamp(Math.round(snapshot.gridSpacing), 18, 100);
+        }
+
+        if (typeof snapshot.peerButtonVisible === 'boolean') settings.peerButtonVisible = snapshot.peerButtonVisible;
+
+        if (!settings.peerButtonVisible) {
+          disconnectPeer(false);
+        }
+
+        applyAndSave();
+      }
+
+      function applyAndSave() {
+        document.body.style.background = getBgColor();
+        syncSettingsUi();
+        updatePeerButtonUi();
+        saveSettings();
+      }
+
+      function resetAllSettings() {
+        const ok = window.confirm('設定を初期状態に戻します。よろしいですか？');
+        if (!ok) return;
+
+        Object.assign(settings, defaults);
         try {
-          if (peerChannel) peerChannel.postMessage(data);
+          localStorage.removeItem(STORAGE_KEY);
         } catch (_) {}
-
-        try {
-          localStorage.setItem(COMM_STORAGE_KEY, JSON.stringify(data));
-        } catch (_) {}
-
-        return data;
-      }
-
-      function rememberPacket(id) {
-        if (!id || seenPackets.has(id)) return false;
-        seenPackets.add(id);
-        seenPacketQueue.push(id);
-        if (seenPacketQueue.length > 300) {
-          const old = seenPacketQueue.shift();
-          if (old) seenPackets.delete(old);
-        }
-        return true;
-      }
-
-      function setPeerState(nextState, nextRemoteId = remotePeerId) {
-        peerState = nextState;
-        remotePeerId = nextRemoteId || null;
-        peerLastSeenAt = Date.now();
-        updatePeerButtonUi();
-      }
-
-      function startPeerTimers() {
-        stopPeerTimers();
-
-        peerPulseTimer = window.setInterval(() => {
-          if (peerState === 'searching') {
-            broadcastPacket({ type: 'search' });
-          } else if (peerState === 'connected') {
-            broadcastPacket({ type: 'keepalive', target: remotePeerId });
-          }
-        }, 1000);
-
-        peerWatchTimer = window.setInterval(() => {
-          if (peerState !== 'connected') return;
-          if (!peerLastSeenAt) return;
-          if (Date.now() - peerLastSeenAt > 6500) {
-            remotePeerId = null;
-            setPeerState('searching');
-            broadcastPacket({ type: 'search' });
-          }
-        }, 1000);
-      }
-
-      function stopPeerTimers() {
-        if (peerPulseTimer) {
-          clearInterval(peerPulseTimer);
-          peerPulseTimer = null;
-        }
-        if (peerWatchTimer) {
-          clearInterval(peerWatchTimer);
-          peerWatchTimer = null;
-        }
-      }
-
-      function startPeerSearch() {
-        if (!settings.peerButtonVisible) return;
-        peerLastSeenAt = Date.now();
-        setPeerState('searching', null);
-        startPeerTimers();
-        broadcastPacket({ type: 'search' });
-      }
-
-      function disconnectPeer(sendGoodbye = true) {
-        const oldRemote = remotePeerId;
-        if (sendGoodbye && oldRemote) {
-          broadcastPacket({ type: 'goodbye', target: oldRemote });
-        }
-        remotePeerId = null;
-        peerLastSeenAt = 0;
-        peerState = 'off';
-        stopPeerTimers();
-        updatePeerButtonUi();
-      }
-
-      function connectPeer(remoteId) {
-        remotePeerId = remoteId;
-        peerLastSeenAt = Date.now();
-        peerState = 'connected';
-        startPeerTimers();
-        updatePeerButtonUi();
-      }
-
-      function togglePeerConnection() {
-        if (!settings.peerButtonVisible) return;
-        if (peerState === 'off') {
-          startPeerSearch();
-          return;
-        }
-        disconnectPeer(true);
-      }
-
-      function applyRemoteEffect(kind, payload) {
-        if (!payload || typeof payload !== 'object') return;
-
-        if (kind === 'tap') {
-          if (typeof payload.x === 'number' && typeof payload.y === 'number') {
-            addTapEffect(payload.x, payload.y, false);
-          }
-          return;
-        }
-
-        if (kind === 'swipe') {
-          const from = payload.from;
-          const to = payload.to;
-          const dir = payload.dir;
-          if (
-            from && to && dir &&
-            typeof from.x === 'number' && typeof from.y === 'number' &&
-            typeof to.x === 'number' && typeof to.y === 'number' &&
-            typeof dir.x === 'number' && typeof dir.y === 'number'
-          ) {
-            createSwipeEffect(from.x, from.y, dir.x * 100, dir.y * 100, false, {
-              forceFrom: from,
-              forceTo: to,
-              forceRadius: typeof payload.radius === 'number' ? payload.radius : undefined
-            });
-          }
-          return;
-        }
-
-        if (kind === 'loop') {
-          if (Array.isArray(payload.points)) {
-            const points = payload.points
-              .filter(p => p && typeof p.x === 'number' && typeof p.y === 'number')
-              .map(p => ({ x: p.x, y: p.y }));
-            if (points.length >= 3) createLoopEffect(points, false);
-          }
-        }
-      }
-
-      function handlePeerPacket(packet) {
-        if (!packet || typeof packet !== 'object') return;
-        if (packet.sender === selfPeerId) return;
-        if (!rememberPacket(packet.id)) return;
-
-        const now = Date.now();
-
-        if (packet.type === 'search') {
-          if (!settings.peerButtonVisible || peerState === 'off') return;
-          peerLastSeenAt = now;
-
-          if (!remotePeerId || remotePeerId === packet.sender) {
-            if (peerState === 'searching') {
-              connectPeer(packet.sender);
-              broadcastPacket({ type: 'found', target: packet.sender });
-            } else if (peerState === 'connected') {
-              if (remotePeerId === packet.sender) {
-                peerLastSeenAt = now;
-              }
-            }
-          }
-          return;
-        }
-
-        if (packet.type === 'found') {
-          if (peerState === 'searching' && packet.target === selfPeerId) {
-            connectPeer(packet.sender);
-          } else if (peerState === 'connected' && remotePeerId === packet.sender) {
-            peerLastSeenAt = now;
-          }
-          return;
-        }
-
-        if (packet.type === 'keepalive') {
-          if (peerState === 'off') return;
-          if (packet.target && packet.target !== selfPeerId) return;
-          if (remotePeerId && packet.sender !== remotePeerId) return;
-          if (!remotePeerId) remotePeerId = packet.sender;
-          peerLastSeenAt = now;
-          return;
-        }
-
-        if (packet.type === 'goodbye') {
-          if (remotePeerId && packet.sender === remotePeerId) {
-            if (settings.peerButtonVisible) {
-              remotePeerId = null;
-              setPeerState('searching', null);
-              broadcastPacket({ type: 'search' });
-            } else {
-              disconnectPeer(false);
-            }
-          }
-          return;
-        }
-
-        if (packet.type === 'effect') {
-          if (peerState === 'off') return;
-          if (packet.target && packet.target !== selfPeerId) return;
-          if (remotePeerId && packet.sender !== remotePeerId) return;
-          if (!remotePeerId) remotePeerId = packet.sender;
-          peerLastSeenAt = now;
-          applyRemoteEffect(packet.kind, packet.payload);
-        }
-      }
-
-      function setupPeerTransport() {
-        if ('BroadcastChannel' in window) {
-          try {
-            peerChannel = new BroadcastChannel(COMM_CHANNEL_NAME);
-            peerChannel.onmessage = (ev) => handlePeerPacket(ev.data);
-          } catch (_) {
-            peerChannel = null;
-          }
-        }
-
-        window.addEventListener('storage', (ev) => {
-          if (ev.key !== COMM_STORAGE_KEY || !ev.newValue) return;
-          try {
-            handlePeerPacket(JSON.parse(ev.newValue));
-          } catch (_) {}
-        });
-
-        window.addEventListener('beforeunload', () => {
-          if (peerState !== 'off' && remotePeerId) {
-            try {
-              broadcastPacket({ type: 'goodbye', target: remotePeerId });
-            } catch (_) {}
-          }
-        });
+        disconnectPeer(false);
+        applyAndSave();
       }
 
       function addTapEffect(x, y, broadcast = true) {
@@ -1170,11 +1238,10 @@
           duration: 650
         });
 
-        if (broadcast && peerState === 'connected' && remotePeerId && settings.peerButtonVisible) {
-          broadcastPacket({
+        if (broadcast && peerState === 'connected') {
+          sendPeerPacket({
             type: 'effect',
             kind: 'tap',
-            target: remotePeerId,
             payload: { x, y }
           });
         }
@@ -1234,6 +1301,10 @@
         const travel = distance(first.x, first.y, last.x, last.y);
         const duration = clamp(460 + travel * 0.12, 520, 900);
 
+        const radius = typeof (forced && forced.forceRadius) === 'number'
+          ? forced.forceRadius
+          : clamp(Math.min(w, h) * 0.045, 18, 38);
+
         effects.push({
           type: 'swipe',
           start: nowMs(),
@@ -1241,23 +1312,18 @@
           from: { x: first.x, y: first.y },
           to: { x: last.x, y: last.y },
           dir: { x: dirX, y: dirY },
-          radius: typeof (forced && forced.forceRadius) === 'number'
-            ? forced.forceRadius
-            : clamp(Math.min(w, h) * 0.045, 18, 38)
+          radius
         });
 
-        if (broadcast && peerState === 'connected' && remotePeerId && settings.peerButtonVisible) {
-          broadcastPacket({
+        if (broadcast && peerState === 'connected') {
+          sendPeerPacket({
             type: 'effect',
             kind: 'swipe',
-            target: remotePeerId,
             payload: {
               from: { x: first.x, y: first.y },
               to: { x: last.x, y: last.y },
               dir: { x: dirX, y: dirY },
-              radius: typeof (forced && forced.forceRadius) === 'number'
-                ? forced.forceRadius
-                : clamp(Math.min(w, h) * 0.045, 18, 38)
+              radius
             }
           });
         }
@@ -1274,11 +1340,10 @@
           points: copy
         });
 
-        if (broadcast && peerState === 'connected' && remotePeerId && settings.peerButtonVisible) {
-          broadcastPacket({
+        if (broadcast && peerState === 'connected') {
+          sendPeerPacket({
             type: 'effect',
             kind: 'loop',
-            target: remotePeerId,
             payload: { points: copy }
           });
         }
@@ -1465,24 +1530,1621 @@
         return { x: e.clientX, y: e.clientY };
       }
 
-      function applyAndSave() {
-        document.body.style.background = getBgColor();
-        syncSettingsUi();
-        updatePeerButtonUi();
-        saveSettings();
+      function openSettingsPanel() {
+        if (peerState === 'searching') return;
+        openOverlay(settingsOverlay);
       }
 
-      function resetAllSettings() {
-        const ok = window.confirm('設定を初期状態に戻します。よろしいですか？');
-        if (!ok) return;
+      function closeSettingsPanel() {
+        closeOverlay(settingsOverlay);
+      }
 
-        Object.assign(settings, defaults);
+      function openPeerModePanel() {
+        if (!settings.peerButtonVisible) return;
+        openOverlay(peerModeOverlay);
+      }
+
+      function closePeerModePanel() {
+        closeOverlay(peerModeOverlay);
+      }
+
+      function openPeerSessionPanel() {
+        openOverlay(peerSessionOverlay);
+      }
+
+      function closePeerSessionPanel() {
+        closeOverlay(peerSessionOverlay);
+      }
+
+      function openPeerActionPanel() {
+        openOverlay(peerActionOverlay);
+      }
+
+      function closePeerActionPanel() {
+        closeOverlay(peerActionOverlay);
+      }
+
+      openSettings.addEventListener('click', openSettingsPanel);
+      closeSettings.addEventListener('click', closeSettingsPanel);
+      settingsOverlay.addEventListener('click', (e) => {
+        if (e.target === settingsOverlay) closeSettingsPanel();
+      });
+
+      closePeerMode.addEventListener('click', closePeerModePanel);
+      peerModeCancelBtn.addEventListener('click', closePeerModePanel);
+      peerModeOverlay.addEventListener('click', (e) => {
+        if (e.target === peerModeOverlay) closePeerModePanel();
+      });
+
+      closePeerSession.addEventListener('click', () => {
+        cancelPeerFlow(true);
+      });
+      peerCodeCloseBtn.addEventListener('click', () => {
+        cancelPeerFlow(true);
+      });
+      cancelPeerScan.addEventListener('click', () => {
+        cancelPeerFlow(true);
+      });
+      peerSessionOverlay.addEventListener('click', (e) => {
+        if (e.target === peerSessionOverlay) cancelPeerFlow(true);
+      });
+
+      closePeerAction.addEventListener('click', closePeerActionPanel);
+      peerActionOverlay.addEventListener('click', (e) => {
+        if (e.target === peerActionOverlay) closePeerActionPanel();
+      });
+
+      peerButton.addEventListener('click', () => {
+        if (!settings.peerButtonVisible) return;
+
+        if (peerState === 'searching') {
+          cancelPeerFlow(true);
+          return;
+        }
+
+        if (peerState === 'connected') {
+          openPeerActionPanel();
+          return;
+        }
+
+        openPeerModePanel();
+      });
+
+      peerWifiBtn.addEventListener('click', () => {
+        closePeerModePanel();
+        startOfferFlow('Wi-Fiで通信');
+      });
+
+      peerShowQrBtn.addEventListener('click', () => {
+        closePeerModePanel();
+        startOfferFlow('QRコードを表示');
+      });
+
+      peerScanQrBtn.addEventListener('click', () => {
+        closePeerModePanel();
+        startScanFlow();
+      });
+
+      copyPeerCode.addEventListener('click', async () => {
         try {
-          localStorage.removeItem(STORAGE_KEY);
+          await navigator.clipboard.writeText(peerCodeText.value || '');
         } catch (_) {}
-        if (peerState !== 'off') disconnectPeer(false);
-        applyAndSave();
+      });
+
+      peerCodeCloseBtn.addEventListener('click', () => {
+        cancelPeerFlow(true);
+      });
+
+      submitPeerScan.addEventListener('click', () => {
+        const text = (peerScanInput.value || '').trim();
+        if (!text) return;
+        handlePeerCode(text);
+      });
+
+      sendSettingsBtn.addEventListener('click', () => {
+        closePeerActionPanel();
+        armOutgoingSettingsSend();
+      });
+
+      receiveSettingsBtn.addEventListener('click', () => {
+        closePeerActionPanel();
+        armIncomingSettingsReceive();
+      });
+
+      disconnectPeerBtn.addEventListener('click', () => {
+        closePeerActionPanel();
+        cancelPeerFlow(true);
+      });
+
+      function updatePeerSessionUi(title, status, modeLabel, isScan) {
+        peerSessionTitle.textContent = title;
+        peerSessionStatus.textContent = status;
+        peerCodeModeLabel.textContent = modeLabel;
+        peerCodeSection.classList.toggle('hidden', isScan);
+        peerScanSection.classList.toggle('hidden', !isScan);
       }
+
+      function setPeerSessionCode(text) {
+        peerSessionCode = text;
+        peerCodeText.value = text || '';
+
+        if (window.QRCode && peerQrCanvas) {
+          try {
+            QRCode.toCanvas(peerQrCanvas, text || ' ', {
+              width: 240,
+              margin: 1,
+              errorCorrectionLevel: 'M',
+              color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+              }
+            });
+          } catch (_) {
+            const p = peerQrCanvas.getContext('2d');
+            if (p) {
+              p.clearRect(0, 0, peerQrCanvas.width, peerQrCanvas.height);
+            }
+          }
+        } else {
+          const p = peerQrCanvas.getContext('2d');
+          if (p) {
+            p.clearRect(0, 0, peerQrCanvas.width, peerQrCanvas.height);
+            p.fillStyle = '#111';
+            p.font = '14px system-ui';
+            p.textAlign = 'center';
+            p.fillText('QRライブラリ未読込', 120, 120);
+          }
+        }
+      }
+
+      function stopPeerScanner() {
+        peerScannerActive = false;
+        try {
+          if (peerQrScanner) {
+            peerQrScanner.destroy();
+          }
+        } catch (_) {}
+        peerQrScanner = null;
+
+        if (peerScannerPollTimer) {
+          clearInterval(peerScannerPollTimer);
+          peerScannerPollTimer = null;
+        }
+
+        if (peerScannerStream) {
+          const tracks = peerScannerStream.getTracks ? peerScannerStream.getTracks() : [];
+          tracks.forEach(t => {
+            try { t.stop(); } catch (_) {}
+          });
+          peerScannerStream = null;
+        }
+
+        peerScanVideo.srcObject = null;
+      }
+
+      async function startPeerScanner() {
+        stopPeerScanner();
+        peerScannerActive = true;
+
+        if (window.QrScanner) {
+          try {
+            if (typeof window.QrScanner.WORKER_PATH === 'string' || window.QrScanner.WORKER_PATH === undefined) {
+              window.QrScanner.WORKER_PATH = 'https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner-worker.min.js';
+            }
+          } catch (_) {}
+
+          try {
+            peerQrScanner = new window.QrScanner(peerScanVideo, result => {
+              const text = typeof result === 'string' ? result : (result && result.data) ? result.data : '';
+              if (text) handlePeerCode(text);
+            }, {
+              highlightScanRegion: true,
+              highlightCodeOutline: true,
+              returnDetailedScanResult: false,
+              preferredCamera: 'environment'
+            });
+            await peerQrScanner.start();
+            return;
+          } catch (_) {
+            peerQrScanner = null;
+          }
+        }
+
+        if ('BarcodeDetector' in window) {
+          try {
+            const detector = new BarcodeDetector({ formats: ['qr_code'] });
+            peerScannerStream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: { ideal: 'environment' } },
+              audio: false
+            });
+            peerScanVideo.srcObject = peerScannerStream;
+            await peerScanVideo.play();
+
+            peerScannerPollTimer = setInterval(async () => {
+              if (!peerScannerActive) return;
+              try {
+                const barcodes = await detector.detect(peerScanVideo);
+                if (barcodes && barcodes.length) {
+                  const raw = barcodes[0].rawValue || '';
+                  if (raw) handlePeerCode(raw);
+                }
+              } catch (_) {}
+            }, 650);
+            return;
+          } catch (_) {}
+        }
+
+        peerSessionStatus.textContent = 'カメラ読み取りは使えません。下の入力欄にコードを貼り付けてください。';
+      }
+
+      async function renderPeerCodeImage() {
+        const text = peerCodeText.value || '';
+        if (!text) return;
+        setPeerSessionCode(text);
+      }
+
+      function waitForIceComplete(pc) {
+        if (!pc) return Promise.resolve();
+        if (pc.iceGatheringState === 'complete') return Promise.resolve();
+
+        return new Promise(resolve => {
+          const onChange = () => {
+            if (pc.iceGatheringState === 'complete') {
+              pc.removeEventListener('icegatheringstatechange', onChange);
+              resolve();
+            }
+          };
+          pc.addEventListener('icegatheringstatechange', onChange);
+          setTimeout(() => {
+            try { pc.removeEventListener('icegatheringstatechange', onChange); } catch (_) {}
+            resolve();
+          }, 5000);
+        });
+      }
+
+      function isDataChannelOpen() {
+        return peerDataChannel && peerDataChannel.readyState === 'open';
+      }
+
+      function sendPeerPacket(packet) {
+        if (!isDataChannelOpen()) return false;
+        try {
+          peerDataChannel.send(JSON.stringify({
+            ...packet,
+            id: makeId(),
+            sender: selfPeerId,
+            ts: Date.now()
+          }));
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      function setupPeerConnection() {
+        cleanupPeerConnection(false);
+
+        try {
+          peerConnection = new RTCPeerConnection({ iceServers: [] });
+        } catch (_) {
+          peerConnection = null;
+          peerSessionStatus.textContent = 'この端末では接続機能を作れません。';
+          return false;
+        }
+
+        peerConnection.onconnectionstatechange = () => {
+          const s = peerConnection ? peerConnection.connectionState : 'closed';
+          if (s === 'connected') {
+            onPeerConnected();
+          } else if (s === 'failed' || s === 'closed' || s === 'disconnected') {
+            if (peerState !== 'off') {
+              cancelPeerFlow(false);
+            }
+          }
+        };
+
+        peerConnection.oniceconnectionstatechange = () => {
+          const s = peerConnection ? peerConnection.iceConnectionState : 'closed';
+          if (s === 'connected') {
+            onPeerConnected();
+          }
+          if (s === 'failed' || s === 'closed' || s === 'disconnected') {
+            if (peerState !== 'off' && peerDataChannel && peerDataChannel.readyState !== 'open') {
+              cancelPeerFlow(false);
+            }
+          }
+        };
+
+        peerConnection.ondatachannel = ev => {
+          setupPeerDataChannel(ev.channel);
+        };
+
+        return true;
+      }
+
+      function setupPeerDataChannel(channel) {
+        peerDataChannel = channel;
+        peerDataChannel.onopen = () => {
+          onPeerConnected();
+        };
+
+        peerDataChannel.onmessage = ev => {
+          handlePeerDataMessage(ev.data);
+        };
+
+        peerDataChannel.onclose = () => {
+          if (peerState !== 'off') {
+            cancelPeerFlow(false);
+          }
+        };
+
+        peerDataChannel.onerror = () => {};
+      }
+
+      function cleanupOutgoingSettingsTimer() {
+        if (outgoingSettingsTimer) {
+          clearInterval(outgoingSettingsTimer);
+          outgoingSettingsTimer = null;
+        }
+        outgoingSettingsToken = null;
+        outgoingSettingsExpireAt = 0;
+      }
+
+      function cleanupPeerConnection(stopOnly = true) {
+        cleanupOutgoingSettingsTimer();
+        receiveArmedUntil = 0;
+        lastIncomingSettingsPacket = null;
+
+        if (peerDataChannel) {
+          try { peerDataChannel.close(); } catch (_) {}
+          peerDataChannel = null;
+        }
+
+        if (peerConnection) {
+          try { peerConnection.close(); } catch (_) {}
+          peerConnection = null;
+        }
+
+        stopPeerScanner();
+
+        if (!stopOnly) {
+          peerRole = null;
+          peerSessionMode = null;
+          peerSessionCode = '';
+        }
+      }
+
+      function disconnectPeer(sendGoodbye = true) {
+        if (sendGoodbye) {
+          sendPeerPacket({ type: 'goodbye' });
+        }
+        cleanupPeerConnection(true);
+        peerRole = null;
+        peerState = 'off';
+        closePeerSessionPanel();
+        closePeerActionPanel();
+        closePeerModePanel();
+        updatePeerButtonUi();
+      }
+
+      function cancelPeerFlow(userInitiated = true) {
+        disconnectPeer(userInitiated);
+      }
+
+      function onPeerConnected() {
+        if (peerState === 'connected') return;
+        peerState = 'connected';
+        updatePeerButtonUi();
+        closePeerSessionPanel();
+        closePeerModePanel();
+        peerSessionStatus.textContent = '接続済み';
+      }
+
+      async function startOfferFlow(modeLabel) {
+        if (!settings.peerButtonVisible) return;
+
+        cleanupPeerConnection(false);
+        peerRole = 'offerer';
+        peerSessionMode = modeLabel;
+        peerState = 'searching';
+        updatePeerButtonUi();
+
+        openPeerSessionPanel();
+        peerCodeSection.classList.remove('hidden');
+        peerScanSection.classList.add('hidden');
+
+        updatePeerSessionUi(
+          modeLabel,
+          '相手に渡すQRやコードを作っています',
+          '表示するコード',
+          false
+        );
+
+        if (!setupPeerConnection()) {
+          cancelPeerFlow(false);
+          return;
+        }
+
+        peerDataChannel = peerConnection.createDataChannel('touch-effects');
+        setupPeerDataChannel(peerDataChannel);
+
+        try {
+          const offer = await peerConnection.createOffer();
+          await peerConnection.setLocalDescription(offer);
+          await waitForIceComplete(peerConnection);
+
+          const code = JSON.stringify({
+            kind: 'offer',
+            sdp: peerConnection.localDescription ? peerConnection.localDescription.sdp : '',
+            role: 'offer',
+            label: modeLabel
+          });
+
+          setPeerSessionCode(code);
+          peerSessionStatus.textContent = 'このQRを相手に読んでもらってください';
+        } catch (err) {
+          peerSessionStatus.textContent = '接続コードの作成に失敗しました。';
+        }
+      }
+
+      async function startScanFlow() {
+        if (!settings.peerButtonVisible) return;
+
+        cleanupPeerConnection(false);
+        peerRole = 'scan';
+        peerSessionMode = 'scan-qr';
+        peerState = 'searching';
+        updatePeerButtonUi();
+
+        openPeerSessionPanel();
+        updatePeerSessionUi(
+          'QRコードを読み取り',
+          'カメラを起動しています',
+          '読み取り',
+          true
+        );
+
+        try {
+          await startPeerScanner();
+          peerSessionStatus.textContent = '相手のQRを読み取ってください';
+        } catch (_) {
+          peerSessionStatus.textContent = 'カメラを使えません。下の入力欄を使ってください。';
+        }
+      }
+
+      async function handlePeerCode(rawText) {
+        const text = String(rawText || '').trim();
+        if (!text) return;
+
+        let data = null;
+        try {
+          data = JSON.parse(text);
+        } catch (_) {
+          data = null;
+        }
+
+        if (!data || typeof data !== 'object') {
+          peerSessionStatus.textContent = 'コードが読めませんでした。';
+          return;
+        }
+
+        if (data.kind === 'offer' && typeof data.sdp === 'string') {
+          await acceptOfferPacket(data);
+          return;
+        }
+
+        if (data.kind === 'answer' && typeof data.sdp === 'string') {
+          await acceptAnswerPacket(data);
+          return;
+        }
+
+        peerSessionStatus.textContent = '接続データとして認識できませんでした。';
+      }
+
+      async function acceptOfferPacket(packet) {
+        if (!packet || typeof packet.sdp !== 'string') return;
+
+        if (!peerConnection) {
+          cleanupPeerConnection(false);
+          peerRole = 'answerer';
+          peerState = 'searching';
+          updatePeerButtonUi();
+          if (!setupPeerConnection()) return;
+        }
+
+        try {
+          peerRole = 'answerer';
+          await peerConnection.setRemoteDescription({ type: 'offer', sdp: packet.sdp });
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+          await waitForIceComplete(peerConnection);
+
+          const code = JSON.stringify({
+            kind: 'answer',
+            sdp: peerConnection.localDescription ? peerConnection.localDescription.sdp : '',
+            role: 'answer'
+          });
+
+          stopPeerScanner();
+          setPeerSessionCode(code);
+          peerSessionTitle.textContent = 'QRコードを表示';
+          peerSessionStatus.textContent = 'このQRを相手に読んでもらってください';
+          peerSessionMode = 'show-answer';
+          peerCodeSection.classList.remove('hidden');
+          peerScanSection.classList.add('hidden');
+        } catch (err) {
+          peerSessionStatus.textContent = '応答コードの作成に失敗しました。';
+        }
+      }
+
+      async function acceptAnswerPacket(packet) {
+        if (!peerConnection || peerRole !== 'offerer') {
+          peerSessionStatus.textContent = 'このコードは今の状態では使えません。';
+          return;
+        }
+
+        try {
+          await peerConnection.setRemoteDescription({ type: 'answer', sdp: packet.sdp });
+          peerSessionStatus.textContent = '接続中...';
+        } catch (err) {
+          peerSessionStatus.textContent = '接続に失敗しました。';
+        }
+      }
+
+      function handlePeerDataMessage(raw) {
+        let packet = null;
+        try {
+          packet = JSON.parse(raw);
+        } catch (_) {
+          return;
+        }
+
+        if (!packet || typeof packet !== 'object') return;
+        if (packet.sender === selfPeerId) return;
+
+        if (packet.type === 'effect') {
+          if (packet.kind === 'tap' && packet.payload) {
+            const p = packet.payload;
+            if (typeof p.x === 'number' && typeof p.y === 'number') {
+              addTapEffect(p.x, p.y, false);
+            }
+          } else if (packet.kind === 'swipe' && packet.payload) {
+            const p = packet.payload;
+            if (p.from && p.to && p.dir) {
+              createSwipeEffect(
+                p.from.x, p.from.y,
+                p.dir.x * 100, p.dir.y * 100,
+                false,
+                {
+                  forceFrom: p.from,
+                  forceTo: p.to,
+                  forceRadius: typeof p.radius === 'number' ? p.radius : undefined
+                }
+              );
+            }
+          } else if (packet.kind === 'loop' && packet.payload && Array.isArray(packet.payload.points)) {
+            const points = packet.payload.points
+              .filter(pt => pt && typeof pt.x === 'number' && typeof pt.y === 'number')
+              .map(pt => ({ x: pt.x, y: pt.y }));
+            if (points.length >= 3) createLoopEffect(points, false);
+          }
+          return;
+        }
+
+        if (packet.type === 'settings-snapshot') {
+          if (!packet.token) return;
+          lastIncomingSettingsPacket = {
+            packet,
+            receivedAt: Date.now()
+          };
+
+          if (Date.now() <= receiveArmedUntil) {
+            applyRemoteSettingsPacket(packet);
+          }
+          return;
+        }
+
+        if (packet.type === 'settings-ack') {
+          if (packet.token && packet.token === outgoingSettingsToken) {
+            cleanupOutgoingSettingsTimer();
+          }
+          return;
+        }
+
+        if (packet.type === 'goodbye') {
+          if (peerState !== 'off') {
+            cancelPeerFlow(false);
+          }
+        }
+      }
+
+      function applyRemoteSettingsPacket(packet) {
+        if (!packet || typeof packet !== 'object') return;
+        if (!packet.token || appliedIncomingTokens.has(packet.token)) return;
+        if (!packet.settings || typeof packet.settings !== 'object') return;
+
+        appliedIncomingTokens.add(packet.token);
+        applySettingsSnapshot(packet.settings);
+
+        sendPeerPacket({
+          type: 'settings-ack',
+          token: packet.token
+        });
+      }
+
+      function armIncomingSettingsReceive() {
+        if (!isDataChannelOpen()) return;
+        receiveArmedUntil = Date.now() + 10000;
+        peerActionStatus.textContent = '受信待ちを開始しました';
+
+        if (lastIncomingSettingsPacket && Date.now() <= receiveArmedUntil) {
+          applyRemoteSettingsPacket(lastIncomingSettingsPacket.packet);
+        }
+      }
+
+      function armOutgoingSettingsSend() {
+        if (!isDataChannelOpen()) return;
+
+        cleanupOutgoingSettingsTimer();
+
+        const snapshot = cleanSettingsSnapshot();
+        const token = makeId();
+        const packet = {
+          type: 'settings-snapshot',
+          token,
+          settings: snapshot,
+          sentAt: Date.now()
+        };
+
+        outgoingSettingsToken = token;
+        outgoingSettingsExpireAt = Date.now() + 10000;
+
+        sendPeerPacket(packet);
+
+        outgoingSettingsTimer = setInterval(() => {
+          if (!isDataChannelOpen()) {
+            cleanupOutgoingSettingsTimer();
+            return;
+          }
+          if (Date.now() > outgoingSettingsExpireAt) {
+            cleanupOutgoingSettingsTimer();
+            return;
+          }
+          sendPeerPacket(packet);
+        }, 1000);
+
+        peerActionStatus.textContent = '設定を送信中です';
+      }
+
+      function isDataChannelOpen() {
+        return peerDataChannel && peerDataChannel.readyState === 'open';
+      }
+
+      function setupPeerButtonVisibility() {
+        peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
+      }
+
+      function openPeerActionPanel() {
+        peerActionStatus.textContent = '設定を送るか受け取るか選べます';
+        openOverlay(peerActionOverlay);
+      }
+
+      function getPeerUiClass() {
+        return peerState;
+      }
+
+      function getPeerCodeLabelForMode(modeLabel) {
+        if (modeLabel === 'Wi-Fiで通信') return 'Wi-Fi通信のコード';
+        if (modeLabel === 'QRコードを表示') return '表示するQRコード';
+        if (modeLabel === 'QRコードを読み取り') return '読み取ったあとに使うコード';
+        return 'コード';
+      }
+
+      async function renderPeerQr(text) {
+        await renderPeerCodeImage();
+        if (window.QRCode) {
+          try {
+            await QRCode.toCanvas(peerQrCanvas, text || ' ', {
+              width: 240,
+              margin: 1,
+              errorCorrectionLevel: 'M',
+              color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+              }
+            });
+            return;
+          } catch (_) {}
+        }
+
+        const g = peerQrCanvas.getContext('2d');
+        if (g) {
+          g.clearRect(0, 0, peerQrCanvas.width, peerQrCanvas.height);
+          g.fillStyle = '#fff';
+          g.fillRect(0, 0, peerQrCanvas.width, peerQrCanvas.height);
+          g.fillStyle = '#111';
+          g.font = '14px system-ui';
+          g.textAlign = 'center';
+          g.fillText('QRライブラリ未読込', 120, 110);
+          g.fillText('文字コードを使ってください', 120, 132);
+        }
+      }
+
+      async function updateSessionCodeAndQr(text) {
+        peerSessionCode = text;
+        peerCodeText.value = text || '';
+        await renderPeerQr(text);
+      }
+
+      function cancelPeerFlowFromUi() {
+        cancelPeerFlow(true);
+      }
+
+      function cancelPeerFlow(sendGoodbye = true) {
+        if (sendGoodbye && isDataChannelOpen()) {
+          sendPeerPacket({ type: 'goodbye' });
+        }
+
+        cleanupOutgoingSettingsTimer();
+        receiveArmedUntil = 0;
+        lastIncomingSettingsPacket = null;
+        stopPeerScanner();
+
+        if (peerDataChannel) {
+          try { peerDataChannel.close(); } catch (_) {}
+          peerDataChannel = null;
+        }
+
+        if (peerConnection) {
+          try { peerConnection.close(); } catch (_) {}
+          peerConnection = null;
+        }
+
+        peerRole = null;
+        peerSessionMode = null;
+        peerSessionCode = '';
+        peerState = 'off';
+
+        closePeerSessionPanel();
+        closePeerModePanel();
+        closePeerActionPanel();
+        updatePeerButtonUi();
+      }
+
+      function onPeerConnected() {
+        if (peerState === 'connected') return;
+        peerState = 'connected';
+        closePeerSessionPanel();
+        closePeerModePanel();
+        updatePeerButtonUi();
+        peerActionStatus.textContent = '接続済みです';
+      }
+
+      function setupInputTracking() {
+        canvas.addEventListener('pointerdown', (e) => {
+          if (settingsOverlay.classList.contains('open')) return;
+          if (peerModeOverlay.classList.contains('open')) return;
+          if (peerSessionOverlay.classList.contains('open')) return;
+          if (peerActionOverlay.classList.contains('open')) return;
+          if (activePointerId !== null) return;
+
+          activePointerId = e.pointerId;
+          canvas.setPointerCapture(activePointerId);
+
+          const p = getPoint(e);
+          pointerDownTime = nowMs();
+          pointerDownPos = { x: p.x, y: p.y };
+          lastPos = { x: p.x, y: p.y };
+          strokePoints = [p];
+          pointerHadLoop = false;
+
+          e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('pointermove', (e) => {
+          if (activePointerId !== e.pointerId) return;
+
+          const p = getPoint(e);
+          const t = nowMs();
+
+          if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
+            strokePoints.push(p);
+            lastPos = p;
+          }
+
+          if (t - lastLoopAt >= LASSO_COOLDOWN) {
+            if (detectLoop(strokePoints, p.x, p.y)) {
+              createLoopEffect(strokePoints);
+              lastLoopAt = t;
+              pointerHadLoop = true;
+              strokePoints = [p];
+            }
+          }
+
+          e.preventDefault();
+        }, { passive: false });
+
+        function finishPointer(e) {
+          if (activePointerId !== e.pointerId) return;
+
+          const p = getPoint(e);
+          const elapsed = nowMs() - pointerDownTime;
+          const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
+
+          if (!pointerHadLoop) {
+            if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
+              addTapEffect(p.x, p.y, true);
+            } else if (totalMove >= SWIPE_MIN_DISTANCE) {
+              const dx = p.x - pointerDownPos.x;
+              const dy = p.y - pointerDownPos.y;
+              createSwipeEffect(p.x, p.y, dx, dy, true);
+            }
+          }
+
+          activePointerId = null;
+          strokePoints = [];
+          pointerHadLoop = false;
+
+          e.preventDefault();
+        }
+
+        canvas.addEventListener('pointerup', finishPointer, { passive: false });
+        canvas.addEventListener('pointercancel', finishPointer, { passive: false });
+        canvas.addEventListener('lostpointercapture', () => {
+          activePointerId = null;
+          strokePoints = [];
+          pointerHadLoop = false;
+        });
+      }
+
+      function updatePeerActionStatusFromConnection() {
+        if (peerState === 'connected') {
+          peerActionStatus.textContent = '設定を送るか受け取るか選べます';
+        } else if (peerState === 'searching') {
+          peerActionStatus.textContent = '接続中です';
+        } else {
+          peerActionStatus.textContent = '未接続です';
+        }
+      }
+
+      openPeerAction.addEventListener('click', () => {
+        if (peerState === 'connected') {
+          updatePeerActionStatusFromConnection();
+          openPeerActionPanel();
+        }
+      });
+
+      function showPeerSessionDisplayMode(modeLabel, title, statusText, codeLabel, isScan) {
+        peerSessionTitle.textContent = title;
+        peerSessionStatus.textContent = statusText;
+        peerCodeModeLabel.textContent = codeLabel;
+        peerCodeSection.classList.toggle('hidden', isScan);
+        peerScanSection.classList.toggle('hidden', !isScan);
+        if (isScan) {
+          stopPeerScanner();
+        }
+      }
+
+      async function startOfferMode(modeLabel) {
+        if (!settings.peerButtonVisible) return;
+
+        cleanupPeerConnection(false);
+        peerRole = 'offerer';
+        peerSessionMode = modeLabel;
+        peerState = 'searching';
+        updatePeerButtonUi();
+
+        openPeerSessionPanel();
+        showPeerSessionDisplayMode(
+          modeLabel,
+          modeLabel,
+          '相手に渡すQRやコードを作っています',
+          getPeerCodeLabelForMode(modeLabel),
+          false
+        );
+
+        if (!setupPeerConnection()) {
+          cancelPeerFlow(false);
+          return;
+        }
+
+        peerDataChannel = peerConnection.createDataChannel('touch-effects');
+        setupPeerDataChannel(peerDataChannel);
+
+        try {
+          const offer = await peerConnection.createOffer();
+          await peerConnection.setLocalDescription(offer);
+          await waitForIceComplete(peerConnection);
+
+          const code = JSON.stringify({
+            kind: 'offer',
+            sdp: peerConnection.localDescription ? peerConnection.localDescription.sdp : '',
+            role: 'offer',
+            label: modeLabel
+          });
+
+          await updateSessionCodeAndQr(code);
+          peerSessionStatus.textContent = 'このQRを相手に読んでもらってください';
+        } catch (err) {
+          peerSessionStatus.textContent = '接続コードの作成に失敗しました。';
+        }
+      }
+
+      async function startScanMode() {
+        if (!settings.peerButtonVisible) return;
+
+        cleanupPeerConnection(false);
+        peerRole = 'scan';
+        peerSessionMode = 'scan-qr';
+        peerState = 'searching';
+        updatePeerButtonUi();
+
+        openPeerSessionPanel();
+        showPeerSessionDisplayMode(
+          'QRコードを読み取り',
+          'QRコードを読み取り',
+          'カメラを起動しています',
+          '読み取り',
+          true
+        );
+
+        try {
+          await startPeerScanner();
+          peerSessionStatus.textContent = '相手のQRを読み取ってください';
+        } catch (_) {
+          peerSessionStatus.textContent = 'カメラを使えません。下の入力欄を使ってください。';
+        }
+      }
+
+      function openPeerSessionPanel() {
+        openOverlay(peerSessionOverlay);
+      }
+
+      function closePeerSessionPanel() {
+        closeOverlay(peerSessionOverlay);
+      }
+
+      function closePeerModePanel() {
+        closeOverlay(peerModeOverlay);
+      }
+
+      function closePeerActionPanel() {
+        closeOverlay(peerActionOverlay);
+      }
+
+      async function startPeerScanner() {
+        stopPeerScanner();
+        peerScannerActive = true;
+
+        if (window.QrScanner) {
+          try {
+            window.QrScanner.WORKER_PATH = 'https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner-worker.min.js';
+          } catch (_) {}
+
+          try {
+            peerQrScanner = new window.QrScanner(peerScanVideo, result => {
+              const text = typeof result === 'string' ? result : (result && result.data) ? result.data : '';
+              if (text) handlePeerCode(text);
+            }, {
+              highlightScanRegion: true,
+              highlightCodeOutline: true,
+              returnDetailedScanResult: false,
+              preferredCamera: 'environment'
+            });
+            await peerQrScanner.start();
+            return;
+          } catch (_) {
+            peerQrScanner = null;
+          }
+        }
+
+        if ('BarcodeDetector' in window) {
+          try {
+            const detector = new BarcodeDetector({ formats: ['qr_code'] });
+            peerScannerStream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: { ideal: 'environment' } },
+              audio: false
+            });
+            peerScanVideo.srcObject = peerScannerStream;
+            await peerScanVideo.play();
+
+            peerScannerPollTimer = setInterval(async () => {
+              if (!peerScannerActive) return;
+              try {
+                const barcodes = await detector.detect(peerScanVideo);
+                if (barcodes && barcodes.length) {
+                  const raw = barcodes[0].rawValue || '';
+                  if (raw) handlePeerCode(raw);
+                }
+              } catch (_) {}
+            }, 650);
+            return;
+          } catch (_) {}
+        }
+
+        peerSessionStatus.textContent = 'カメラ読み取りは使えません。下の入力欄にコードを貼り付けてください。';
+      }
+
+      function stopPeerScanner() {
+        peerScannerActive = false;
+
+        try {
+          if (peerQrScanner) {
+            peerQrScanner.destroy();
+          }
+        } catch (_) {}
+        peerQrScanner = null;
+
+        if (peerScannerPollTimer) {
+          clearInterval(peerScannerPollTimer);
+          peerScannerPollTimer = null;
+        }
+
+        if (peerScannerStream) {
+          const tracks = peerScannerStream.getTracks ? peerScannerStream.getTracks() : [];
+          tracks.forEach(t => {
+            try { t.stop(); } catch (_) {}
+          });
+          peerScannerStream = null;
+        }
+
+        peerScanVideo.srcObject = null;
+      }
+
+      async function handlePeerCode(rawText) {
+        const text = String(rawText || '').trim();
+        if (!text) return;
+
+        let data = null;
+        try {
+          data = JSON.parse(text);
+        } catch (_) {
+          data = null;
+        }
+
+        if (!data || typeof data !== 'object') {
+          peerSessionStatus.textContent = 'コードが読めませんでした。';
+          return;
+        }
+
+        if (data.kind === 'offer' && typeof data.sdp === 'string') {
+          await acceptOfferPacket(data);
+          return;
+        }
+
+        if (data.kind === 'answer' && typeof data.sdp === 'string') {
+          await acceptAnswerPacket(data);
+          return;
+        }
+
+        peerSessionStatus.textContent = '接続データとして認識できませんでした。';
+      }
+
+      function setupPeerConnection() {
+        cleanupPeerConnection(false);
+
+        try {
+          peerConnection = new RTCPeerConnection({ iceServers: [] });
+        } catch (_) {
+          peerConnection = null;
+          peerSessionStatus.textContent = 'この端末では接続機能を作れません。';
+          return false;
+        }
+
+        peerConnection.onconnectionstatechange = () => {
+          const s = peerConnection ? peerConnection.connectionState : 'closed';
+          if (s === 'connected') {
+            onPeerConnected();
+          } else if (s === 'failed' || s === 'closed' || s === 'disconnected') {
+            if (peerState !== 'off') {
+              cancelPeerFlow(false);
+            }
+          }
+        };
+
+        peerConnection.oniceconnectionstatechange = () => {
+          const s = peerConnection ? peerConnection.iceConnectionState : 'closed';
+          if (s === 'connected') {
+            onPeerConnected();
+          }
+          if (s === 'failed' || s === 'closed' || s === 'disconnected') {
+            if (peerState !== 'off' && peerDataChannel && peerDataChannel.readyState !== 'open') {
+              cancelPeerFlow(false);
+            }
+          }
+        };
+
+        peerConnection.ondatachannel = ev => {
+          setupPeerDataChannel(ev.channel);
+        };
+
+        return true;
+      }
+
+      function setupPeerDataChannel(channel) {
+        peerDataChannel = channel;
+        peerDataChannel.onopen = () => {
+          onPeerConnected();
+        };
+
+        peerDataChannel.onmessage = ev => {
+          handlePeerDataMessage(ev.data);
+        };
+
+        peerDataChannel.onclose = () => {
+          if (peerState !== 'off') {
+            cancelPeerFlow(false);
+          }
+        };
+
+        peerDataChannel.onerror = () => {};
+      }
+
+      function cleanupOutgoingSettingsTimer() {
+        if (outgoingSettingsTimer) {
+          clearInterval(outgoingSettingsTimer);
+          outgoingSettingsTimer = null;
+        }
+        outgoingSettingsToken = null;
+        outgoingSettingsExpireAt = 0;
+      }
+
+      function cleanupPeerConnection(stopOnly = true) {
+        cleanupOutgoingSettingsTimer();
+        receiveArmedUntil = 0;
+        lastIncomingSettingsPacket = null;
+
+        if (peerDataChannel) {
+          try { peerDataChannel.close(); } catch (_) {}
+          peerDataChannel = null;
+        }
+
+        if (peerConnection) {
+          try { peerConnection.close(); } catch (_) {}
+          peerConnection = null;
+        }
+
+        stopPeerScanner();
+
+        if (!stopOnly) {
+          peerRole = null;
+          peerSessionMode = null;
+          peerSessionCode = '';
+        }
+      }
+
+      function isDataChannelOpen() {
+        return peerDataChannel && peerDataChannel.readyState === 'open';
+      }
+
+      function sendPeerPacket(packet) {
+        if (!isDataChannelOpen()) return false;
+        try {
+          peerDataChannel.send(JSON.stringify({
+            ...packet,
+            id: makeId(),
+            sender: selfPeerId,
+            ts: Date.now()
+          }));
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      function disconnectPeer(sendGoodbye = true) {
+        if (sendGoodbye && isDataChannelOpen()) {
+          sendPeerPacket({ type: 'goodbye' });
+        }
+
+        cleanupPeerConnection(true);
+        peerRole = null;
+        peerSessionMode = null;
+        peerSessionCode = '';
+        peerState = 'off';
+
+        closePeerSessionPanel();
+        closePeerModePanel();
+        closePeerActionPanel();
+        updatePeerButtonUi();
+      }
+
+      function onPeerConnected() {
+        if (peerState === 'connected') return;
+        peerState = 'connected';
+        closePeerSessionPanel();
+        closePeerModePanel();
+        updatePeerButtonUi();
+        peerActionStatus.textContent = '接続済みです';
+      }
+
+      async function acceptOfferPacket(packet) {
+        if (!packet || typeof packet.sdp !== 'string') return;
+
+        if (!peerConnection) {
+          cleanupPeerConnection(false);
+          peerRole = 'answerer';
+          peerState = 'searching';
+          updatePeerButtonUi();
+          if (!setupPeerConnection()) return;
+        }
+
+        try {
+          peerRole = 'answerer';
+          await peerConnection.setRemoteDescription({ type: 'offer', sdp: packet.sdp });
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+          await waitForIceComplete(peerConnection);
+
+          const code = JSON.stringify({
+            kind: 'answer',
+            sdp: peerConnection.localDescription ? peerConnection.localDescription.sdp : '',
+            role: 'answer'
+          });
+
+          stopPeerScanner();
+          peerSessionTitle.textContent = 'QRコードを表示';
+          peerSessionStatus.textContent = 'このQRを相手に読んでもらってください';
+          peerSessionMode = 'show-answer';
+          showPeerSessionDisplayMode(
+            'QRコードを表示',
+            'QRコードを表示',
+            'このQRを相手に読んでもらってください',
+            '表示するQRコード',
+            false
+          );
+          await updateSessionCodeAndQr(code);
+        } catch (err) {
+          peerSessionStatus.textContent = '応答コードの作成に失敗しました。';
+        }
+      }
+
+      async function acceptAnswerPacket(packet) {
+        if (!peerConnection || peerRole !== 'offerer') {
+          peerSessionStatus.textContent = 'このコードは今の状態では使えません。';
+          return;
+        }
+
+        try {
+          await peerConnection.setRemoteDescription({ type: 'answer', sdp: packet.sdp });
+          peerSessionStatus.textContent = '接続中...';
+        } catch (err) {
+          peerSessionStatus.textContent = '接続に失敗しました。';
+        }
+      }
+
+      async function waitForIceComplete(pc) {
+        if (!pc) return;
+        if (pc.iceGatheringState === 'complete') return;
+
+        await new Promise(resolve => {
+          const onChange = () => {
+            if (pc.iceGatheringState === 'complete') {
+              pc.removeEventListener('icegatheringstatechange', onChange);
+              resolve();
+            }
+          };
+          pc.addEventListener('icegatheringstatechange', onChange);
+          setTimeout(() => {
+            try { pc.removeEventListener('icegatheringstatechange', onChange); } catch (_) {}
+            resolve();
+          }, 5000);
+        });
+      }
+
+      function showPeerActionStatus() {
+        updatePeerActionStatusFromConnection();
+      }
+
+      function updatePeerActionStatusFromConnection() {
+        if (peerState === 'connected') {
+          peerActionStatus.textContent = '設定を送るか受け取るか選べます';
+        } else if (peerState === 'searching') {
+          peerActionStatus.textContent = '接続中です';
+        } else {
+          peerActionStatus.textContent = '未接続です';
+        }
+      }
+
+      function armOutgoingSettingsSend() {
+        if (!isDataChannelOpen()) return;
+
+        cleanupOutgoingSettingsTimer();
+
+        const snapshot = cleanSettingsSnapshot();
+        const token = makeId();
+        const packet = {
+          type: 'settings-snapshot',
+          token,
+          settings: snapshot,
+          sentAt: Date.now()
+        };
+
+        outgoingSettingsToken = token;
+        outgoingSettingsExpireAt = Date.now() + 10000;
+
+        sendPeerPacket(packet);
+
+        outgoingSettingsTimer = setInterval(() => {
+          if (!isDataChannelOpen()) {
+            cleanupOutgoingSettingsTimer();
+            return;
+          }
+          if (Date.now() > outgoingSettingsExpireAt) {
+            cleanupOutgoingSettingsTimer();
+            return;
+          }
+          sendPeerPacket(packet);
+        }, 1000);
+
+        peerActionStatus.textContent = '設定を送信中です';
+      }
+
+      function armIncomingSettingsReceive() {
+        if (!isDataChannelOpen()) return;
+        receiveArmedUntil = Date.now() + 10000;
+        peerActionStatus.textContent = '受信待ちを開始しました';
+
+        if (lastIncomingSettingsPacket && Date.now() <= receiveArmedUntil) {
+          applyRemoteSettingsPacket(lastIncomingSettingsPacket.packet);
+        }
+      }
+
+      function applyRemoteSettingsPacket(packet) {
+        if (!packet || typeof packet !== 'object') return;
+        if (!packet.token || appliedIncomingTokens.has(packet.token)) return;
+        if (!packet.settings || typeof packet.settings !== 'object') return;
+
+        appliedIncomingTokens.add(packet.token);
+        applySettingsSnapshot(packet.settings);
+
+        sendPeerPacket({
+          type: 'settings-ack',
+          token: packet.token
+        });
+      }
+
+      function handlePeerDataMessage(raw) {
+        let packet = null;
+        try {
+          packet = JSON.parse(raw);
+        } catch (_) {
+          return;
+        }
+
+        if (!packet || typeof packet !== 'object') return;
+        if (packet.sender === selfPeerId) return;
+
+        if (packet.type === 'effect') {
+          if (packet.kind === 'tap' && packet.payload) {
+            const p = packet.payload;
+            if (typeof p.x === 'number' && typeof p.y === 'number') {
+              addTapEffect(p.x, p.y, false);
+            }
+          } else if (packet.kind === 'swipe' && packet.payload) {
+            const p = packet.payload;
+            if (p.from && p.to && p.dir) {
+              createSwipeEffect(
+                p.from.x, p.from.y,
+                p.dir.x * 100, p.dir.y * 100,
+                false,
+                {
+                  forceFrom: p.from,
+                  forceTo: p.to,
+                  forceRadius: typeof p.radius === 'number' ? p.radius : undefined
+                }
+              );
+            }
+          } else if (packet.kind === 'loop' && packet.payload && Array.isArray(packet.payload.points)) {
+            const points = packet.payload.points
+              .filter(pt => pt && typeof pt.x === 'number' && typeof pt.y === 'number')
+              .map(pt => ({ x: pt.x, y: pt.y }));
+            if (points.length >= 3) createLoopEffect(points, false);
+          }
+          return;
+        }
+
+        if (packet.type === 'settings-snapshot') {
+          if (!packet.token) return;
+          lastIncomingSettingsPacket = {
+            packet,
+            receivedAt: Date.now()
+          };
+
+          if (Date.now() <= receiveArmedUntil) {
+            applyRemoteSettingsPacket(packet);
+          }
+          return;
+        }
+
+        if (packet.type === 'settings-ack') {
+          if (packet.token && packet.token === outgoingSettingsToken) {
+            cleanupOutgoingSettingsTimer();
+          }
+          return;
+        }
+
+        if (packet.type === 'goodbye') {
+          if (peerState !== 'off') {
+            cancelPeerFlow(false);
+          }
+        }
+      }
+
+      function renderCurrentPeerCode() {
+        if (!peerSessionCode) return;
+        peerCodeText.value = peerSessionCode;
+        if (window.QRCode) {
+          QRCode.toCanvas(peerQrCanvas, peerSessionCode || ' ', {
+            width: 240,
+            margin: 1,
+            errorCorrectionLevel: 'M',
+            color: {
+              dark: '#000000',
+              light: '#FFFFFF'
+            }
+          }).catch(() => {});
+        } else {
+          const g = peerQrCanvas.getContext('2d');
+          if (g) {
+            g.clearRect(0, 0, peerQrCanvas.width, peerQrCanvas.height);
+            g.fillStyle = '#fff';
+            g.fillRect(0, 0, peerQrCanvas.width, peerQrCanvas.height);
+            g.fillStyle = '#111';
+            g.font = '14px system-ui';
+            g.textAlign = 'center';
+            g.fillText('QRライブラリ未読込', 120, 110);
+            g.fillText('文字コードを使ってください', 120, 132);
+          }
+        }
+      }
+
+      async function updateSessionCodeAndQr(text) {
+        peerSessionCode = text;
+        peerCodeText.value = text || '';
+        renderCurrentPeerCode();
+      }
+
+      async function startPeerScanner() {
+        stopPeerScanner();
+        peerScannerActive = true;
+
+        if (window.QrScanner) {
+          try {
+            window.QrScanner.WORKER_PATH = 'https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner-worker.min.js';
+          } catch (_) {}
+
+          try {
+            peerQrScanner = new window.QrScanner(peerScanVideo, result => {
+              const text = typeof result === 'string' ? result : (result && result.data) ? result.data : '';
+              if (text) handlePeerCode(text);
+            }, {
+              highlightScanRegion: true,
+              highlightCodeOutline: true,
+              returnDetailedScanResult: false,
+              preferredCamera: 'environment'
+            });
+            await peerQrScanner.start();
+            return;
+          } catch (_) {
+            peerQrScanner = null;
+          }
+        }
+
+        if ('BarcodeDetector' in window) {
+          try {
+            const detector = new BarcodeDetector({ formats: ['qr_code'] });
+            peerScannerStream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: { ideal: 'environment' } },
+              audio: false
+            });
+            peerScanVideo.srcObject = peerScannerStream;
+            await peerScanVideo.play();
+
+            peerScannerPollTimer = setInterval(async () => {
+              if (!peerScannerActive) return;
+              try {
+                const barcodes = await detector.detect(peerScanVideo);
+                if (barcodes && barcodes.length) {
+                  const raw = barcodes[0].rawValue || '';
+                  if (raw) handlePeerCode(raw);
+                }
+              } catch (_) {}
+            }, 650);
+            return;
+          } catch (_) {}
+        }
+
+        peerSessionStatus.textContent = 'カメラ読み取りは使えません。下の入力欄にコードを貼り付けてください。';
+      }
+
+      function setupPeerButtonVisibility() {
+        peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
+      }
+
+      function cancelAllPeerUi() {
+        closePeerModePanel();
+        closePeerSessionPanel();
+        closePeerActionPanel();
+      }
+
+      const openPeerAction = peerButton;
+
+      function openPeerModePanel() {
+        if (!settings.peerButtonVisible) return;
+        openOverlay(peerModeOverlay);
+      }
+
+      function closePeerModePanel() {
+        closeOverlay(peerModeOverlay);
+      }
+
+      function closePeerSessionPanel() {
+        closeOverlay(peerSessionOverlay);
+      }
+
+      function closePeerActionPanel() {
+        closeOverlay(peerActionOverlay);
+      }
+
+      openPeerAction.addEventListener('click', () => {
+        if (!settings.peerButtonVisible) return;
+
+        if (peerState === 'searching') {
+          cancelPeerFlow(true);
+          return;
+        }
+
+        if (peerState === 'connected') {
+          updatePeerActionStatusFromConnection();
+          openPeerActionPanel();
+          return;
+        }
+
+        openPeerModePanel();
+      });
+
+      peerWifiBtn.addEventListener('click', () => {
+        closePeerModePanel();
+        startOfferFlow('Wi-Fiで通信');
+      });
+
+      peerShowQrBtn.addEventListener('click', () => {
+        closePeerModePanel();
+        startOfferFlow('QRコードを表示');
+      });
+
+      peerScanQrBtn.addEventListener('click', () => {
+        closePeerModePanel();
+        startScanMode();
+      });
+
+      copyPeerCode.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(peerCodeText.value || '');
+        } catch (_) {}
+      });
+
+      submitPeerScan.addEventListener('click', () => {
+        const text = (peerScanInput.value || '').trim();
+        if (!text) return;
+        handlePeerCode(text);
+      });
+
+      sendSettingsBtn.addEventListener('click', () => {
+        closePeerActionPanel();
+        armOutgoingSettingsSend();
+      });
+
+      receiveSettingsBtn.addEventListener('click', () => {
+        closePeerActionPanel();
+        armIncomingSettingsReceive();
+      });
+
+      disconnectPeerBtn.addEventListener('click', () => {
+        closePeerActionPanel();
+        cancelPeerFlow(true);
+      });
 
       bgMode.addEventListener('change', () => {
         settings.bgMode = bgMode.value;
@@ -1535,7 +3197,10 @@
 
       peerButtonToggle.addEventListener('change', () => {
         settings.peerButtonVisible = peerButtonToggle.checked;
-        if (!settings.peerButtonVisible) disconnectPeer(false);
+        if (!settings.peerButtonVisible) {
+          cancelPeerFlow(true);
+        }
+        setupPeerButtonVisibility();
         updatePeerButtonUi();
         saveSettings();
       });
@@ -1544,93 +3209,60 @@
         resetAllSettings();
       });
 
-      openSettings.addEventListener('click', () => {
-        openOverlay();
+      closePeerMode.addEventListener('click', closePeerModePanel);
+      peerModeCancelBtn.addEventListener('click', closePeerModePanel);
+      peerModeOverlay.addEventListener('click', (e) => {
+        if (e.target === peerModeOverlay) closePeerModePanel();
       });
 
-      closeSettings.addEventListener('click', () => {
-        closeOverlay();
+      closePeerSession.addEventListener('click', () => {
+        cancelPeerFlow(true);
+      });
+      peerCodeCloseBtn.addEventListener('click', () => {
+        cancelPeerFlow(true);
+      });
+      cancelPeerScan.addEventListener('click', () => {
+        cancelPeerFlow(true);
+      });
+      peerSessionOverlay.addEventListener('click', (e) => {
+        if (e.target === peerSessionOverlay) cancelPeerFlow(true);
       });
 
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) closeOverlay();
+      closePeerAction.addEventListener('click', closePeerActionPanel);
+      peerActionOverlay.addEventListener('click', (e) => {
+        if (e.target === peerActionOverlay) closePeerActionPanel();
       });
 
-      peerButton.addEventListener('click', () => {
-        togglePeerConnection();
+      openSettings.addEventListener('click', openSettingsPanel);
+      closeSettings.addEventListener('click', closeSettingsPanel);
+      settingsOverlay.addEventListener('click', (e) => {
+        if (e.target === settingsOverlay) closeSettingsPanel();
       });
 
-      canvas.addEventListener('pointerdown', (e) => {
-        if (overlay.classList.contains('open')) return;
-        if (activePointerId !== null) return;
-
-        activePointerId = e.pointerId;
-        canvas.setPointerCapture(activePointerId);
-
-        const p = getPoint(e);
-        pointerDownTime = nowMs();
-        pointerDownPos = { x: p.x, y: p.y };
-        lastPos = { x: p.x, y: p.y };
-        strokePoints = [p];
-        pointerHadLoop = false;
-
-        e.preventDefault();
-      }, { passive: false });
-
-      canvas.addEventListener('pointermove', (e) => {
-        if (activePointerId !== e.pointerId) return;
-
-        const p = getPoint(e);
-        const t = nowMs();
-
-        if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
-          strokePoints.push(p);
-          lastPos = p;
-        }
-
-        if (t - lastLoopAt >= LASSO_COOLDOWN) {
-          if (detectLoop(strokePoints, p.x, p.y)) {
-            createLoopEffect(strokePoints);
-            lastLoopAt = t;
-            pointerHadLoop = true;
-            strokePoints = [p];
-          }
-        }
-
-        e.preventDefault();
-      }, { passive: false });
-
-      function finishPointer(e) {
-        if (activePointerId !== e.pointerId) return;
-
-        const p = getPoint(e);
-        const elapsed = nowMs() - pointerDownTime;
-        const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
-
-        if (!pointerHadLoop) {
-          if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
-            addTapEffect(p.x, p.y);
-          } else if (totalMove >= SWIPE_MIN_DISTANCE) {
-            const dx = p.x - pointerDownPos.x;
-            const dy = p.y - pointerDownPos.y;
-            createSwipeEffect(p.x, p.y, dx, dy);
-          }
-        }
-
-        activePointerId = null;
-        strokePoints = [];
-        pointerHadLoop = false;
-
-        e.preventDefault();
+      function cancelPeerFlow(sendGoodbye = true) {
+        disconnectPeer(sendGoodbye);
       }
 
-      canvas.addEventListener('pointerup', finishPointer, { passive: false });
-      canvas.addEventListener('pointercancel', finishPointer, { passive: false });
-      canvas.addEventListener('lostpointercapture', () => {
-        activePointerId = null;
-        strokePoints = [];
-        pointerHadLoop = false;
-      });
+      function openSettingsPanel() {
+        if (peerState === 'searching') return;
+        openOverlay(settingsOverlay);
+      }
+
+      function closeSettingsPanel() {
+        closeOverlay(settingsOverlay);
+      }
+
+      function sendCurrentSettingsIfPossible() {
+        if (!isDataChannelOpen()) return;
+        armOutgoingSettingsSend();
+      }
+
+      function receiveCurrentSettingsIfPossible() {
+        if (!isDataChannelOpen()) return;
+        armIncomingSettingsReceive();
+      }
+
+      window.addEventListener('resize', resize);
 
       const darkMql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
@@ -1638,13 +3270,9 @@
       updateTheme();
       resize();
       syncSettingsUi();
-      document.body.style.background = getBgColor();
+      setupPeerButtonVisibility();
       updatePeerButtonUi();
-      setupPeerTransport();
-
-      if (settings.peerButtonVisible) {
-        updatePeerButtonUi();
-      }
+      document.body.style.background = getBgColor();
 
       if (darkMql) {
         if (typeof darkMql.addEventListener === 'function') {
@@ -1654,11 +3282,24 @@
         }
       }
 
-      window.addEventListener('resize', () => {
-        resize();
+      setupInputTracking();
+      requestAnimationFrame(render);
+
+      window.addEventListener('beforeunload', () => {
+        try {
+          if (isDataChannelOpen()) {
+            sendPeerPacket({ type: 'goodbye' });
+          }
+        } catch (_) {}
       });
 
-      requestAnimationFrame(render);
+      // keep peer action buttons available from keyboard / assistive tech
+      sendSettingsBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') sendCurrentSettingsIfPossible();
+      });
+      receiveSettingsBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') receiveCurrentSettingsIfPossible();
+      });
     })();
   </script>
 </body>
