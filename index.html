@@ -1,14 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
   <title>Touch Effects</title>
   <style>
     :root {
       color-scheme: light dark;
+      --bg-light: #ffffff;
+      --bg-dark: #000000;
     }
-
     html, body {
       width: 100%;
       height: 100%;
@@ -17,23 +19,20 @@
       touch-action: none;
       -webkit-user-select: none;
       user-select: none;
+      -webkit-touch-callout: none;
+      background: var(--bg-light);
     }
-
-    body {
-      background: #fff;
-    }
-
     @media (prefers-color-scheme: dark) {
-      body {
-        background: #000;
+      html, body {
+        background: var(--bg-dark);
       }
     }
-
     canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       display: block;
-      width: 100vw;
-      height: 100vh;
-      touch-action: none;
     }
   </style>
 </head>
@@ -43,359 +42,388 @@
   <script>
     (() => {
       const canvas = document.getElementById('c');
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { alpha: true });
 
-      let dpr = Math.max(1, window.devicePixelRatio || 1);
+      let dpr = 1;
       let w = 0;
       let h = 0;
+      let darkMode = matchMedia('(prefers-color-scheme: dark)').matches;
+
+      const greenBursts = [];
+      const blueOrbs = [];
+      const redFills = [];
+      const pointers = new Map();
 
       function resize() {
         dpr = Math.max(1, window.devicePixelRatio || 1);
         w = window.innerWidth;
         h = window.innerHeight;
+
         canvas.width = Math.floor(w * dpr);
         canvas.height = Math.floor(h * dpr);
         canvas.style.width = w + 'px';
         canvas.style.height = h + 'px';
+
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
       }
 
-      window.addEventListener('resize', resize, { passive: true });
-      resize();
-
-      const bgColor = () => matchMedia('(prefers-color-scheme: dark)').matches ? '#000000' : '#ffffff';
-
-      const pulses = [];
-      const swipes = [];
-      const fills = [];
-      const gestures = new Map();
-
-      function now() {
-        return performance.now();
+      function bgColor() {
+        return darkMode ? '#000000' : '#ffffff';
       }
 
-      function clamp(v, min, max) {
-        return Math.max(min, Math.min(max, v));
+      function addGreenBurst(x, y) {
+        greenBursts.push({
+          x,
+          y,
+          t: 0,
+          dur: 520,
+          maxR: Math.max(w, h) * 0.22
+        });
       }
 
-      function dist(a, b) {
-        const dx = a.x - b.x;
-        const dy = a.y - b.y;
-        return Math.hypot(dx, dy);
+      function addRedFill(points) {
+        if (!points || points.length < 3) return;
+        redFills.push({
+          points: points.map(p => ({ x: p.x, y: p.y })),
+          t: 0,
+          dur: 420
+        });
       }
 
-      function lerp(a, b, t) {
-        return a + (b - a) * t;
-      }
+      function intersectionToEdge(x, y, dx, dy) {
+        const hits = [];
 
-      function segmentIntersection(p1, p2, p3, p4) {
-        const x1 = p1.x, y1 = p1.y;
-        const x2 = p2.x, y2 = p2.y;
-        const x3 = p3.x, y3 = p3.y;
-        const x4 = p4.x, y4 = p4.y;
+        if (dx !== 0) {
+          const t1 = (0 - x) / dx;
+          const t2 = (w - x) / dx;
+          if (t1 > 0) hits.push(t1);
+          if (t2 > 0) hits.push(t2);
+        }
 
-        const den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-        if (den === 0) return null;
+        if (dy !== 0) {
+          const t3 = (0 - y) / dy;
+          const t4 = (h - y) / dy;
+          if (t3 > 0) hits.push(t3);
+          if (t4 > 0) hits.push(t4);
+        }
 
-        const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
-        const u = ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / den;
-
-        if (t < 0 || t > 1 || u < 0 || u > 1) return null;
+        const valid = hits.filter(v => Number.isFinite(v) && v > 0);
+        const t = valid.length ? Math.min(...valid) : 1;
 
         return {
-          x: x1 + t * (x2 - x1),
-          y: y1 + t * (y2 - y1)
+          x: x + dx * t,
+          y: y + dy * t
         };
       }
 
-      function pointInPolygon(point, polygon) {
-        let inside = false;
-        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-          const xi = polygon[i].x, yi = polygon[i].y;
-          const xj = polygon[j].x, yj = polygon[j].y;
-          const intersect = ((yi > point.y) !== (yj > point.y)) &&
-            (point.x < (xj - xi) * (point.y - yi) / ((yj - yi) || 1e-9) + xi);
-          if (intersect) inside = !inside;
-        }
-        return inside;
-      }
-
-      function centroid(points) {
-        let x = 0;
-        let y = 0;
-        for (const p of points) {
-          x += p.x;
-          y += p.y;
-        }
-        return { x: x / points.length, y: y / points.length };
-      }
-
-      function closeLoop(points) {
-        if (points.length < 4) return null;
-
-        const clean = [];
-        for (const p of points) {
-          if (!clean.length || dist(clean[clean.length - 1], p) > 2) clean.push({ x: p.x, y: p.y });
-        }
-
-        if (clean.length < 4) return null;
-
-        const last = clean[clean.length - 1];
-        for (let i = 0; i < clean.length - 3; i++) {
-          const a = clean[i];
-          const b = clean[i + 1];
-          const hit = segmentIntersection(clean[clean.length - 2], last, a, b);
-          if (hit) {
-            const loop = clean.slice(i + 1);
-            loop.push({ x: hit.x, y: hit.y });
-            if (loop.length >= 3) return loop;
-          }
-        }
-
-        const first = clean[0];
-        if (dist(last, first) < 22) {
-          return clean.slice();
-        }
-
-        return null;
-      }
-
-      function addPulse(x, y) {
-        pulses.push({
-          x, y,
-          start: now(),
-          duration: 750
-        });
-      }
-
-      function addSwipe(startX, startY, endX, endY) {
-        const dx = endX - startX;
-        const dy = endY - startY;
-        const len = Math.hypot(dx, dy);
-        if (len < 16) return;
-
+      function addBlueOrbFromSwipe(startX, startY, dx, dy, speedPxPerMs) {
+        const len = Math.hypot(dx, dy) || 1;
         const ux = dx / len;
         const uy = dy / len;
 
-        const radius = Math.max(18, Math.min(40, Math.min(w, h) * 0.03));
-        const fromLeft = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? -radius * 2 : w + radius * 2) : startX;
-        const fromTop = Math.abs(dx) > Math.abs(dy) ? startY : (dy > 0 ? -radius * 2 : h + radius * 2);
+        const back = intersectionToEdge(startX, startY, -ux, -uy);
+        const forward = intersectionToEdge(startX, startY, ux, uy);
 
-        const toLeft = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? w + radius * 2 : -radius * 2) : endX;
-        const toTop = Math.abs(dx) > Math.abs(dy) ? endY : (dy > 0 ? h + radius * 2 : -radius * 2);
+        const sx = back.x;
+        const sy = back.y;
+        const ex = forward.x;
+        const ey = forward.y;
 
-        const travel = Math.hypot(toLeft - fromLeft, toTop - fromTop);
-        const speed = 0.9; // px per ms
+        const totalDx = ex - sx;
+        const totalDy = ey - sy;
+        const dist = Math.hypot(totalDx, totalDy);
 
-        swipes.push({
-          x: fromLeft,
-          y: fromTop,
-          vx: (toLeft - fromLeft) / (travel / speed || 1),
-          vy: (toTop - fromTop) / (travel / speed || 1),
-          radius,
-          start: now(),
-          duration: Math.max(500, travel / speed),
+        const dur = Math.max(700, Math.min(1600, (dist / Math.max(0.15, speedPxPerMs)) * 0.75));
+
+        blueOrbs.push({
+          sx,
+          sy,
+          dx: totalDx,
+          dy: totalDy,
+          t: 0,
+          dur,
+          r: Math.max(18, Math.min(34, Math.min(w, h) * 0.04)),
           trail: [],
-          hue: 210
+          trailTimer: 0
         });
       }
 
-      function addFill(loopPoints) {
-        fills.push({
-          points: loopPoints.map(p => ({ x: p.x, y: p.y })),
-          start: now(),
-          duration: 520
-        });
+      function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
+        const vx = x2 - x1;
+        const vy = y2 - y1;
+        const wx = px - x1;
+        const wy = py - y1;
+
+        const c1 = vx * wx + vy * wy;
+        if (c1 <= 0) return Math.hypot(px - x1, py - y1);
+
+        const c2 = vx * vx + vy * vy;
+        if (c2 <= c1) return Math.hypot(px - x2, py - y2);
+
+        const b = c1 / c2;
+        const bx = x1 + b * vx;
+        const by = y1 + b * vy;
+        return Math.hypot(px - bx, py - by);
       }
 
-      function handlePointerDown(e) {
-        canvas.setPointerCapture?.(e.pointerId);
-        gestures.set(e.pointerId, {
-          id: e.pointerId,
-          downX: e.clientX,
-          downY: e.clientY,
-          lastX: e.clientX,
-          lastY: e.clientY,
-          points: [{ x: e.clientX, y: e.clientY }],
+      function detectLoop(state, x, y) {
+        const pts = state.points;
+        if (pts.length < 40) return -1;
+
+        const minGap = 18;
+        const threshold = 16;
+
+        for (let i = 0; i < pts.length - minGap - 1; i++) {
+          const a = pts[i];
+          const b = pts[i + 1];
+          const d = pointToSegmentDistance(x, y, a.x, a.y, b.x, b.y);
+          if (d < threshold) return i;
+        }
+
+        return -1;
+      }
+
+      function startPointer(id, x, y) {
+        pointers.set(id, {
+          id,
+          startX: x,
+          startY: y,
+          lastX: x,
+          lastY: y,
+          downTime: performance.now(),
           moved: false,
-          closed: false,
-          downTime: now()
+          loopTriggered: false,
+          points: [{ x, y }],
+          lastPointTime: performance.now()
         });
+
+        addGreenBurst(x, y);
       }
 
-      function handlePointerMove(e) {
-        const g = gestures.get(e.pointerId);
-        if (!g) return;
+      function movePointer(id, x, y) {
+        const state = pointers.get(id);
+        if (!state) return;
 
-        const x = e.clientX;
-        const y = e.clientY;
-        const moved = Math.hypot(x - g.downX, y - g.downY);
+        const dx = x - state.lastX;
+        const dy = y - state.lastY;
+        const step = Math.hypot(dx, dy);
 
-        if (moved > 6) g.moved = true;
+        if (step > 1.5) {
+          state.moved = true;
+          state.points.push({ x, y });
+          state.lastX = x;
+          state.lastY = y;
+          state.lastPointTime = performance.now();
+        } else {
+          state.lastX = x;
+          state.lastY = y;
+        }
 
-        if (g.moved) {
-          const last = g.points[g.points.length - 1];
-          if (!last || Math.hypot(x - last.x, y - last.y) >= 3) {
-            const prev = g.points[g.points.length - 1];
-            g.points.push({ x, y });
-
-            if (g.points.length >= 4 && !g.closed) {
-              const loop = closeLoop(g.points);
-              if (loop) {
-                g.closed = true;
-                addFill(loop);
-              }
+        if (!state.loopTriggered) {
+          const loopIndex = detectLoop(state, x, y);
+          if (loopIndex >= 0) {
+            state.loopTriggered = true;
+            const closed = state.points.slice(loopIndex);
+            if (closed.length >= 3) {
+              addRedFill(closed);
             }
           }
         }
-
-        g.lastX = x;
-        g.lastY = y;
       }
 
-      function handlePointerUp(e) {
-        const g = gestures.get(e.pointerId);
-        if (!g) return;
+      function endPointer(id, x, y) {
+        const state = pointers.get(id);
+        if (!state) return;
 
-        const upX = e.clientX;
-        const upY = e.clientY;
-        const moved = Math.hypot(upX - g.downX, upY - g.downY);
+        const totalDx = x - state.startX;
+        const totalDy = y - state.startY;
+        const dist = Math.hypot(totalDx, totalDy);
+        const dt = Math.max(1, performance.now() - state.downTime);
+        const speed = dist / dt;
 
-        if (!g.moved && moved < 8) {
-          addPulse(upX, upY);
-        } else {
-          addSwipe(g.downX, g.downY, upX, upY);
-          if (!g.closed) {
-            const loop = closeLoop(g.points);
-            if (loop) addFill(loop);
-          }
+        if (!state.loopTriggered && dist > 28) {
+          addBlueOrbFromSwipe(state.startX, state.startY, totalDx, totalDy, speed);
         }
 
-        gestures.delete(e.pointerId);
+        pointers.delete(id);
       }
 
-      canvas.addEventListener('pointerdown', handlePointerDown, { passive: false });
-      canvas.addEventListener('pointermove', handlePointerMove, { passive: false });
-      canvas.addEventListener('pointerup', handlePointerUp, { passive: false });
-      canvas.addEventListener('pointercancel', handlePointerUp, { passive: false });
+      function cancelPointer(id) {
+        pointers.delete(id);
+      }
 
-      function drawBackground() {
+      window.addEventListener('resize', resize, { passive: true });
+      matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', (e) => {
+        darkMode = e.matches;
+      });
+
+      canvas.addEventListener('pointerdown', (e) => {
+        canvas.setPointerCapture?.(e.pointerId);
+        startPointer(e.pointerId, e.clientX, e.clientY);
+      });
+
+      canvas.addEventListener('pointermove', (e) => {
+        movePointer(e.pointerId, e.clientX, e.clientY);
+      });
+
+      canvas.addEventListener('pointerup', (e) => {
+        endPointer(e.pointerId, e.clientX, e.clientY);
+      });
+
+      canvas.addEventListener('pointercancel', (e) => {
+        cancelPointer(e.pointerId);
+      });
+
+      canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      function drawGreenBurst(item) {
+        const p = item.t / item.dur;
+        if (p >= 1) return false;
+
+        const easeOut = 1 - Math.pow(1 - p, 3);
+        const radius = item.maxR * easeOut;
+        const alpha = Math.max(0, 0.34 * (1 - p));
+
+        const g = ctx.createRadialGradient(item.x, item.y, 0, item.x, item.y, radius);
+        g.addColorStop(0, `rgba(0, 255, 0, ${alpha})`);
+        g.addColorStop(0.45, `rgba(0, 255, 0, ${alpha * 0.55})`);
+        g.addColorStop(1, 'rgba(0, 255, 0, 0)');
+
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(item.x, item.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        return true;
+      }
+
+      function drawRedFill(item) {
+        const p = item.t / item.dur;
+        if (p >= 1) return false;
+
+        const alpha = Math.max(0, 0.28 * (1 - p));
+        const scale = 0.98 + p * 0.02;
+
+        ctx.save();
+        ctx.translate(0, 0);
+        ctx.scale(scale, scale);
+
+        ctx.beginPath();
+        const pts = item.points;
+        ctx.moveTo(pts[0].x / scale, pts[0].y / scale);
+        for (let i = 1; i < pts.length; i++) {
+          ctx.lineTo(pts[i].x / scale, pts[i].y / scale);
+        }
+        ctx.closePath();
+        ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
+        ctx.fill();
+        ctx.restore();
+
+        return true;
+      }
+
+      function drawBlueOrb(item, now, dt) {
+        const p = item.t / item.dur;
+        if (p >= 1) return false;
+
+        const ease = p < 0.5
+          ? 2 * p * p
+          : 1 - Math.pow(-2 * p + 2, 2) / 2;
+
+        const x = item.sx + item.dx * ease;
+        const y = item.sy + item.dy * ease;
+
+        item.trailTimer += dt;
+        if (item.trailTimer >= 18) {
+          item.trailTimer = 0;
+          item.trail.push({
+            x,
+            y,
+            life: 0
+          });
+          if (item.trail.length > 18) item.trail.shift();
+        }
+
+        for (let i = 0; i < item.trail.length; i++) {
+          const t = item.trail[i];
+          t.life += dt;
+        }
+
+        for (let i = item.trail.length - 1; i >= 0; i--) {
+          const t = item.trail[i];
+          const ap = Math.max(0, 1 - t.life / 320);
+          if (ap <= 0) {
+            item.trail.splice(i, 1);
+            continue;
+          }
+
+          const rr = item.r * (0.65 + (i / Math.max(1, item.trail.length)) * 0.2);
+          ctx.fillStyle = `rgba(0, 120, 255, ${ap * 0.22})`;
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, rr, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        const orbAlpha = Math.max(0, 0.42 * (1 - p));
+        const pulse = 1 + Math.sin(p * Math.PI * 3) * 0.05;
+        const radius = item.r * pulse;
+
+        const g = ctx.createRadialGradient(x, y, 0, x, y, radius * 1.8);
+        g.addColorStop(0, `rgba(0, 150, 255, ${orbAlpha})`);
+        g.addColorStop(0.35, `rgba(0, 150, 255, ${orbAlpha * 0.55})`);
+        g.addColorStop(1, 'rgba(0, 150, 255, 0)');
+
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, radius * 1.35, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = `rgba(0, 150, 255, ${orbAlpha * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(x, y, radius * 0.75, 0, Math.PI * 2);
+        ctx.fill();
+
+        return true;
+      }
+
+      let last = performance.now();
+
+      function frame(now) {
+        const dt = Math.min(32, now - last);
+        last = now;
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.globalCompositeOperation = 'source-over';
         ctx.fillStyle = bgColor();
         ctx.fillRect(0, 0, w, h);
-      }
 
-      function drawPulses(t) {
-        for (let i = pulses.length - 1; i >= 0; i--) {
-          const p = pulses[i];
-          const u = (t - p.start) / p.duration;
-          if (u >= 1) {
-            pulses.splice(i, 1);
-            continue;
+        for (let i = greenBursts.length - 1; i >= 0; i--) {
+          greenBursts[i].t += dt;
+          if (!drawGreenBurst(greenBursts[i])) {
+            greenBursts.splice(i, 1);
           }
-          const ease = 1 - Math.pow(1 - u, 3);
-          const r = lerp(6, Math.max(w, h) * 0.16, ease);
-          const a = 0.28 * (1 - u);
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(0, 255, 0, ${a})`;
-          ctx.fill();
-          ctx.restore();
         }
-      }
 
-      function drawSwipes(t) {
-        for (let i = swipes.length - 1; i >= 0; i--) {
-          const s = swipes[i];
-          const u = (t - s.start) / s.duration;
-          if (u >= 1.05) {
-            swipes.splice(i, 1);
-            continue;
+        for (let i = blueOrbs.length - 1; i >= 0; i--) {
+          blueOrbs[i].t += dt;
+          if (!drawBlueOrb(blueOrbs[i], now, dt)) {
+            blueOrbs.splice(i, 1);
           }
-
-          const dt = Math.min(24, Math.max(0, t - (s._lastT || s.start)));
-          s._lastT = t;
-          s.x += s.vx * dt;
-          s.y += s.vy * dt;
-
-          s.trail.push({ x: s.x, y: s.y, a: 1 });
-          if (s.trail.length > 28) s.trail.shift();
-
-          for (let j = 0; j < s.trail.length; j++) {
-            const tr = s.trail[j];
-            tr.a *= 0.94;
-          }
-
-          ctx.save();
-          for (let j = 0; j < s.trail.length; j++) {
-            const tr = s.trail[j];
-            const alpha = 0.24 * (j / s.trail.length) * tr.a;
-            const rr = s.radius * (0.88 + 0.16 * (j / s.trail.length));
-            ctx.beginPath();
-            ctx.arc(tr.x, tr.y, rr, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(0, 150, 255, ${alpha})`;
-            ctx.fill();
-          }
-
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(0, 150, 255, ${0.45 * (1 - u)})`;
-          ctx.fill();
-          ctx.restore();
         }
-      }
 
-      function drawFills(t) {
-        for (let i = fills.length - 1; i >= 0; i--) {
-          const f = fills[i];
-          const u = (t - f.start) / f.duration;
-          if (u >= 1) {
-            fills.splice(i, 1);
-            continue;
+        for (let i = redFills.length - 1; i >= 0; i--) {
+          redFills[i].t += dt;
+          if (!drawRedFill(redFills[i])) {
+            redFills.splice(i, 1);
           }
-
-          const alpha = 0.34 * (1 - Math.pow(u, 0.65));
-          ctx.save();
-          ctx.beginPath();
-          ctx.moveTo(f.points[0].x, f.points[0].y);
-          for (let j = 1; j < f.points.length; j++) {
-            ctx.lineTo(f.points[j].x, f.points[j].y);
-          }
-          ctx.closePath();
-          ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
-          ctx.fill();
-          ctx.restore();
         }
-      }
 
-      function drawActiveGestures() {
-        ctx.save();
-        ctx.lineWidth = 14;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.0)';
-        for (const g of gestures.values()) {
-          if (g.points.length < 2) continue;
-          ctx.beginPath();
-          ctx.moveTo(g.points[0].x, g.points[0].y);
-          for (let i = 1; i < g.points.length; i++) {
-            ctx.lineTo(g.points[i].x, g.points[i].y);
-          }
-          ctx.stroke();
-        }
-        ctx.restore();
-      }
-
-      function frame() {
-        const t = now();
-        drawBackground();
-        drawFills(t);
-        drawPulses(t);
-        drawSwipes(t);
-        drawActiveGestures();
         requestAnimationFrame(frame);
       }
 
+      resize();
       requestAnimationFrame(frame);
     })();
   </script>
