@@ -7,407 +7,349 @@
   <title>Touch Effects</title>
   <style>
     :root {
-      --bg: #ffffff;
-      --fg: #111111;
-      --muted: rgba(17, 17, 17, 0.56);
-      --panel: rgba(255, 255, 255, 0.78);
-      --panel-border: rgba(17, 17, 17, 0.12);
-      --panel-shadow: rgba(0, 0, 0, 0.10);
-      --control-bg: rgba(255, 255, 255, 0.18);
-      --control-border: rgba(17, 17, 17, 0.18);
-      --control-disabled: rgba(17, 17, 17, 0.24);
+      --bg: #fff;
+      --edge: #111;
+      --panel-bg: rgba(255, 255, 255, 0.84);
+      --panel-border: rgba(0, 0, 0, 0.14);
+      --text: #101010;
+      --muted: rgba(16, 16, 16, 0.45);
+      --track: rgba(0, 0, 0, 0.12);
+      --track-disabled: rgba(0, 0, 0, 0.06);
+      --thumb: rgba(0, 0, 0, 0.72);
+      --grid-light: rgba(232, 232, 232, 0.42);
+      --grid-dark: rgba(34, 34, 34, 0.42);
     }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #000000;
-        --fg: #f4f4f4;
-        --muted: rgba(244, 244, 244, 0.58);
-        --panel: rgba(0, 0, 0, 0.72);
-        --panel-border: rgba(244, 244, 244, 0.10);
-        --panel-shadow: rgba(0, 0, 0, 0.48);
-        --control-bg: rgba(255, 255, 255, 0.08);
-        --control-border: rgba(244, 244, 244, 0.18);
-        --control-disabled: rgba(244, 244, 244, 0.22);
-      }
-    }
-
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-      overscroll-behavior: none;
-      background: var(--bg);
-      color: var(--fg);
-      color-scheme: light dark;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Yu Gothic", sans-serif;
-    }
-
-    body {
-      position: fixed;
-      inset: 0;
-    }
-
-    #mainView,
-    #settingsView {
-      position: fixed;
-      inset: 0;
-    }
-
-    #mainView {
-      display: block;
-    }
-
-    #settingsView {
-      display: none;
-      box-sizing: border-box;
-      padding:
-        max(18px, env(safe-area-inset-top))
-        max(18px, env(safe-area-inset-right))
-        max(18px, env(safe-area-inset-bottom))
-        max(18px, env(safe-area-inset-left));
-      background: linear-gradient(180deg, rgba(255,255,255,0.00), rgba(255,255,255,0.00));
-    }
-
-    body.route-settings #settingsView {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    body.route-settings #mainView {
-      display: none;
-    }
-
-    canvas {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-      touch-action: none;
-    }
-
-    .gearButton {
-      position: fixed;
-      top: max(14px, env(safe-area-inset-top));
-      right: max(14px, env(safe-area-inset-right));
-      width: 42px;
-      height: 42px;
-      border-radius: 999px;
-      border: 1.5px solid var(--fg);
-      background: transparent;
-      color: transparent;
-      display: grid;
-      place-items: center;
-      padding: 0;
-      margin: 0;
-      z-index: 20;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      cursor: pointer;
-    }
-
-    .gearButton span {
-      display: block;
-      font-size: 24px;
-      line-height: 1;
-      color: transparent;
-      -webkit-text-stroke: 1.25px var(--fg);
-      text-shadow: 0 0 0 var(--fg);
-      transform: translateY(-0.5px);
-    }
-
-    .settingsPanel {
-      width: min(440px, calc(100vw - 32px));
-      border-radius: 26px;
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      box-shadow: 0 18px 50px var(--panel-shadow);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 18px;
-      box-sizing: border-box;
-    }
-
-    .settingsTop {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .backButton {
-      width: 42px;
-      height: 42px;
-      border-radius: 999px;
-      border: 1.5px solid var(--fg);
-      background: transparent;
-      color: transparent;
-      display: grid;
-      place-items: center;
-      padding: 0;
-      margin: 0;
-      -webkit-tap-highlight-color: transparent;
-      cursor: pointer;
-      flex: 0 0 auto;
-    }
-
-    .backButton span {
-      display: block;
-      font-size: 22px;
-      line-height: 1;
-      color: transparent;
-      -webkit-text-stroke: 1.2px var(--fg);
-      text-shadow: 0 0 0 var(--fg);
-      transform: translateY(-0.5px);
-    }
-
-    .settingsTitle {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: var(--fg);
-      flex: 1 1 auto;
-      text-align: right;
-    }
-
-    .settingRow {
-      border-radius: 18px;
-      border: 1px solid var(--panel-border);
-      background: rgba(255,255,255,0.06);
-      padding: 14px;
-      box-sizing: border-box;
-      margin-top: 12px;
-    }
-
-    .settingHead {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-
-    .settingLabel {
-      font-size: 16px;
-      font-weight: 650;
-      color: var(--fg);
-    }
-
-    .settingNote {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
-      line-height: 1.5;
-    }
-
-    .toggle {
-      position: relative;
-      width: 56px;
-      height: 32px;
-      flex: 0 0 auto;
-    }
-
-    .toggle input {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      margin: 0;
-      cursor: pointer;
-    }
-
-    .toggleTrack {
-      position: absolute;
-      inset: 0;
-      border-radius: 999px;
-      background: rgba(127,127,127,0.22);
-      border: 1px solid var(--control-border);
-      transition: background 0.18s ease, border-color 0.18s ease;
-    }
-
-    .toggleThumb {
-      position: absolute;
-      top: 50%;
-      left: 3px;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: var(--fg);
-      transform: translateY(-50%);
-      transition: left 0.18s ease, background 0.18s ease;
-    }
-
-    .toggle input:checked + .toggleTrack {
-      background: rgba(76, 200, 120, 0.32);
-    }
-
-    .toggle input:checked + .toggleTrack .toggleThumb {
-      left: 27px;
-    }
-
-    .rangeWrap {
-      display: grid;
-      gap: 8px;
-      transition: opacity 0.18s ease;
-    }
-
-    .rangeWrap.disabled {
-      opacity: 0.34;
-      pointer-events: none;
-    }
-
-    .rangeTop {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      color: var(--fg);
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .rangeValue {
-      color: var(--muted);
-      font-weight: 650;
-    }
-
-    input[type="range"] {
-      width: 100%;
-      margin: 0;
-      accent-color: var(--fg);
-      background: transparent;
-    }
-
-    input[type="range"]::-webkit-slider-runnable-track {
-      height: 6px;
-      border-radius: 999px;
-      background: var(--control-bg);
-      border: 1px solid var(--control-border);
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--fg);
-      border: none;
-      margin-top: -6px;
-    }
-
-    input[type="range"]::-moz-range-track {
-      height: 6px;
-      border-radius: 999px;
-      background: var(--control-bg);
-      border: 1px solid var(--control-border);
-    }
-
-    input[type="range"]::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--fg);
-      border: none;
-    }
-
-    .settingsFooter {
-      margin-top: 12px;
-      font-size: 12px;
-      line-height: 1.5;
-      color: var(--muted);
-    }
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000;
+    --edge: #fafafa;
+    --panel-bg: rgba(0, 0, 0, 0.82);
+    --panel-border: rgba(255, 255, 255, 0.16);
+    --text: #f5f5f5;
+    --muted: rgba(245, 245, 245, 0.45);
+    --track: rgba(255, 255, 255, 0.14);
+    --track-disabled: rgba(255, 255, 255, 0.07);
+    --thumb: rgba(255, 255, 255, 0.78);
+  }
+}
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color-scheme: light dark;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  overscroll-behavior: none;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+body {
+  position: relative;
+  background: var(--bg);
+}
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  touch-action: none;
+}
+.gear-btn {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  right: calc(env(safe-area-inset-right, 0px) + 10px);
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  border: 1.7px solid var(--edge);
+  background: transparent;
+  color: transparent;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 20;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-stroke: 1.3px var(--edge);
+  text-shadow:
+    1px 0 0 var(--edge),
+    -1px 0 0 var(--edge),
+    0 1px 0 var(--edge),
+    0 -1px 0 var(--edge),
+    1px 1px 0 var(--edge),
+    -1px 1px 0 var(--edge),
+    1px -1px 0 var(--edge),
+    -1px -1px 0 var(--edge);
+}
+.gear-btn span {
+  font-size: 22px;
+  line-height: 1;
+  transform: translateY(-0.5px);
+}
+.gear-btn:active {
+  transform: scale(0.97);
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 18px;
+  box-sizing: border-box;
+}
+.overlay.open {
+  display: flex;
+}
+.panel {
+  width: min(92vw, 460px);
+  max-height: min(84vh, 640px);
+  overflow: auto;
+  border-radius: 26px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+  color: var(--text);
+  padding: 18px 18px 16px;
+  box-sizing: border-box;
+}
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.panel-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.close-btn {
+  appearance: none;
+  border: 1.5px solid var(--edge);
+  background: transparent;
+  color: var(--text);
+  border-radius: 999px;
+  min-width: 42px;
+  height: 36px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.close-btn:active {
+  transform: scale(0.98);
+}
+.setting-block {
+  padding: 14px 0 4px;
+  border-top: 1px solid rgba(127, 127, 127, 0.16);
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.setting-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.setting-label .main {
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+.setting-label .sub {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.switch {
+  position: relative;
+  width: 56px;
+  height: 34px;
+  flex: 0 0 auto;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.slider {
+  position: absolute;
+  inset: 0;
+  background: rgba(127, 127, 127, 0.18);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+.slider::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--thumb);
+  transition: 0.2s ease;
+}
+.switch input:checked + .slider {
+  background: rgba(55, 180, 90, 0.22);
+}
+.switch input:checked + .slider::before {
+  transform: translateX(22px);
+}
+.range-wrap {
+  margin-top: 12px;
+  padding-left: 2px;
+}
+.range-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.range-title {
+  font-size: 13px;
+  font-weight: 650;
+}
+.range-value {
+  font-size: 12px;
+  color: var(--muted);
+}
+.range-wrap.disabled {
+  opacity: 0.34;
+  pointer-events: none;
+}
+input[type="range"] {
+  width: 100%;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  height: 28px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--track);
+}
+.range-wrap.disabled input[type="range"]::-webkit-slider-runnable-track {
+  background: var(--track-disabled);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  margin-top: -7.5px;
+  background: var(--thumb);
+  border: 0;
+  box-shadow: 0 0 0 3px rgba(127, 127, 127, 0.15);
+}
+input[type="range"]::-moz-range-track {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--track);
+}
+.range-wrap.disabled input[type="range"]::-moz-range-track {
+  background: var(--track-disabled);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--thumb);
+  border: 0;
+  box-shadow: 0 0 0 3px rgba(127, 127, 127, 0.15);
+}
+.hint {
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.hidden {
+  display: none !important;
+}
   </style>
 </head>
 <body>
-  <div id="mainView">
-    <canvas id="c"></canvas>
-    <button id="gearButton" class="gearButton" type="button" aria-label="設定">
-      <span>⛭</span>
-    </button>
-  </div>
-
-  <div id="settingsView" aria-hidden="true">
-    <div class="settingsPanel">
-      <div class="settingsTop">
-        <button id="backButton" class="backButton" type="button" aria-label="戻る">
-          <span>←</span>
-        </button>
-        <h1 class="settingsTitle">設定</h1>
+  <canvas id="c"></canvas>
+  <button class="gear-btn" id="openSettings" aria-label="設定を開く">
+    <span>⛭</span>
+  </button>
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="panel" role="dialog" aria-modal="true" aria-label="設定">
+      <div class="panel-header">
+        <div class="panel-title">設定</div>
+        <button class="close-btn" id="closeSettings">戻る</button>
       </div>
-
-      <div class="settingRow">
-        <div class="settingHead">
-          <div class="settingLabel">格子状の線</div>
-          <label class="toggle" aria-label="格子状の線を表示する">
-            <input id="gridEnabled" type="checkbox" />
-            <div class="toggleTrack">
-              <div class="toggleThumb"></div>
-            </div>
-          </label>
-        </div>
-
-        <div id="gridRangeWrap" class="rangeWrap">
-          <div class="rangeTop">
-            <div>間隔</div>
-            <div class="rangeValue"><span id="gridSpacingValue">34</span> px</div>
-          </div>
-          <input id="gridSpacing" type="range" min="18" max="120" step="1" value="34" />
-          <div class="settingNote">ONのときだけ調整できます。</div>
-        </div>
-
-        <div id="gridOffNote" class="settingNote" style="display:none;">
-          OFFのときは薄い表示になって、間隔の調整はできません。
-        </div>
+  <div class="setting-block">
+    <div class="setting-row">
+      <div class="setting-label">
+        <div class="main">格子状の線を表示</div>
+        <div class="sub">ONで背景に格子を出します</div>
       </div>
-
-      <div class="settingsFooter">
-        URLは <code>/s</code>、無理なら <code>/#/s</code> で開けます。
+      <label class="switch" aria-label="格子状の線を表示">
+        <input type="checkbox" id="gridToggle" />
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="range-wrap" id="spacingWrap">
+      <div class="range-head">
+        <div class="range-title">間隔</div>
+        <div class="range-value"><span id="spacingValue">36</span>px</div>
       </div>
+      <input type="range" id="spacingRange" min="18" max="100" step="1" value="36" />
+    </div>
+    <div class="hint">
+      格子はライトモードでは白寄りのグレー、ダークモードでは黒寄りのグレーで表示されます。<br />
+      色が出るエフェクトはそれより少しはっきり見えるようにしています。
     </div>
   </div>
-
+</div>
+  </div>
   <script>
     (() => {
       const canvas = document.getElementById('c');
       const ctx = canvas.getContext('2d', { alpha: true });
-
-      const gearButton = document.getElementById('gearButton');
-      const settingsView = document.getElementById('settingsView');
-      const backButton = document.getElementById('backButton');
-      const gridEnabledEl = document.getElementById('gridEnabled');
-      const gridSpacingEl = document.getElementById('gridSpacing');
-      const gridSpacingValueEl = document.getElementById('gridSpacingValue');
-      const gridRangeWrap = document.getElementById('gridRangeWrap');
-      const gridOffNote = document.getElementById('gridOffNote');
-
-      const STORAGE_KEY = 'touch_effects_settings_v2';
-
-      const defaultSettings = {
-        gridEnabled: true,
-        gridSpacing: 34
-      };
-
-      let settings = loadSettings();
-
+      const overlay = document.getElementById('overlay');
+      const openSettings = document.getElementById('openSettings');
+      const closeSettings = document.getElementById('closeSettings');
+      const gridToggle = document.getElementById('gridToggle');
+      const spacingRange = document.getElementById('spacingRange');
+      const spacingValue = document.getElementById('spacingValue');
+      const spacingWrap = document.getElementById('spacingWrap');
       let w = 0;
       let h = 0;
       let dpr = 1;
-
+      let darkMode = false;
       const effects = [];
       let activePointerId = null;
-
-      let strokePoints = [];
       let pointerDownTime = 0;
       let pointerDownPos = { x: 0, y: 0 };
-      let lastMovePos = { x: 0, y: 0 };
+      let lastPos = { x: 0, y: 0 };
+      let strokePoints = [];
+      let sessionHadLoop = false;
       let lastLoopAt = 0;
-
+      let gridEnabled = false;
+      let gridSpacing = 36;
       const SWIPE_MIN_DISTANCE = 42;
       const TAP_MAX_DISTANCE = 12;
       const TAP_MAX_TIME = 320;
@@ -415,76 +357,46 @@
       const LASSO_HIT_RADIUS = 18;
       const LASSO_IGNORE_RECENT_SEGMENTS = 10;
       const LASSO_COOLDOWN = 140;
-
-      const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
-      const lerp = (a, b, t) => a + (b - a) * t;
-      const nowMs = () => performance.now();
-
-      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-
-      function loadSettings() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) return { ...defaultSettings };
-          const parsed = JSON.parse(raw);
-          return {
-            gridEnabled: typeof parsed.gridEnabled === 'boolean' ? parsed.gridEnabled : defaultSettings.gridEnabled,
-            gridSpacing: clamp(Number(parsed.gridSpacing ?? defaultSettings.gridSpacing), 18, 120)
-          };
-        } catch {
-          return { ...defaultSettings };
-        }
+      function clamp(v, min, max) {
+        return Math.min(max, Math.max(min, v));
       }
-
-      function saveSettings() {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-        } catch {}
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
       }
-
-      function syncSettingsUI() {
-        gridEnabledEl.checked = !!settings.gridEnabled;
-        gridSpacingEl.value = String(settings.gridSpacing);
-        gridSpacingValueEl.textContent = String(settings.gridSpacing);
-
-        const enabled = !!settings.gridEnabled;
-        gridRangeWrap.classList.toggle('disabled', !enabled);
-        gridOffNote.style.display = enabled ? 'none' : 'block';
+      function nowMs() {
+        return performance.now();
       }
-
-      function updateRouteView() {
-        const settingsRoute = isSettingsRoute();
-        document.body.classList.toggle('route-settings', settingsRoute);
-        settingsView.setAttribute('aria-hidden', settingsRoute ? 'false' : 'true');
-        document.title = settingsRoute ? '設定' : 'Touch Effects';
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
       }
-
-      function isSettingsRoute() {
-        const segs = location.pathname.split('/').filter(Boolean);
-        return segs[segs.length - 1] === 's' || location.hash === '#/s';
+      function distance(ax, ay, bx, by) {
+        return Math.hypot(ax - bx, ay - by);
       }
-
-      function goSettings() {
-        try {
-          history.pushState({ view: 'settings' }, '', '/s');
-        } catch {
-          location.hash = '#/s';
-          return;
-        }
-        updateRouteView();
+      function pointToSegmentDistance(px, py, ax, ay, bx, by) {
+        const abx = bx - ax;
+        const aby = by - ay;
+        const apx = px - ax;
+        const apy = py - ay;
+        const abLen2 = abx * abx + aby * aby;
+        if (abLen2 === 0) return Math.hypot(px - ax, py - ay);
+        let t = (apx * abx + apy * aby) / abLen2;
+        t = clamp(t, 0, 1);
+        const cx = ax + abx * t;
+        const cy = ay + aby * t;
+        return Math.hypot(px - cx, py - cy);
       }
-
-      function goMain() {
-        try {
-          history.pushState({ view: 'main' }, '', '/');
-        } catch {
-          if (location.hash === '#/s') location.hash = '';
-          else location.hash = '';
-          return;
-        }
-        updateRouteView();
+      function updateTheme() {
+        darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.style.setProperty('--bg', darkMode ? '#000' : '#fff');
+        document.documentElement.style.setProperty('--edge', darkMode ? '#fafafa' : '#111');
+        document.documentElement.style.setProperty('--panel-bg', darkMode ? 'rgba(0, 0, 0, 0.82)' : 'rgba(255, 255, 255, 0.84)');
+        document.documentElement.style.setProperty('--panel-border', darkMode ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.14)');
+        document.documentElement.style.setProperty('--text', darkMode ? '#f5f5f5' : '#101010');
+        document.documentElement.style.setProperty('--muted', darkMode ? 'rgba(245, 245, 245, 0.45)' : 'rgba(16, 16, 16, 0.45)');
+        document.documentElement.style.setProperty('--track', darkMode ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.12)');
+        document.documentElement.style.setProperty('--track-disabled', darkMode ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)');
+        document.documentElement.style.setProperty('--thumb', darkMode ? 'rgba(255, 255, 255, 0.78)' : 'rgba(0, 0, 0, 0.72)');
       }
-
       function resize() {
         dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
         w = window.innerWidth;
@@ -495,28 +407,20 @@
         canvas.style.height = h + 'px';
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
-
-      function distance(ax, ay, bx, by) {
-        return Math.hypot(ax - bx, ay - by);
+      function openOverlay() {
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
       }
-
-      function pointToSegmentDistance(px, py, ax, ay, bx, by) {
-        const abx = bx - ax;
-        const aby = by - ay;
-        const apx = px - ax;
-        const apy = py - ay;
-        const abLen2 = abx * abx + aby * aby;
-
-        if (abLen2 === 0) return Math.hypot(px - ax, py - ay);
-
-        let t = (apx * abx + apy * aby) / abLen2;
-        t = clamp(t, 0, 1);
-
-        const cx = ax + abx * t;
-        const cy = ay + aby * t;
-        return Math.hypot(px - cx, py - cy);
+      function closeOverlay() {
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
       }
-
+      function syncGridUi() {
+        spacingWrap.classList.toggle('disabled', !gridEnabled);
+        spacingValue.textContent = String(gridSpacing);
+        gridToggle.checked = gridEnabled;
+        spacingRange.value = String(gridSpacing);
+      }
       function addTapEffect(x, y) {
         effects.push({
           type: 'tap',
@@ -526,55 +430,45 @@
           duration: 650
         });
       }
-
       function createSwipeEffect(startX, startY, dirX, dirY) {
         const len = Math.hypot(dirX, dirY) || 1;
         dirX /= len;
         dirY /= len;
-
         const pad = 90;
         const minX = -pad;
         const minY = -pad;
         const maxX = w + pad;
         const maxY = h + pad;
-
-        const candidates = [];
-
-        function pushIfValid(t, x, y) {
+        const hits = [];
+        function pushCandidate(t, x, y) {
           if (x >= minX - 0.5 && x <= maxX + 0.5 && y >= minY - 0.5 && y <= maxY + 0.5) {
-            candidates.push({ t, x, y });
+            hits.push({ t, x, y });
           }
         }
-
         if (Math.abs(dirX) > 1e-6) {
           let t = (minX - startX) / dirX;
-          pushIfValid(t, minX, startY + dirY * t);
+          pushCandidate(t, minX, startY + dirY * t);
           t = (maxX - startX) / dirX;
-          pushIfValid(t, maxX, startY + dirY * t);
+          pushCandidate(t, maxX, startY + dirY * t);
         }
-
         if (Math.abs(dirY) > 1e-6) {
           let t = (minY - startY) / dirY;
-          pushIfValid(t, startX + dirX * t, minY);
+          pushCandidate(t, startX + dirX * t, minY);
           t = (maxY - startY) / dirY;
-          pushIfValid(t, startX + dirX * t, maxY);
+          pushCandidate(t, startX + dirX * t, maxY);
         }
-
-        if (candidates.length < 2) {
-          candidates.push(
+        if (hits.length < 2) {
+          hits.push(
             { t: -400, x: startX - dirX * 400, y: startY - dirY * 400 },
             { t: 400, x: startX + dirX * 400, y: startY + dirY * 400 }
           );
         } else {
-          candidates.sort((a, b) => a.t - b.t);
+          hits.sort((a, b) => a.t - b.t);
         }
-
-        const first = candidates[0];
-        const last = candidates[candidates.length - 1];
-
+        const first = hits[0];
+        const last = hits[hits.length - 1];
         const travel = distance(first.x, first.y, last.x, last.y);
         const duration = clamp(460 + travel * 0.12, 520, 900);
-
         effects.push({
           type: 'swipe',
           start: nowMs(),
@@ -585,24 +479,20 @@
           radius: clamp(Math.min(w, h) * 0.045, 18, 38)
         });
       }
-
       function createLoopEffect(points) {
         if (points.length < 3) return;
-        const copy = points.map(p => ({ x: p.x, y: p.y }));
         effects.push({
           type: 'loop',
           start: nowMs(),
           duration: 420,
-          points: copy
+          points: points.map(p => ({ x: p.x, y: p.y }))
         });
       }
-
       function detectLoop(points, currentX, currentY) {
         if (points.length < LASSO_MIN_POINTS) return false;
         const n = points.length;
-        const startIndex = Math.max(0, n - 1 - LASSO_IGNORE_RECENT_SEGMENTS);
-
-        for (let i = 0; i < startIndex - 1; i++) {
+        const safeEnd = Math.max(0, n - 1 - LASSO_IGNORE_RECENT_SEGMENTS);
+        for (let i = 0; i < safeEnd - 1; i++) {
           const a = points[i];
           const b = points[i + 1];
           const d = pointToSegmentDistance(currentX, currentY, a.x, a.y, b.x, b.y);
@@ -615,119 +505,72 @@
             if (traveled > 40) return true;
           }
         }
-
         return false;
       }
-
-      function currentGridStrokeStyle() {
-        const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        return dark ? 'rgba(32, 32, 32, 0.82)' : 'rgba(235, 235, 235, 0.92)';
-      }
-
       function drawGrid() {
-        if (!settings.gridEnabled) return;
-
-        const spacing = clamp(Number(settings.gridSpacing) || 34, 18, 120);
-        const style = currentGridStrokeStyle();
-        const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
+        if (!gridEnabled) return;
+        const lightGrid = darkMode ? 'rgba(34, 34, 34, 0.40)' : 'rgba(232, 232, 232, 0.44)';
+        const accentGrid = darkMode ? 'rgba(58, 58, 58, 0.56)' : 'rgba(210, 210, 210, 0.58)';
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
         ctx.lineWidth = 1;
-
-        // 全体の格子
-        ctx.strokeStyle = style;
-        ctx.globalAlpha = dark ? 0.48 : 0.42;
-
-        for (let x = 0; x <= w; x += spacing) {
+        for (let x = 0; x <= w + gridSpacing; x += gridSpacing) {
+          const isAccent = Math.round(x / gridSpacing) % 4 === 0;
+          ctx.strokeStyle = isAccent ? accentGrid : lightGrid;
           ctx.beginPath();
-          ctx.moveTo(x + 0.5, 0);
-          ctx.lineTo(x + 0.5, h);
+          ctx.moveTo(Math.floor(x) + 0.5, 0);
+          ctx.lineTo(Math.floor(x) + 0.5, h);
           ctx.stroke();
         }
-
-        for (let y = 0; y <= h; y += spacing) {
+        for (let y = 0; y <= h + gridSpacing; y += gridSpacing) {
+          const isAccent = Math.round(y / gridSpacing) % 4 === 0;
+          ctx.strokeStyle = isAccent ? accentGrid : lightGrid;
           ctx.beginPath();
-          ctx.moveTo(0, y + 0.5);
-          ctx.lineTo(w, y + 0.5);
+          ctx.moveTo(0, Math.floor(y) + 0.5);
+          ctx.lineTo(w, Math.floor(y) + 0.5);
           ctx.stroke();
         }
-
-        // ちょっとだけ濃い線を重ねて、色が出たときに他より薄くならないようにする
-        const major = spacing * 4;
-        if (major >= 64) {
-          ctx.globalAlpha = dark ? 0.20 : 0.18;
-          ctx.strokeStyle = style;
-
-          for (let x = 0; x <= w; x += major) {
-            ctx.beginPath();
-            ctx.moveTo(x + 0.5, 0);
-            ctx.lineTo(x + 0.5, h);
-            ctx.stroke();
-          }
-
-          for (let y = 0; y <= h; y += major) {
-            ctx.beginPath();
-            ctx.moveTo(0, y + 0.5);
-            ctx.lineTo(w, y + 0.5);
-            ctx.stroke();
-          }
-        }
-
         ctx.restore();
       }
-
       function drawTap(effect, t) {
         const p = clamp((t - effect.start) / effect.duration, 0, 1);
         if (p >= 1) return;
-
         const e = easeOutCubic(p);
-        const alpha = 0.36 * Math.pow(1 - p, 1.6);
         const radius = lerp(10, Math.max(w, h) * 0.22, e);
-
+        const alpha = 0.34 * Math.pow(1 - p, 1.7);
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.globalCompositeOperation = 'source-over';
         ctx.shadowBlur = radius * 0.22;
         ctx.shadowColor = 'rgba(70, 255, 120, 0.55)';
-
         const g = ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, radius);
-        g.addColorStop(0.00, 'rgba(70, 255, 120, 0.96)');
-        g.addColorStop(0.28, 'rgba(60, 235, 110, 0.62)');
-        g.addColorStop(0.68, 'rgba(50, 220, 100, 0.28)');
+        g.addColorStop(0.00, 'rgba(70, 255, 120, 0.92)');
+        g.addColorStop(0.28, 'rgba(60, 235, 110, 0.60)');
+        g.addColorStop(0.68, 'rgba(50, 220, 100, 0.25)');
         g.addColorStop(1.00, 'rgba(50, 220, 100, 0)');
-
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(effect.x, effect.y, radius, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.restore();
       }
-
       function drawSwipe(effect, t) {
         const p = clamp((t - effect.start) / effect.duration, 0, 1);
         if (p >= 1) return;
-
         const e = easeOutCubic(p);
         const x = lerp(effect.from.x, effect.to.x, e);
         const y = lerp(effect.from.y, effect.to.y, e);
-
         const trailSteps = 16;
         const trailSpacing = effect.radius * 0.82;
-
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
-
         for (let i = trailSteps; i >= 0; i--) {
           const back = i * trailSpacing;
           const px = x - effect.dir.x * back;
           const py = y - effect.dir.y * back;
-          const a = 0.26 * Math.pow(1 - i / (trailSteps + 1), 2.2) * Math.pow(1 - p, 0.30);
+          const a = 0.24 * Math.pow(1 - i / (trailSteps + 1), 2.2) * Math.pow(1 - p, 0.35);
           if (a <= 0.001) continue;
-
           const r = effect.radius * (1 + (trailSteps - i) * 0.02);
-
           ctx.globalAlpha = a;
           ctx.shadowBlur = r * 0.35;
           ctx.shadowColor = 'rgba(90, 150, 255, 0.55)';
@@ -736,170 +579,140 @@
           ctx.arc(px, py, r, 0, Math.PI * 2);
           ctx.fill();
         }
-
-        ctx.globalAlpha = 0.48 * Math.pow(1 - p, 0.72);
+        ctx.globalAlpha = 0.45 * Math.pow(1 - p, 0.7);
         ctx.shadowBlur = effect.radius * 0.6;
         ctx.shadowColor = 'rgba(110, 165, 255, 0.45)';
         ctx.fillStyle = 'rgba(110, 165, 255, 1)';
         ctx.beginPath();
         ctx.arc(x, y, effect.radius * 1.02, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.restore();
       }
-
       function drawLoop(effect, t) {
         const p = clamp((t - effect.start) / effect.duration, 0, 1);
         if (p >= 1) return;
         if (effect.points.length < 3) return;
-
-        const alpha = 0.40 * Math.pow(1 - p, 1.95);
+        const alpha = 0.36 * Math.pow(1 - p, 2.0);
         const blur = 8 * Math.pow(1 - p, 0.55);
-
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = alpha;
         ctx.shadowBlur = blur;
         ctx.shadowColor = 'rgba(255, 60, 60, 0.40)';
         ctx.fillStyle = 'rgba(255, 78, 78, 1)';
-
         ctx.beginPath();
         ctx.moveTo(effect.points[0].x, effect.points[0].y);
         for (let i = 1; i < effect.points.length; i++) {
           ctx.lineTo(effect.points[i].x, effect.points[i].y);
         }
         ctx.closePath();
-        ctx.fill();
-
+        ctx.fill('evenodd');
         ctx.restore();
       }
-
       function render() {
         const t = nowMs();
-
         ctx.clearRect(0, 0, w, h);
-
         drawGrid();
-
         for (let i = 0; i < effects.length; i++) {
-          const e = effects[i];
-          if (e.type === 'tap') drawTap(e, t);
-          else if (e.type === 'swipe') drawSwipe(e, t);
-          else if (e.type === 'loop') drawLoop(e, t);
+          const effect = effects[i];
+          if (effect.type === 'tap') drawTap(effect, t);
+          else if (effect.type === 'swipe') drawSwipe(effect, t);
+          else if (effect.type === 'loop') drawLoop(effect, t);
         }
-
         for (let i = effects.length - 1; i >= 0; i--) {
           if (t - effects[i].start >= effects[i].duration) effects.splice(i, 1);
         }
-
         requestAnimationFrame(render);
       }
-
-      function setPointFromEvent(e) {
+      function getPoint(e) {
         return { x: e.clientX, y: e.clientY };
       }
-
       canvas.addEventListener('pointerdown', (e) => {
-        if (activePointerId !== null || isSettingsRoute()) return;
-
+        if (overlay.classList.contains('open')) return;
+        if (activePointerId !== null) return;
         activePointerId = e.pointerId;
         canvas.setPointerCapture(activePointerId);
-
-        const p = setPointFromEvent(e);
+        const p = getPoint(e);
         pointerDownTime = nowMs();
         pointerDownPos = { x: p.x, y: p.y };
-        lastMovePos = { x: p.x, y: p.y };
+        lastPos = { x: p.x, y: p.y };
         strokePoints = [p];
-
+        sessionHadLoop = false;
         e.preventDefault();
       }, { passive: false });
-
       canvas.addEventListener('pointermove', (e) => {
-        if (activePointerId !== e.pointerId || isSettingsRoute()) return;
-
-        const p = setPointFromEvent(e);
+        if (activePointerId !== e.pointerId) return;
+        const p = getPoint(e);
         const t = nowMs();
-
-        if (distance(p.x, p.y, lastMovePos.x, lastMovePos.y) >= 2.2) {
+        if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
           strokePoints.push(p);
-          lastMovePos = p;
+          lastPos = p;
         }
-
-        if (t - lastLoopAt >= LASSO_COOLDOWN) {
+        if (!sessionHadLoop && t - lastLoopAt >= LASSO_COOLDOWN) {
           if (detectLoop(strokePoints, p.x, p.y)) {
             createLoopEffect(strokePoints);
             lastLoopAt = t;
-
-            // 指を離さずに、もう一回そのまま囲えるようにする
-            strokePoints = [ { x: p.x, y: p.y } ];
+            sessionHadLoop = true;
+            strokePoints = [p];
           }
         }
-
         e.preventDefault();
       }, { passive: false });
-
       function finishPointer(e) {
         if (activePointerId !== e.pointerId) return;
-
-        const t = nowMs();
-        const totalMove = distance(pointerDownPos.x, pointerDownPos.y, lastMovePos.x, lastMovePos.y);
-        const elapsed = t - pointerDownTime;
-
-        if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME && !isSettingsRoute()) {
-          addTapEffect(lastMovePos.x, lastMovePos.y);
-        } else if (totalMove >= SWIPE_MIN_DISTANCE && !isSettingsRoute()) {
-          const dx = lastMovePos.x - pointerDownPos.x;
-          const dy = lastMovePos.y - pointerDownPos.y;
-          createSwipeEffect(lastMovePos.x, lastMovePos.y, dx, dy);
+        const p = getPoint(e);
+        const elapsed = nowMs() - pointerDownTime;
+        const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
+        if (!sessionHadLoop) {
+          if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
+            addTapEffect(p.x, p.y);
+          } else if (totalMove >= SWIPE_MIN_DISTANCE) {
+            const dx = p.x - pointerDownPos.x;
+            const dy = p.y - pointerDownPos.y;
+            createSwipeEffect(p.x, p.y, dx, dy);
+          }
         }
-
         activePointerId = null;
         strokePoints = [];
+        sessionHadLoop = false;
         e.preventDefault();
       }
-
       canvas.addEventListener('pointerup', finishPointer, { passive: false });
       canvas.addEventListener('pointercancel', finishPointer, { passive: false });
       canvas.addEventListener('lostpointercapture', () => {
         activePointerId = null;
         strokePoints = [];
+        sessionHadLoop = false;
       });
-
-      gridEnabledEl.addEventListener('change', () => {
-        settings.gridEnabled = gridEnabledEl.checked;
-        saveSettings();
-        syncSettingsUI();
+      openSettings.addEventListener('click', () => {
+        openOverlay();
       });
-
-      gridSpacingEl.addEventListener('input', () => {
-        settings.gridSpacing = clamp(Number(gridSpacingEl.value) || 34, 18, 120);
-        gridSpacingValueEl.textContent = String(settings.gridSpacing);
-        saveSettings();
+      closeSettings.addEventListener('click', () => {
+        closeOverlay();
       });
-
-      gearButton.addEventListener('click', goSettings);
-      backButton.addEventListener('click', goMain);
-
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeOverlay();
+      });
+      gridToggle.addEventListener('change', () => {
+        gridEnabled = gridToggle.checked;
+        syncGridUi();
+      });
+      spacingRange.addEventListener('input', () => {
+        gridSpacing = Number(spacingRange.value);
+        syncGridUi();
+      });
       window.addEventListener('resize', resize);
-      window.addEventListener('popstate', updateRouteView);
-      window.addEventListener('hashchange', updateRouteView);
-
-      const mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
-      if (mql) {
-        const refreshTheme = () => {
-          updateRouteView();
-        };
-
-        if (typeof mql.addEventListener === 'function') {
-          mql.addEventListener('change', refreshTheme);
-        } else if (typeof mql.addListener === 'function') {
-          mql.addListener(refreshTheme);
+      const darkMql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+      updateTheme();
+      if (darkMql) {
+        if (typeof darkMql.addEventListener === 'function') {
+          darkMql.addEventListener('change', updateTheme);
+        } else if (typeof darkMql.addListener === 'function') {
+          darkMql.addListener(updateTheme);
         }
       }
-
-      syncSettingsUI();
       resize();
-      updateRouteView();
+      syncGridUi();
       requestAnimationFrame(render);
     })();
   </script>
