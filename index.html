@@ -17,6 +17,7 @@
       --track-disabled: rgba(0, 0, 0, 0.06);
       --thumb: rgba(0, 0, 0, 0.72);
       --peer-blue: #2f78ff;
+      --danger: #d23636;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -113,14 +114,15 @@
 
     .peer-btn.searching {
       border-color: var(--peer-blue);
+      color: var(--peer-blue);
     }
 
     .peer-btn.connected {
       border-color: var(--peer-blue);
+      color: var(--peer-blue);
     }
 
-    .peer-btn.connected .peer-icon,
-    .peer-btn.searching .peer-icon {
+    .peer-btn.connected .peer-icon {
       color: var(--peer-blue);
     }
 
@@ -208,14 +210,14 @@
     .panel-header {
       position: sticky;
       top: 0;
-      z-index: 2;
+      z-index: 3;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
       margin: -18px -18px 18px;
       padding: 18px 18px 14px;
-      background: linear-gradient(to bottom, var(--panel-bg) 82%, rgba(0,0,0,0));
+      background: linear-gradient(to bottom, var(--panel-bg) 78%, rgba(0, 0, 0, 0));
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(127, 127, 127, 0.12);
@@ -348,8 +350,7 @@
       -webkit-appearance: none;
     }
 
-    .hex-input,
-    .text-input {
+    .hex-input {
       width: 100%;
       box-sizing: border-box;
       height: 38px;
@@ -362,8 +363,7 @@
       outline: none;
     }
 
-    .hex-input::placeholder,
-    .text-input::placeholder {
+    .hex-input::placeholder {
       color: var(--muted);
     }
 
@@ -490,7 +490,7 @@
       appearance: none;
       border: 1.5px solid rgba(220, 40, 40, 0.55);
       background: transparent;
-      color: #d23636;
+      color: var(--danger);
       border-radius: 14px;
       min-width: 0;
       height: 40px;
@@ -507,7 +507,7 @@
     }
 
     .peer-menu-overlay,
-    .connect-overlay {
+    .join-overlay {
       position: fixed;
       inset: 0;
       z-index: 40;
@@ -522,7 +522,7 @@
     }
 
     .peer-menu-overlay.open,
-    .connect-overlay.open {
+    .join-overlay.open {
       display: flex;
     }
 
@@ -533,51 +533,68 @@
       pointer-events: none;
     }
 
-    .peer-topbar {
+    .peer-menu-head {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      display: none;
+      left: 50%;
+      top: calc(50% - 146px);
+      transform: translateX(-50%);
+      width: min(88vw, 380px);
+      display: flex;
       flex-direction: column;
       gap: 8px;
-      padding: 12px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(47, 120, 255, 0.2);
-      box-sizing: border-box;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.45s ease 0.95s;
+      z-index: 2;
+      align-items: center;
     }
 
-    .peer-topbar.open {
-      display: flex;
+    .peer-menu-overlay.open .peer-menu-head {
+      opacity: 1;
     }
 
-    .peer-topbar-title {
-      font-size: 11px;
-      color: rgba(47, 120, 255, 0.92);
+    .peer-room-label {
+      color: #2f78ff;
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.02em;
+      text-align: center;
+      word-break: break-all;
     }
 
-    .peer-chip-list {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .peer-chip {
+    .peer-room-status {
+      color: rgba(47, 120, 255, 0.85);
       font-size: 12px;
-      line-height: 1;
-      color: var(--peer-blue);
-      border: 1px solid rgba(47, 120, 255, 0.35);
-      border-radius: 999px;
-      padding: 7px 10px;
-      background: rgba(47, 120, 255, 0.08);
-      white-space: nowrap;
+      text-align: center;
+      line-height: 1.35;
     }
 
-    .peer-chip.self {
-      background: rgba(47, 120, 255, 0.18);
+    .peer-members {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      max-width: 100%;
+      max-height: 92px;
+      overflow: auto;
+      padding: 0 8px;
+      box-sizing: border-box;
+      scrollbar-width: thin;
+    }
+
+    .peer-member {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 26px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(47, 120, 255, 0.42);
+      color: #2f78ff;
+      background: rgba(47, 120, 255, 0.06);
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
     }
 
     .peer-burst-ring {
@@ -645,14 +662,14 @@
       font-size: 15px;
       font-weight: 700;
       text-align: center;
-      line-height: 1.22;
+      line-height: 1.35;
       padding: 0 12px;
       color: #2f78ff;
       opacity: 0;
       transition: opacity 0.5s ease;
-      transition-delay: 1.0s;
-      white-space: pre-line;
+      transition-delay: 1s;
       word-break: keep-all;
+      white-space: pre-line;
     }
 
     .peer-menu-overlay.open .peer-choice .peer-choice-label {
@@ -669,16 +686,40 @@
       pointer-events: none;
     }
 
-    .peer-choice.wifi { --to-x: 0px; --to-y: -118px; }
-    .peer-choice.firebase { --to-x: -118px; --to-y: 108px; }
-    .peer-choice.close { --to-x: 118px; --to-y: 108px; }
-    .peer-choice.disconnect { --to-x: 0px; --to-y: -118px; }
-    .peer-choice.send { --to-x: -118px; --to-y: 108px; }
-    .peer-choice.receive { --to-x: 118px; --to-y: 108px; }
+    .peer-choice.wifi {
+      --to-x: 0px;
+      --to-y: -118px;
+    }
 
-    .peer-choice.disabledChoice {
-      opacity: 0.42 !important;
+    .peer-choice.online {
+      --to-x: -118px;
+      --to-y: 108px;
+    }
+
+    .peer-choice.cancel {
+      --to-x: 118px;
+      --to-y: 108px;
+    }
+
+    .peer-choice.disconnect {
+      --to-x: 0px;
+      --to-y: -118px;
+    }
+
+    .peer-choice.send {
+      --to-x: -118px;
+      --to-y: 108px;
+    }
+
+    .peer-choice.receive {
+      --to-x: 118px;
+      --to-y: 108px;
+    }
+
+    .peer-choice:disabled {
+      opacity: 0.46;
       pointer-events: none;
+      filter: grayscale(0.2);
     }
 
     .dialog {
@@ -707,7 +748,21 @@
       margin-bottom: 12px;
     }
 
-    .dialog-actions {
+    .room-input {
+      width: 100%;
+      box-sizing: border-box;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      padding: 0 12px;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+
+    .room-actions {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
@@ -731,24 +786,10 @@
       transform: scale(0.98);
     }
 
-    .connect-field {
-      margin-top: 6px;
-    }
-
-    .connect-help {
+    .join-label {
       font-size: 12px;
       color: var(--muted);
-      line-height: 1.45;
-      margin-top: 10px;
-    }
-
-    .name-block.disabled {
-      opacity: 0.34;
-      pointer-events: none;
-    }
-
-    .name-block .sub {
-      margin-top: 2px;
+      margin-bottom: 8px;
     }
 
     .toast {
@@ -776,6 +817,29 @@
       transform: translateX(-50%) translateY(0);
     }
 
+    .peer-settings-name {
+      width: 100%;
+      box-sizing: border-box;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      padding: 0 12px;
+      font-size: 14px;
+      outline: none;
+      margin-top: 10px;
+    }
+
+    .peer-settings-name::placeholder {
+      color: var(--muted);
+    }
+
+    .peer-name-disabled {
+      opacity: 0.34;
+      pointer-events: none;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -788,7 +852,7 @@
     <span>⛭</span>
   </button>
 
-  <button class="peer-btn hidden" id="peerButton" aria-label="ローカル通信">
+  <button class="peer-btn hidden" id="peerButton" aria-label="接続">
     <span class="peer-icon">☋</span>
     <span class="peer-spinner" aria-hidden="true">
       <span></span><span></span><span></span><span></span>
@@ -896,15 +960,13 @@
         </div>
       </div>
 
-      <div class="setting-block name-block" id="nameBlock">
+      <div class="setting-block">
         <div class="setting-row">
-          <div class="setting-label">
+          <div class="setting-label" id="nameSettingWrap">
             <div class="main">名前</div>
-            <div class="sub">表示名を変えられます</div>
+            <div class="sub">接続中の一覧に出る名前</div>
           </div>
-        </div>
-        <div class="sub-input-wrap">
-          <input class="text-input" id="displayNameInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="名前" maxlength="20" />
+          <input class="peer-settings-name" id="peerNameInput" type="text" maxlength="24" placeholder="名前" />
         </div>
       </div>
 
@@ -917,36 +979,28 @@
   </div>
 
   <div class="peer-menu-overlay" id="peerMenuOverlay" aria-hidden="true">
-    <div class="peer-topbar" id="peerTopbar">
-      <div class="peer-topbar-title">参加者</div>
-      <div class="peer-chip-list" id="peerNamesList"></div>
-    </div>
-
     <div class="peer-menu-stage" id="peerMenuStage">
+      <div class="peer-menu-head">
+        <div class="peer-room-label" id="peerRoomLabel">ルーム</div>
+        <div class="peer-room-status" id="peerRoomStatus">0人</div>
+        <div class="peer-members" id="peerMembers"></div>
+      </div>
       <div class="peer-burst-ring"></div>
-      <button class="peer-choice wifi" id="peerChoice1">
-        <span class="peer-choice-label" id="peerChoiceLabel1">Wi-Fiで\n通信</span>
-      </button>
-      <button class="peer-choice firebase" id="peerChoice2">
-        <span class="peer-choice-label" id="peerChoiceLabel2">Firebaseで\n通信</span>
-      </button>
-      <button class="peer-choice close" id="peerChoice3">
-        <span class="peer-choice-label" id="peerChoiceLabel3">閉じる</span>
-      </button>
+      <button class="peer-choice" id="peerChoice1"><span class="peer-choice-label" id="peerChoiceLabel1"></span></button>
+      <button class="peer-choice" id="peerChoice2"><span class="peer-choice-label" id="peerChoiceLabel2"></span></button>
+      <button class="peer-choice" id="peerChoice3"><span class="peer-choice-label" id="peerChoiceLabel3"></span></button>
     </div>
   </div>
 
-  <div class="connect-overlay" id="connectOverlay" aria-hidden="true">
+  <div class="join-overlay" id="joinOverlay" aria-hidden="true">
     <div class="dialog">
-      <div class="dialog-title" id="connectTitle">参加</div>
-      <div class="dialog-text" id="connectText">同じ文字を入れた人とつながる</div>
-      <div class="connect-field">
-        <input class="text-input" id="roomCodeInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="ルームコード" maxlength="32" />
-      </div>
-      <div class="connect-help">ここはマッチング用の文字です。<br>同じ文字を入れた人どうしで参加します。</div>
-      <div class="dialog-actions" style="margin-top: 12px;">
-        <button class="ghost-btn" id="connectJoinButton">参加</button>
-        <button class="ghost-btn" id="connectCancelButton">戻る</button>
+      <div class="dialog-title" id="joinTitle">接続</div>
+      <div class="dialog-text" id="joinText">文字を入れて同じ場所に入ります。</div>
+      <div class="join-label" id="joinLabel">ルーム名</div>
+      <input class="room-input" id="joinInput" type="text" autocomplete="off" spellcheck="false" />
+      <div class="room-actions">
+        <button class="ghost-btn" id="joinConfirm">入る</button>
+        <button class="ghost-btn" id="joinCancel">戻る</button>
       </div>
     </div>
   </div>
@@ -955,19 +1009,14 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
     import {
       getFirestore,
-      collection,
       doc,
+      collection,
       setDoc,
-      getDoc,
       deleteDoc,
       onSnapshot,
-      runTransaction,
-      addDoc,
-      query,
-      orderBy
+      runTransaction
     } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -980,9 +1029,15 @@
       measurementId: "G-QX5C0SHB9Y"
     };
 
-    const app = initializeApp(firebaseConfig);
-    try { getAnalytics(app); } catch (_) {}
-    const db = getFirestore(app);
+    let firebaseApp = null;
+    let firestore = null;
+    try {
+      firebaseApp = initializeApp(firebaseConfig);
+      firestore = getFirestore(firebaseApp);
+    } catch (_) {
+      firebaseApp = null;
+      firestore = null;
+    }
 
     const canvas = document.getElementById('c');
     const ctx = canvas.getContext('2d', { alpha: true });
@@ -1010,57 +1065,52 @@
     const spacingValue = document.getElementById('spacingValue');
 
     const peerButtonToggle = document.getElementById('peerButtonToggle');
-    const nameBlock = document.getElementById('nameBlock');
-    const displayNameInput = document.getElementById('displayNameInput');
+    const peerNameInput = document.getElementById('peerNameInput');
+    const nameSettingWrap = document.getElementById('nameSettingWrap');
 
     const resetSettings = document.getElementById('resetSettings');
 
     const peerMenuOverlay = document.getElementById('peerMenuOverlay');
-    const peerTopbar = document.getElementById('peerTopbar');
-    const peerNamesList = document.getElementById('peerNamesList');
-
+    const peerRoomLabel = document.getElementById('peerRoomLabel');
+    const peerRoomStatus = document.getElementById('peerRoomStatus');
+    const peerMembers = document.getElementById('peerMembers');
     const peerChoice1 = document.getElementById('peerChoice1');
     const peerChoice2 = document.getElementById('peerChoice2');
     const peerChoice3 = document.getElementById('peerChoice3');
-
     const peerChoiceLabel1 = document.getElementById('peerChoiceLabel1');
     const peerChoiceLabel2 = document.getElementById('peerChoiceLabel2');
     const peerChoiceLabel3 = document.getElementById('peerChoiceLabel3');
 
-    const connectOverlay = document.getElementById('connectOverlay');
-    const connectTitle = document.getElementById('connectTitle');
-    const connectText = document.getElementById('connectText');
-    const roomCodeInput = document.getElementById('roomCodeInput');
-    const connectJoinButton = document.getElementById('connectJoinButton');
-    const connectCancelButton = document.getElementById('connectCancelButton');
+    const joinOverlay = document.getElementById('joinOverlay');
+    const joinTitle = document.getElementById('joinTitle');
+    const joinText = document.getElementById('joinText');
+    const joinLabel = document.getElementById('joinLabel');
+    const joinInput = document.getElementById('joinInput');
+    const joinConfirm = document.getElementById('joinConfirm');
+    const joinCancel = document.getElementById('joinCancel');
 
     const toast = document.getElementById('toast');
 
     const STORAGE_KEY = 'touch_effect_settings_v6';
+    const BUS_KEY = 'touch_effect_bus_v2';
 
     const defaults = {
       bgMode: 'system',
       bgCustom: '#ffffff',
-
       tapColor: '#46ff78',
       swipeColor: '#6ea5ff',
       loopColor: '#ff4e4e',
-
       gridEnabled: false,
       gridMode: 'system',
       gridCustom: '#e8e8e8',
       gridSpacing: 36,
-
       peerButtonVisible: false,
-      displayName: 'ユーザー'
+      userName: 'ユーザー'
     };
 
     const settings = { ...defaults };
 
-    const FIREBASE_ROOM_PREFIX = 'touch_effect_room_';
-    const LOCAL_ROOM_PREFIX = 'touch_effect_local_';
-    const LOCAL_BUS_PREFIX = 'touch_effect_local_bus_';
-    const LOCAL_MEMBER_PREFIX = 'touch_effect_local_members_';
+    let selfPeerId = makeId();
 
     let w = 0;
     let h = 0;
@@ -1085,42 +1135,46 @@
     const LASSO_IGNORE_RECENT_SEGMENTS = 10;
     const LASSO_COOLDOWN = 140;
 
-    const SHAREABLE_KEYS = ['bgMode', 'bgCustom', 'tapColor', 'swipeColor', 'loopColor', 'gridEnabled', 'gridMode', 'gridCustom', 'gridSpacing'];
+    let transportMode = null; // null | local | firebase
+    let roomId = '';
+    let roomDisplayName = '';
 
-    const comm = {
-      transport: 'none',
-      roomCode: '',
-      clientId: makeId(),
-      channel: null,
-      localBusKey: '',
-      members: new Map(),
-      currentSendLock: null,
-      receiveWindowUntil: 0,
-      lastAppliedLockId: '',
-      roomRef: null,
-      membersCol: null,
-      eventsCol: null,
-      memberRef: null,
-      unsubRoom: null,
-      unsubMembers: null,
-      unsubEvents: null,
-      heartbeatTimer: null,
-      roomCleanupTimer: null,
-      localCleanupTimer: null
+    let localChannel = null;
+    let localHeartbeatTimer = null;
+    let localCleanupTimer = null;
+
+    let firebaseRoomRef = null;
+    let firebaseMemberRef = null;
+    let firebaseRoomUnsub = null;
+    let firebaseMembersUnsub = null;
+    let firebaseHeartbeatTimer = null;
+
+    let peerState = 'off'; // off | connected | searching
+    let roomState = {
+      activeSenderId: null,
+      activeSenderName: '',
+      activeSenderUntil: 0,
+      lastSettingsVersion: 0,
+      lastSettingsPayload: null,
+      lastSettingsSenderId: null,
+      lastSettingsSenderName: '',
+      lastSettingsAtMs: 0
     };
 
-    let toastTimer = null;
-    let connectMode = 'local';
-    let localPresenceTimer = null;
+    let receiveWindowUntil = 0;
+    let appliedSettingsVersion = 0;
 
-    function showToast(message, duration = 1700) {
-      toast.textContent = message;
-      toast.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        toast.classList.remove('show');
-      }, duration);
-    }
+    let peerMenuOpen = false;
+    let joinMode = null; // local | firebase
+    let joinDrafts = {
+      local: '',
+      firebase: ''
+    };
+
+    const membersMap = new Map();
+    const staleMemberMs = 12000;
+
+    let toastTimer = null;
 
     function makeId() {
       if (window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -1168,6 +1222,15 @@
       return Math.hypot(px - cx, py - cy);
     }
 
+    function showToast(message, duration = 1800) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
+    }
+
     function isValidMode(value) {
       return value === 'system' || value === 'white' || value === 'black' || value === 'custom';
     }
@@ -1199,6 +1262,47 @@
       return `rgba(${r}, ${g}, ${b}, ${clamp(a * alphaOverride, 0, 1)})`;
     }
 
+    function safeRoomId(input) {
+      const s = String(input || '').trim();
+      if (!s) return '';
+      return s.replaceAll('/', '_').slice(0, 48);
+    }
+
+    function safeName(input) {
+      const s = String(input || '').trim();
+      if (!s) return defaultName();
+      return s.slice(0, 24);
+    }
+
+    function defaultName() {
+      return `ユーザー${selfPeerId.slice(0, 4).toUpperCase()}`;
+    }
+
+    function getBgColor() {
+      return resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000');
+    }
+
+    function getGridBaseColor() {
+      return resolveModeColor(
+        settings.gridMode,
+        settings.gridCustom,
+        darkMode ? '#262626' : '#e8e8e8',
+        darkMode ? '#262626' : '#e8e8e8'
+      );
+    }
+
+    function getTapBaseColor() {
+      return normalizeHexColor(settings.tapColor) || defaults.tapColor;
+    }
+
+    function getSwipeBaseColor() {
+      return normalizeHexColor(settings.swipeColor) || defaults.swipeColor;
+    }
+
+    function getLoopBaseColor() {
+      return normalizeHexColor(settings.loopColor) || defaults.loopColor;
+    }
+
     function resolveModeColor(mode, customRaw, lightHex, darkHex) {
       const fallback = darkMode ? darkHex : lightHex;
       if (mode === 'system') return fallback;
@@ -1206,11 +1310,6 @@
       if (mode === 'black') return '#000000';
       if (mode === 'custom') return normalizeHexColor(customRaw) || fallback;
       return fallback;
-    }
-
-    function sanitizeDisplayName(value) {
-      const text = String(value ?? '').trim().replace(/\s+/g, ' ');
-      return text.slice(0, 20) || defaults.displayName;
     }
 
     function saveSettings() {
@@ -1240,24 +1339,8 @@
         }
 
         if (typeof data.peerButtonVisible === 'boolean') settings.peerButtonVisible = data.peerButtonVisible;
-        if (typeof data.displayName === 'string') settings.displayName = sanitizeDisplayName(data.displayName);
+        if (typeof data.userName === 'string') settings.userName = data.userName;
       } catch (_) {}
-    }
-
-    function updateTheme() {
-      darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-      document.documentElement.style.setProperty('--bg', darkMode ? '#000' : '#fff');
-      document.documentElement.style.setProperty('--edge', darkMode ? '#fafafa' : '#111');
-      document.documentElement.style.setProperty('--panel-bg', darkMode ? 'rgba(0, 0, 0, 0.82)' : 'rgba(255, 255, 255, 0.84)');
-      document.documentElement.style.setProperty('--panel-border', darkMode ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.14)');
-      document.documentElement.style.setProperty('--text', darkMode ? '#f5f5f5' : '#101010');
-      document.documentElement.style.setProperty('--muted', darkMode ? 'rgba(245, 245, 245, 0.45)' : 'rgba(16, 16, 16, 0.45)');
-      document.documentElement.style.setProperty('--track', darkMode ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.12)');
-      document.documentElement.style.setProperty('--track-disabled', darkMode ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)');
-      document.documentElement.style.setProperty('--thumb', darkMode ? 'rgba(255, 255, 255, 0.78)' : 'rgba(0, 0, 0, 0.72)');
-
-      document.body.style.background = getBgColor();
     }
 
     function resize() {
@@ -1271,138 +1354,18 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    function openOverlay(el) {
-      el.classList.add('open');
-      el.setAttribute('aria-hidden', 'false');
-    }
-
-    function closeOverlay(el) {
-      el.classList.remove('open');
-      el.setAttribute('aria-hidden', 'true');
-    }
-
-    function getShareableSettingsSnapshot() {
-      const snapshot = {};
-      for (const key of SHAREABLE_KEYS) snapshot[key] = settings[key];
-      return snapshot;
-    }
-
-    function applyShareableSettingsSnapshot(snapshot) {
-      if (!snapshot || typeof snapshot !== 'object') return;
-
-      if (isValidMode(snapshot.bgMode)) settings.bgMode = snapshot.bgMode;
-      if (typeof snapshot.bgCustom === 'string') settings.bgCustom = snapshot.bgCustom;
-
-      if (typeof snapshot.tapColor === 'string') settings.tapColor = snapshot.tapColor;
-      if (typeof snapshot.swipeColor === 'string') settings.swipeColor = snapshot.swipeColor;
-      if (typeof snapshot.loopColor === 'string') settings.loopColor = snapshot.loopColor;
-
-      if (typeof snapshot.gridEnabled === 'boolean') settings.gridEnabled = snapshot.gridEnabled;
-      if (isValidMode(snapshot.gridMode)) settings.gridMode = snapshot.gridMode;
-      if (typeof snapshot.gridCustom === 'string') settings.gridCustom = snapshot.gridCustom;
-      if (typeof snapshot.gridSpacing === 'number' && isFinite(snapshot.gridSpacing)) {
-        settings.gridSpacing = clamp(Math.round(snapshot.gridSpacing), 18, 100);
-      }
-
-      syncSettingsUi();
+    function updateTheme() {
+      darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.style.setProperty('--bg', darkMode ? '#000' : '#fff');
+      document.documentElement.style.setProperty('--edge', darkMode ? '#fafafa' : '#111');
+      document.documentElement.style.setProperty('--panel-bg', darkMode ? 'rgba(0, 0, 0, 0.82)' : 'rgba(255, 255, 255, 0.84)');
+      document.documentElement.style.setProperty('--panel-border', darkMode ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.14)');
+      document.documentElement.style.setProperty('--text', darkMode ? '#f5f5f5' : '#101010');
+      document.documentElement.style.setProperty('--muted', darkMode ? 'rgba(245, 245, 245, 0.45)' : 'rgba(16, 16, 16, 0.45)');
+      document.documentElement.style.setProperty('--track', darkMode ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.12)');
+      document.documentElement.style.setProperty('--track-disabled', darkMode ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)');
+      document.documentElement.style.setProperty('--thumb', darkMode ? 'rgba(255, 255, 255, 0.78)' : 'rgba(0, 0, 0, 0.72)');
       document.body.style.background = getBgColor();
-      saveSettings();
-    }
-
-    function getBgColor() {
-      return resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000');
-    }
-
-    function getGridBaseColor() {
-      return resolveModeColor(
-        settings.gridMode,
-        settings.gridCustom,
-        darkMode ? '#262626' : '#e8e8e8',
-        darkMode ? '#262626' : '#e8e8e8'
-      );
-    }
-
-    function getTapBaseColor() {
-      return normalizeHexColor(settings.tapColor) || defaults.tapColor;
-    }
-
-    function getSwipeBaseColor() {
-      return normalizeHexColor(settings.swipeColor) || defaults.swipeColor;
-    }
-
-    function getLoopBaseColor() {
-      return normalizeHexColor(settings.loopColor) || defaults.loopColor;
-    }
-
-    function getDisplayName() {
-      return sanitizeDisplayName(settings.displayName);
-    }
-
-    function refreshOwnPresence() {
-      if (comm.transport === 'none') return;
-      const entry = {
-        id: comm.clientId,
-        name: getDisplayName(),
-        lastSeenMs: Date.now()
-      };
-      comm.members.set(comm.clientId, entry);
-      if (comm.transport === 'local') {
-        postLocalPacket({ type: 'presence', id: comm.clientId, name: entry.name, lastSeenMs: entry.lastSeenMs });
-      } else if (comm.transport === 'firebase' && comm.memberRef) {
-        setDoc(comm.memberRef, {
-          name: entry.name,
-          lastSeenMs: entry.lastSeenMs,
-          clientId: comm.clientId,
-          roomCode: comm.roomCode
-        }, { merge: true }).catch(() => {});
-      }
-      updatePeerMenuUi();
-    }
-
-    function purgeStaleMembers() {
-      const now = Date.now();
-      for (const [id, info] of [...comm.members.entries()]) {
-        if (id === comm.clientId) continue;
-        if (!info || now - (info.lastSeenMs || 0) > 12000) {
-          comm.members.delete(id);
-        }
-      }
-      updatePeerMenuUi();
-    }
-
-    function rememberPacket(id) {
-      if (!id) return false;
-      if (!comm._seenPackets) comm._seenPackets = new Set();
-      if (comm._seenPackets.has(id)) return false;
-      comm._seenPackets.add(id);
-      if (!comm._seenPacketQueue) comm._seenPacketQueue = [];
-      comm._seenPacketQueue.push(id);
-      if (comm._seenPacketQueue.length > 400) {
-        const old = comm._seenPacketQueue.shift();
-        if (old) comm._seenPackets.delete(old);
-      }
-      return true;
-    }
-
-    function updatePeerButtonUi() {
-      peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
-      peerButton.classList.toggle('searching', comm.transport !== 'none' && comm.transportState === 'searching');
-      peerButton.classList.toggle('connected', comm.transport !== 'none' && comm.transportState === 'connected');
-
-      if (comm.transportState === 'searching') {
-        peerButton.setAttribute('aria-label', '通信をキャンセル');
-      } else if (comm.transport !== 'none') {
-        peerButton.setAttribute('aria-label', '接続メニューを開く');
-      } else {
-        peerButton.setAttribute('aria-label', 'ローカル通信');
-      }
-    }
-
-    function updateSettingsUiAvailability() {
-      nameBlock.classList.toggle('disabled', !settings.peerButtonVisible);
-      displayNameInput.disabled = !settings.peerButtonVisible;
-      peerButtonToggle.checked = settings.peerButtonVisible;
-      nameBlock.classList.toggle('disabled', !settings.peerButtonVisible);
     }
 
     function syncSettingsUi() {
@@ -1424,85 +1387,197 @@
       spacingRange.value = String(settings.gridSpacing);
       spacingValue.textContent = String(settings.gridSpacing);
 
-      displayNameInput.value = settings.displayName;
-      updateSettingsUiAvailability();
-      updatePeerButtonUi();
+      peerButtonToggle.checked = settings.peerButtonVisible;
+      peerNameInput.value = settings.userName;
+
+      const peerEnabled = settings.peerButtonVisible;
+      peerNameInput.disabled = !peerEnabled;
+      nameSettingWrap.classList.toggle('peer-name-disabled', !peerEnabled);
+      peerNameInput.style.opacity = peerEnabled ? '1' : '0.42';
     }
 
-    function currentVisibleMembers() {
+    function openOverlay() {
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeOverlay() {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function activeLock() {
+      const until = Number(roomState.activeSenderUntil) || 0;
+      if (!roomState.activeSenderId || until <= Date.now()) return null;
+      return {
+        senderId: roomState.activeSenderId,
+        senderName: roomState.activeSenderName || '誰か',
+        until
+      };
+    }
+
+    function normalizeRoomState() {
+      const until = Number(roomState.activeSenderUntil) || 0;
+      if (roomState.activeSenderId && until <= Date.now()) {
+        roomState.activeSenderId = null;
+        roomState.activeSenderName = '';
+        roomState.activeSenderUntil = 0;
+      }
+
+      if (roomState.lastSettingsVersion < appliedSettingsVersion) {
+        roomState.lastSettingsVersion = appliedSettingsVersion;
+      }
+
+      pruneMembers();
+      refreshPeerMenuUi();
+    }
+
+    function applySettingsSnapshot(snapshot) {
+      if (!snapshot || typeof snapshot !== 'object') return;
+
+      if (isValidMode(snapshot.bgMode)) settings.bgMode = snapshot.bgMode;
+      if (typeof snapshot.bgCustom === 'string') settings.bgCustom = snapshot.bgCustom;
+
+      if (typeof snapshot.tapColor === 'string') settings.tapColor = snapshot.tapColor;
+      if (typeof snapshot.swipeColor === 'string') settings.swipeColor = snapshot.swipeColor;
+      if (typeof snapshot.loopColor === 'string') settings.loopColor = snapshot.loopColor;
+
+      if (typeof snapshot.gridEnabled === 'boolean') settings.gridEnabled = snapshot.gridEnabled;
+      if (isValidMode(snapshot.gridMode)) settings.gridMode = snapshot.gridMode;
+      if (typeof snapshot.gridCustom === 'string') settings.gridCustom = snapshot.gridCustom;
+      if (typeof snapshot.gridSpacing === 'number' && isFinite(snapshot.gridSpacing)) {
+        settings.gridSpacing = clamp(Math.round(snapshot.gridSpacing), 18, 100);
+      }
+
+      if (typeof snapshot.peerButtonVisible === 'boolean') settings.peerButtonVisible = snapshot.peerButtonVisible;
+      if (typeof snapshot.userName === 'string') settings.userName = snapshot.userName;
+
+      bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
+      gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
+      gridDetails.classList.toggle('disabled', !settings.gridEnabled);
+      document.body.style.background = getBgColor();
+
+      saveSettings();
+      syncSettingsUi();
+      refreshPeerMenuUi();
+    }
+
+    function captureSettingsSnapshot() {
+      return {
+        bgMode: settings.bgMode,
+        bgCustom: settings.bgCustom,
+        tapColor: settings.tapColor,
+        swipeColor: settings.swipeColor,
+        loopColor: settings.loopColor,
+        gridEnabled: settings.gridEnabled,
+        gridMode: settings.gridMode,
+        gridCustom: settings.gridCustom,
+        gridSpacing: settings.gridSpacing,
+        peerButtonVisible: settings.peerButtonVisible,
+        userName: settings.userName
+      };
+    }
+
+    function updateMembersFromMap() {
+      pruneMembers();
+      renderMembers();
+      refreshPeerMenuUi();
+    }
+
+    function pruneMembers() {
       const now = Date.now();
-      const list = [];
-      for (const [id, info] of comm.members.entries()) {
-        if (!info) continue;
-        if (id === comm.clientId || now - (info.lastSeenMs || 0) <= 12000) {
-          list.push({ id, name: info.name || '名無し', lastSeenMs: info.lastSeenMs || 0 });
+      for (const [id, item] of membersMap.entries()) {
+        if (id === selfPeerId) continue;
+        const seen = Number(item.updatedAtMs) || 0;
+        if (now - seen > staleMemberMs) {
+          membersMap.delete(id);
         }
       }
-      list.sort((a, b) => {
-        if (a.id === comm.clientId) return -1;
-        if (b.id === comm.clientId) return 1;
-        return (b.lastSeenMs || 0) - (a.lastSeenMs || 0);
-      });
-      return list;
+      if (!membersMap.has(selfPeerId)) {
+        membersMap.set(selfPeerId, {
+          id: selfPeerId,
+          name: settings.userName || defaultName(),
+          updatedAtMs: Date.now(),
+          transport: transportMode || 'local'
+        });
+      } else {
+        const mine = membersMap.get(selfPeerId);
+        mine.name = settings.userName || defaultName();
+        mine.updatedAtMs = Date.now();
+        mine.transport = transportMode || 'local';
+        membersMap.set(selfPeerId, mine);
+      }
     }
 
-    function updatePeerMenuUi() {
-      const members = currentVisibleMembers();
-      peerTopbar.classList.toggle('open', comm.transport !== 'none' && peerMenuOverlay.classList.contains('open'));
+    function renderMembers() {
+      const arr = Array.from(membersMap.values())
+        .filter(m => m && typeof m.name === 'string')
+        .sort((a, b) => {
+          if (a.id === selfPeerId) return -1;
+          if (b.id === selfPeerId) return 1;
+          return a.name.localeCompare(b.name, 'ja');
+        });
 
-      peerNamesList.innerHTML = '';
-      for (const member of members) {
-        const chip = document.createElement('span');
-        chip.className = 'peer-chip' + (member.id === comm.clientId ? ' self' : '');
-        chip.textContent = member.name;
-        peerNamesList.appendChild(chip);
+      peerMembers.innerHTML = '';
+      for (const item of arr) {
+        const chip = document.createElement('div');
+        chip.className = 'peer-member';
+        chip.textContent = item.id === selfPeerId ? `${item.name}（自分）` : item.name;
+        peerMembers.appendChild(chip);
       }
 
-      if (comm.transport === 'none') {
-        peerChoiceLabel1.textContent = 'ローカルで\n通信';
-        peerChoiceLabel2.textContent = 'Firebaseで\n通信';
-        peerChoiceLabel3.textContent = '閉じる';
-        peerChoice1.className = 'peer-choice wifi';
-        peerChoice2.className = 'peer-choice firebase';
-        peerChoice3.className = 'peer-choice close';
-        peerChoice1.classList.remove('disabledChoice');
-        peerChoice2.classList.remove('disabledChoice');
+      const connectedCount = arr.length;
+      peerRoomStatus.textContent = `${connectedCount}人接続中`;
+    }
+
+    function refreshPeerMenuUi() {
+      const lock = activeLock();
+      const count = Array.from(membersMap.values()).filter(Boolean).length;
+
+      peerRoomLabel.textContent = roomDisplayName
+        ? `${roomDisplayName} / ${transportMode === 'firebase' ? 'Firebase' : 'ローカル'}`
+        : '未接続';
+
+      if (peerState === 'connected') {
+        peerRoomStatus.textContent = lock && lock.senderId !== selfPeerId
+          ? `${lock.senderName}が送信中…`
+          : `${count}人接続中`;
+      } else if (peerState === 'searching') {
+        peerRoomStatus.textContent = '接続中…';
       } else {
-        const lock = getActiveSendLock();
+        peerRoomStatus.textContent = `${count}人`;
+      }
+
+      if (peerState === 'connected') {
         peerChoiceLabel1.textContent = '接続を\n切断';
-
-        if (lock && lock.ownerId && lock.ownerId !== comm.clientId) {
-          peerChoiceLabel2.textContent = `${truncateName(lock.ownerName)}が\n送信中…`;
-          peerChoice2.classList.add('disabledChoice');
-        } else if (lock && lock.ownerId === comm.clientId) {
-          peerChoiceLabel2.textContent = '送信中…';
-          peerChoice2.classList.add('disabledChoice');
-        } else {
-          peerChoiceLabel2.textContent = '設定を\n送信';
-          peerChoice2.classList.remove('disabledChoice');
-        }
-
+        peerChoiceLabel2.textContent = lock && lock.senderId !== selfPeerId ? `${lock.senderName}が\n送信中…` : '設定を\n送信';
         peerChoiceLabel3.textContent = '設定を\n受信';
         peerChoice1.className = 'peer-choice disconnect';
-        peerChoice2.className = 'peer-choice send' + (peerChoice2.classList.contains('disabledChoice') ? ' disabledChoice' : '');
+        peerChoice2.className = 'peer-choice send';
         peerChoice3.className = 'peer-choice receive';
+        peerChoice2.disabled = !!(lock && lock.senderId !== selfPeerId);
+      } else {
+        peerChoiceLabel1.textContent = 'ローカルで\n通信';
+        peerChoiceLabel2.textContent = 'Firebaseで\n通信';
+        peerChoiceLabel3.textContent = 'やめる';
+        peerChoice1.className = 'peer-choice wifi';
+        peerChoice2.className = 'peer-choice online';
+        peerChoice3.className = 'peer-choice cancel';
+        peerChoice2.disabled = false;
       }
-    }
 
-    function truncateName(name) {
-      const s = String(name || '').trim();
-      return s.length > 8 ? s.slice(0, 8) + '…' : s;
+      renderMembers();
     }
 
     function openPeerMenu() {
       if (!settings.peerButtonVisible) return;
-      updatePeerMenuUi();
-      openOverlay(peerMenuOverlay);
-      requestAnimationFrame(() => {
-        peerTopbar.classList.toggle('open', comm.transport !== 'none');
-      });
+      peerMenuOpen = true;
+      refreshPeerMenuUi();
+      peerMenuOverlay.classList.add('open');
+      peerMenuOverlay.setAttribute('aria-hidden', 'false');
+
       const rect = peerButton.getBoundingClientRect();
-      const stageRect = document.getElementById('peerMenuStage').getBoundingClientRect();
+      const stageRect = peerMenuOverlay.getBoundingClientRect();
       const stageW = stageRect.width || window.innerWidth;
       const stageH = stageRect.height || window.innerHeight;
       const anchorX = rect.left + rect.width / 2 - stageW / 2;
@@ -1521,475 +1596,600 @@
     }
 
     function closePeerMenu() {
-      closeOverlay(peerMenuOverlay);
-      peerTopbar.classList.remove('open');
+      peerMenuOpen = false;
+      peerMenuOverlay.classList.remove('open');
+      peerMenuOverlay.setAttribute('aria-hidden', 'true');
     }
 
-    function openConnectDialog(mode) {
-      connectMode = mode;
-      roomCodeInput.value = '';
-      if (mode === 'local') {
-        connectTitle.textContent = 'ローカル通信';
-        connectText.textContent = '同じ文字を入れた人とつながる';
-        connectJoinButton.textContent = '参加';
-      } else {
-        connectTitle.textContent = 'Firebase通信';
-        connectText.textContent = '同じ文字を入れた人とつながる';
-        connectJoinButton.textContent = '参加';
+    function openJoinOverlay(mode) {
+      joinMode = mode;
+      const isFirebase = mode === 'firebase';
+      joinTitle.textContent = isFirebase ? 'Firebaseで通信' : 'ローカルで通信';
+      joinText.textContent = isFirebase
+        ? '同じ文字を入れると同じ部屋に入ります。1人でもそのまま遊べます。'
+        : '同じ文字を入れた端末どうしでつながります。';
+      joinLabel.textContent = 'ルーム名';
+      joinInput.value = joinDrafts[mode] || '';
+      joinConfirm.textContent = '入る';
+      joinOverlay.classList.add('open');
+      joinOverlay.setAttribute('aria-hidden', 'false');
+      setTimeout(() => joinInput.focus(), 0);
+    }
+
+    function closeJoinOverlay() {
+      joinOverlay.classList.remove('open');
+      joinOverlay.setAttribute('aria-hidden', 'true');
+      joinMode = null;
+    }
+
+    function setPeerState(nextState) {
+      peerState = nextState;
+      peerButton.classList.toggle('searching', peerState === 'searching');
+      peerButton.classList.toggle('connected', peerState === 'connected');
+      peerButton.setAttribute('aria-label', peerState === 'connected' ? '接続メニューを開く' : '接続');
+      refreshPeerMenuUi();
+    }
+
+    function setPeerOff() {
+      setPeerState('off');
+      transportMode = null;
+      roomId = '';
+      roomDisplayName = '';
+      roomState.activeSenderId = null;
+      roomState.activeSenderName = '';
+      roomState.activeSenderUntil = 0;
+      roomState.lastSettingsVersion = 0;
+      roomState.lastSettingsPayload = null;
+      roomState.lastSettingsSenderId = null;
+      roomState.lastSettingsSenderName = '';
+      roomState.lastSettingsAtMs = 0;
+      receiveWindowUntil = 0;
+      appliedSettingsVersion = 0;
+      membersMap.clear();
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName || defaultName(),
+        updatedAtMs: Date.now(),
+        transport: 'local'
+      });
+      refreshPeerMenuUi();
+    }
+
+    function stopLocalTransport(sendBye = false) {
+      if (sendBye) {
+        sendLocalPacket({
+          type: 'bye',
+          senderId: selfPeerId,
+          senderName: settings.userName,
+          roomId
+        }, false);
       }
-      openOverlay(connectOverlay);
-      setTimeout(() => roomCodeInput.focus(), 50);
-    }
 
-    function closeConnectDialog() {
-      closeOverlay(connectOverlay);
-    }
-
-    function buildRoomCode(name, code) {
-      const c = String(code || '').trim();
-      if (!c) return '';
-      return `${name}${c}`;
-    }
-
-    function openLocalTransport(roomCode) {
-      stopAllComm(false);
-      comm.transport = 'local';
-      comm.transportState = 'searching';
-      comm.roomCode = roomCode;
-      comm.localBusKey = LOCAL_BUS_PREFIX + roomCode;
-      comm.members = new Map();
-      comm.currentSendLock = null;
-      comm.lastAppliedLockId = '';
-      comm.receiveWindowUntil = 0;
-
-      const channelName = LOCAL_ROOM_PREFIX + roomCode;
-      if ('BroadcastChannel' in window) {
-        try {
-          comm.channel = new BroadcastChannel(channelName);
-          comm.channel.onmessage = (ev) => handleIncomingPacket(ev.data, 'local');
-        } catch (_) {
-          comm.channel = null;
-        }
+      if (localHeartbeatTimer) {
+        clearInterval(localHeartbeatTimer);
+        localHeartbeatTimer = null;
       }
 
-      window.addEventListener('storage', onLocalStorage);
-      window.addEventListener('beforeunload', onBeforeUnload, { once: true });
+      if (localCleanupTimer) {
+        clearInterval(localCleanupTimer);
+        localCleanupTimer = null;
+      }
 
-      comm.members.set(comm.clientId, { id: comm.clientId, name: getDisplayName(), lastSeenMs: Date.now() });
-      refreshOwnPresence();
-      startLocalPresenceTimer();
-      startCleanupTimer();
-      comm.transportState = 'connected';
-      updatePeerButtonUi();
-      updatePeerMenuUi();
-    }
-
-    function postLocalPacket(packet) {
-      if (packet.room !== comm.roomCode) packet.room = comm.roomCode;
-      packet.id = packet.id || makeId();
-      packet.senderId = packet.senderId || comm.clientId;
-      packet.senderName = packet.senderName || getDisplayName();
-      packet.createdAtMs = packet.createdAtMs || Date.now();
-
-      if (comm.channel) {
+      if (localChannel) {
         try {
-          comm.channel.postMessage(packet);
+          localChannel.close();
         } catch (_) {}
-      }
-
-      try {
-        localStorage.setItem(comm.localBusKey, JSON.stringify(packet));
-      } catch (_) {}
-    }
-
-    function onLocalStorage(ev) {
-      if (ev.key !== comm.localBusKey || !ev.newValue) return;
-      try {
-        handleIncomingPacket(JSON.parse(ev.newValue), 'local');
-      } catch (_) {}
-    }
-
-    function startLocalPresenceTimer() {
-      clearInterval(localPresenceTimer);
-      localPresenceTimer = setInterval(() => {
-        if (comm.transport !== 'local') return;
-        postLocalPacket({ type: 'presence', room: comm.roomCode, id: comm.clientId, name: getDisplayName(), lastSeenMs: Date.now() });
-      }, 2500);
-    }
-
-    function stopLocalPresenceTimer() {
-      clearInterval(localPresenceTimer);
-      localPresenceTimer = null;
-    }
-
-    async function openFirebaseTransport(roomCode) {
-      stopAllComm(false);
-      comm.transport = 'firebase';
-      comm.transportState = 'searching';
-      comm.roomCode = roomCode;
-      comm.members = new Map();
-      comm.currentSendLock = null;
-      comm.lastAppliedLockId = '';
-      comm.receiveWindowUntil = 0;
-
-      comm.roomRef = doc(db, 'rooms', roomCode);
-      comm.membersCol = collection(comm.roomRef, 'members');
-      comm.eventsCol = collection(comm.roomRef, 'events');
-      comm.memberRef = doc(comm.membersCol, comm.clientId);
-
-      await setDoc(comm.roomRef, {
-        roomCode,
-        createdAtMs: Date.now(),
-        updatedAtMs: Date.now()
-      }, { merge: true });
-
-      await setDoc(comm.memberRef, {
-        clientId: comm.clientId,
-        name: getDisplayName(),
-        roomCode,
-        lastSeenMs: Date.now(),
-        joinedAtMs: Date.now()
-      }, { merge: true });
-
-      comm.unsubMembers = onSnapshot(query(comm.membersCol, orderBy('joinedAtMs', 'asc')), (snap) => {
-        const next = new Map();
-        next.set(comm.clientId, { id: comm.clientId, name: getDisplayName(), lastSeenMs: Date.now() });
-
-        snap.forEach((docSnap) => {
-          const data = docSnap.data() || {};
-          const id = docSnap.id;
-          const name = sanitizeDisplayName(data.name);
-          const lastSeenMs = typeof data.lastSeenMs === 'number' ? data.lastSeenMs : 0;
-          if (Date.now() - lastSeenMs <= 12000 || id === comm.clientId) {
-            next.set(id, { id, name, lastSeenMs });
-          }
-        });
-
-        comm.members = next;
-        updatePeerMenuUi();
-      });
-
-      comm.unsubRoom = onSnapshot(comm.roomRef, (snap) => {
-        const data = snap.data() || {};
-        const lock = data.sendLock || null;
-        comm.currentSendLock = lock && typeof lock === 'object' ? lock : null;
-        if (comm.currentSendLock && typeof comm.currentSendLock.expiresAtMs === 'number' && Date.now() > comm.currentSendLock.expiresAtMs) {
-          comm.currentSendLock = null;
-        }
-        updatePeerMenuUi();
-        maybeApplyReceiveFromCurrentLock();
-      });
-
-      comm.unsubEvents = onSnapshot(query(comm.eventsCol, orderBy('createdAtMs', 'asc')), (snap) => {
-        snap.docChanges().forEach((change) => {
-          if (change.type !== 'added') return;
-          const data = change.doc.data() || {};
-          handleIncomingPacket({ ...data, id: change.doc.id }, 'firebase');
-        });
-      });
-
-      comm.heartbeatTimer = setInterval(() => {
-        if (comm.transport !== 'firebase' || !comm.memberRef) return;
-        setDoc(comm.memberRef, {
-          name: getDisplayName(),
-          roomCode: comm.roomCode,
-          lastSeenMs: Date.now()
-        }, { merge: true }).catch(() => {});
-      }, 2500);
-
-      startCleanupTimer();
-      comm.transportState = 'connected';
-      updatePeerButtonUi();
-      updatePeerMenuUi();
-      refreshOwnPresence();
-      window.addEventListener('beforeunload', onBeforeUnload, { once: true });
-    }
-
-    function startCleanupTimer() {
-      clearInterval(comm.roomCleanupTimer);
-      clearInterval(comm.localCleanupTimer);
-
-      comm.roomCleanupTimer = setInterval(() => {
-        if (comm.transport === 'none') return;
-        purgeStaleMembers();
-        purgeExpiredSendLock();
-      }, 1000);
-
-      comm.localCleanupTimer = comm.roomCleanupTimer;
-    }
-
-    function purgeExpiredSendLock() {
-      if (!comm.currentSendLock) return;
-      const exp = typeof comm.currentSendLock.expiresAtMs === 'number' ? comm.currentSendLock.expiresAtMs : 0;
-      if (exp && Date.now() > exp) {
-        comm.currentSendLock = null;
-        updatePeerMenuUi();
-      }
-    }
-
-    function stopFirebaseTransport(sendLeave = false) {
-      clearInterval(comm.heartbeatTimer);
-      comm.heartbeatTimer = null;
-
-      if (sendLeave && comm.memberRef) {
-        deleteDoc(comm.memberRef).catch(() => {});
-      }
-
-      if (comm.unsubMembers) comm.unsubMembers();
-      if (comm.unsubRoom) comm.unsubRoom();
-      if (comm.unsubEvents) comm.unsubEvents();
-      comm.unsubMembers = null;
-      comm.unsubRoom = null;
-      comm.unsubEvents = null;
-
-      comm.roomRef = null;
-      comm.membersCol = null;
-      comm.eventsCol = null;
-      comm.memberRef = null;
-    }
-
-    function stopLocalTransport(sendLeave = false) {
-      stopLocalPresenceTimer();
-
-      if (sendLeave) {
-        postLocalPacket({ type: 'leave', room: comm.roomCode, id: comm.clientId });
-      }
-
-      if (comm.channel) {
-        try { comm.channel.close(); } catch (_) {}
-        comm.channel = null;
+        localChannel = null;
       }
 
       window.removeEventListener('storage', onLocalStorage);
     }
 
-    function stopAllComm(sendLeave = true) {
-      if (comm.transport === 'local') {
-        stopLocalTransport(sendLeave);
-      } else if (comm.transport === 'firebase') {
-        stopFirebaseTransport(sendLeave);
+    function stopFirebaseTransport(sendLeave = false) {
+      if (sendLeave && firebaseMemberRef) {
+        deleteDoc(firebaseMemberRef).catch(() => {});
       }
 
-      comm.transport = 'none';
-      comm.transportState = 'off';
-      comm.roomCode = '';
-      comm.currentSendLock = null;
-      comm.receiveWindowUntil = 0;
-      comm.lastAppliedLockId = '';
-      comm.members = new Map();
-      stopLocalPresenceTimer();
-      clearInterval(comm.heartbeatTimer);
-      clearInterval(comm.roomCleanupTimer);
-      clearInterval(comm.localCleanupTimer);
-      comm.heartbeatTimer = null;
-      comm.roomCleanupTimer = null;
-      comm.localCleanupTimer = null;
-
-      updatePeerButtonUi();
-      updatePeerMenuUi();
-    }
-
-    function onBeforeUnload() {
-      if (comm.transport === 'local') {
-        stopLocalTransport(true);
-      } else if (comm.transport === 'firebase') {
-        stopFirebaseTransport(true);
+      if (firebaseHeartbeatTimer) {
+        clearInterval(firebaseHeartbeatTimer);
+        firebaseHeartbeatTimer = null;
       }
+
+      if (firebaseRoomUnsub) {
+        firebaseRoomUnsub();
+        firebaseRoomUnsub = null;
+      }
+
+      if (firebaseMembersUnsub) {
+        firebaseMembersUnsub();
+        firebaseMembersUnsub = null;
+      }
+
+      firebaseRoomRef = null;
+      firebaseMemberRef = null;
     }
 
-    function getActiveSendLock() {
-      const lock = comm.currentSendLock;
-      if (!lock) return null;
-      const exp = typeof lock.expiresAtMs === 'number' ? lock.expiresAtMs : 0;
-      if (exp && Date.now() > exp) return null;
-      return lock;
+    function stopAllTransports(sendBye = false) {
+      stopLocalTransport(sendBye);
+      stopFirebaseTransport(sendBye);
+      setPeerOff();
+      closePeerMenu();
+      closeJoinOverlay();
     }
 
-    function maybeApplyReceiveFromCurrentLock() {
-      const lock = getActiveSendLock();
-      if (!lock) return;
-      if (lock.ownerId === comm.clientId) return;
-      if (Date.now() > comm.receiveWindowUntil) return;
-      if (comm.lastAppliedLockId === lock.id) return;
-      comm.lastAppliedLockId = lock.id;
-      applyShareableSettingsSnapshot(lock.payload);
-      showToast('設定を受信した');
-    }
-
-    function claimLocalSendLock(snapshot) {
-      const now = Date.now();
-      const lock = getActiveSendLock();
-      if (lock && lock.ownerId !== comm.clientId) return null;
-
-      const newLock = {
+    function sendLocalPacket(packet, includeSelf = false) {
+      if (transportMode !== 'local' || !localChannel) return;
+      const data = {
+        ...packet,
         id: makeId(),
-        ownerId: comm.clientId,
-        ownerName: getDisplayName(),
-        payload: snapshot,
-        expiresAtMs: now + 10000,
-        createdAtMs: now
+        ts: Date.now()
       };
 
-      comm.currentSendLock = newLock;
-      postLocalPacket({ type: 'send-lock', room: comm.roomCode, lock: newLock });
-      maybeApplyReceiveFromCurrentLock();
-      updatePeerMenuUi();
-      return newLock;
+      try {
+        localChannel.postMessage(data);
+      } catch (_) {}
+
+      try {
+        localStorage.setItem(BUS_KEY, JSON.stringify(data));
+      } catch (_) {}
+
+      if (includeSelf) handleIncomingPacket(data, 'local');
     }
 
-    async function claimFirebaseSendLock(snapshot) {
+    function onLocalStorage(ev) {
+      if (ev.key !== BUS_KEY || !ev.newValue) return;
+      try {
+        handleIncomingPacket(JSON.parse(ev.newValue), 'local');
+      } catch (_) {}
+    }
+
+    function announcePresence() {
       const now = Date.now();
-      const roomRef = comm.roomRef;
-      if (!roomRef) return null;
+      const packet = {
+        type: 'presence',
+        senderId: selfPeerId,
+        name: settings.userName || defaultName(),
+        updatedAtMs: now,
+        transport: transportMode || 'local',
+        roomId
+      };
 
-      let claimed = null;
+      if (transportMode === 'local') {
+        sendLocalPacket(packet);
+      } else if (transportMode === 'firebase' && firebaseMemberRef) {
+        setDoc(firebaseMemberRef, packet, { merge: true }).catch(() => {});
+      }
 
-      await runTransaction(db, async (tx) => {
-        const snap = await tx.get(roomRef);
-        const data = snap.data() || {};
-        const lock = data.sendLock || null;
-        const exp = lock && typeof lock.expiresAtMs === 'number' ? lock.expiresAtMs : 0;
-        if (lock && exp > now && lock.ownerId !== comm.clientId) {
-          throw new Error(lock.ownerName || '他の人');
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: packet.name,
+        updatedAtMs: now,
+        transport: transportMode || 'local'
+      });
+      refreshPeerMenuUi();
+    }
+
+    function startLocalHeartbeat() {
+      stopLocalTransport(false);
+      const channelName = `touch_effect_local_${encodeURIComponent(roomId)}`;
+      if ('BroadcastChannel' in window) {
+        try {
+          localChannel = new BroadcastChannel(channelName);
+          localChannel.onmessage = (ev) => handleIncomingPacket(ev.data, 'local');
+        } catch (_) {
+          localChannel = null;
         }
+      }
 
-        claimed = {
-          id: makeId(),
-          ownerId: comm.clientId,
-          ownerName: getDisplayName(),
-          payload: snapshot,
-          expiresAtMs: now + 10000,
-          createdAtMs: now
-        };
+      window.addEventListener('storage', onLocalStorage);
 
-        tx.set(roomRef, {
-          sendLock: claimed,
-          updatedAtMs: now
-        }, { merge: true });
+      localHeartbeatTimer = setInterval(() => {
+        if (transportMode !== 'local') return;
+        announcePresence();
+      }, 3500);
+
+      localCleanupTimer = setInterval(() => {
+        if (transportMode !== 'local') return;
+        pruneMembers();
+        refreshPeerMenuUi();
+      }, 2500);
+    }
+
+    function startFirebaseHeartbeat() {
+      stopFirebaseTransport(false);
+      if (!firestore) {
+        showToast('Firebaseが使えない');
+        return false;
+      }
+
+      firebaseRoomRef = doc(firestore, 'rooms', roomId);
+      firebaseMemberRef = doc(firestore, 'rooms', roomId, 'members', selfPeerId);
+
+      firebaseRoomUnsub = onSnapshot(firebaseRoomRef, (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        updateRoomStateFromRemote(data, 'firebase');
       });
 
-      comm.currentSendLock = claimed;
-      maybeApplyReceiveFromCurrentLock();
-      updatePeerMenuUi();
-      return claimed;
-    }
-
-    function claimSendLock(snapshot) {
-      if (comm.transport === 'local') return claimLocalSendLock(snapshot);
-      if (comm.transport === 'firebase') return claimFirebaseSendLock(snapshot);
-      return null;
-    }
-
-    function sendCurrentSettings() {
-      const snapshot = getShareableSettingsSnapshot();
-      const lock = getActiveSendLock();
-      if (lock && lock.ownerId !== comm.clientId) {
-        showToast(`${truncateName(lock.ownerName)}が送信中…`);
-        return;
-      }
-
-      const result = claimSendLock(snapshot);
-      if (result && typeof result.then === 'function') {
-        result.then(() => {
-          showToast('設定を送った');
-        }).catch((err) => {
-          showToast('送れなかった');
+      firebaseMembersUnsub = onSnapshot(collection(firestore, 'rooms', roomId, 'members'), (snap) => {
+        const now = Date.now();
+        membersMap.clear();
+        membersMap.set(selfPeerId, {
+          id: selfPeerId,
+          name: settings.userName || defaultName(),
+          updatedAtMs: now,
+          transport: 'firebase'
         });
-      } else if (result) {
-        showToast('設定を送った');
-      } else {
-        showToast('通信先を選んで');
-      }
+
+        snap.forEach((docSnap) => {
+          const data = docSnap.data() || {};
+          const name = String(data.name || '').trim() || '名無し';
+          const updatedAtMs = Number(data.updatedAtMs) || 0;
+          if (now - updatedAtMs > staleMemberMs) return;
+          membersMap.set(docSnap.id, {
+            id: docSnap.id,
+            name,
+            updatedAtMs,
+            transport: 'firebase'
+          });
+        });
+
+        refreshPeerMenuUi();
+      });
+
+      firebaseHeartbeatTimer = setInterval(() => {
+        if (transportMode !== 'firebase' || !firebaseMemberRef) return;
+        announcePresence();
+      }, 4000);
+
+      announcePresence();
+      return true;
     }
 
-    function handleIncomingPacket(packet, transport) {
-      if (!packet || typeof packet !== 'object') return;
-      if (!rememberPacket(packet.id || packet.messageId || packet.eventId || makeId())) return;
+    function updateRoomStateFromRemote(data, via) {
+      const now = Date.now();
+      const activeUntil = Number(data.activeSenderUntil) || 0;
+      roomState.activeSenderId = data.activeSenderId || null;
+      roomState.activeSenderName = data.activeSenderName || '';
+      roomState.activeSenderUntil = activeUntil;
+      roomState.lastSettingsVersion = Number(data.lastSettingsVersion) || 0;
+      roomState.lastSettingsPayload = data.lastSettingsPayload || null;
+      roomState.lastSettingsSenderId = data.lastSettingsSenderId || null;
+      roomState.lastSettingsSenderName = data.lastSettingsSenderName || '';
+      roomState.lastSettingsAtMs = Number(data.lastSettingsAtMs) || 0;
 
-      if (packet.room && packet.room !== comm.roomCode) return;
-      if (packet.senderId === comm.clientId) return;
+      if (roomState.activeSenderId && roomState.activeSenderUntil <= now) {
+        roomState.activeSenderId = null;
+        roomState.activeSenderName = '';
+        roomState.activeSenderUntil = 0;
+      }
+
+      if (roomState.lastSettingsPayload && roomState.lastSettingsVersion > appliedSettingsVersion) {
+        if (now <= receiveWindowUntil && roomState.lastSettingsSenderId !== selfPeerId) {
+          appliedSettingsVersion = roomState.lastSettingsVersion;
+          applySettingsSnapshot(roomState.lastSettingsPayload);
+          showToast(`${roomState.lastSettingsSenderName || '相手'}から受信した`);
+        }
+      }
+
+      refreshPeerMenuUi();
+    }
+
+    function handleIncomingPacket(packet, via) {
+      if (!packet || typeof packet !== 'object') return;
+      if (packet.senderId === selfPeerId) return;
+
+      const now = Date.now();
 
       if (packet.type === 'presence') {
-        const id = packet.id || packet.senderId;
-        if (!id) return;
-        comm.members.set(id, {
-          id,
-          name: sanitizeDisplayName(packet.name),
-          lastSeenMs: typeof packet.lastSeenMs === 'number' ? packet.lastSeenMs : Date.now()
+        const name = String(packet.name || '').trim() || '名無し';
+        const updatedAtMs = Number(packet.updatedAtMs) || now;
+        membersMap.set(packet.senderId, {
+          id: packet.senderId,
+          name,
+          updatedAtMs,
+          transport: via
         });
-        updatePeerMenuUi();
+        refreshPeerMenuUi();
         return;
       }
 
-      if (packet.type === 'leave') {
-        const id = packet.id || packet.senderId;
-        if (id) comm.members.delete(id);
-        updatePeerMenuUi();
+      if (packet.type === 'bye') {
+        membersMap.delete(packet.senderId);
+        refreshPeerMenuUi();
         return;
       }
 
-      if (packet.type === 'send-lock') {
-        const lock = packet.lock || null;
-        if (!lock) return;
-        comm.currentSendLock = lock;
-        updatePeerMenuUi();
-        maybeApplyReceiveFromCurrentLock();
+      if (packet.type === 'lock') {
+        roomState.activeSenderId = packet.senderId;
+        roomState.activeSenderName = String(packet.senderName || '誰か');
+        roomState.activeSenderUntil = Number(packet.until) || 0;
+        refreshPeerMenuUi();
+        return;
+      }
+
+      if (packet.type === 'unlock') {
+        if (roomState.activeSenderId === packet.senderId) {
+          roomState.activeSenderId = null;
+          roomState.activeSenderName = '';
+          roomState.activeSenderUntil = 0;
+        }
+        refreshPeerMenuUi();
         return;
       }
 
       if (packet.type === 'effect') {
-        handleRemoteEffect(packet);
+        if (packet.target && packet.target !== selfPeerId) return;
+        applyRemoteEffect(packet.kind, packet.payload);
+        return;
+      }
+
+      if (packet.type === 'settings') {
+        roomState.lastSettingsVersion = Number(packet.version) || (roomState.lastSettingsVersion + 1);
+        roomState.lastSettingsPayload = packet.payload || null;
+        roomState.lastSettingsSenderId = packet.senderId || null;
+        roomState.lastSettingsSenderName = packet.senderName || '相手';
+        roomState.lastSettingsAtMs = Number(packet.ts) || now;
+
+        if (Date.now() <= receiveWindowUntil && packet.senderId !== selfPeerId) {
+          appliedSettingsVersion = roomState.lastSettingsVersion;
+          applySettingsSnapshot(packet.payload);
+          showToast(`${packet.senderName || '相手'}から受信した`);
+        }
+
+        refreshPeerMenuUi();
+        return;
+      }
+
+      if (packet.type === 'settings-state') {
+        updateRoomStateFromRemote(packet, via);
+      }
+    }
+
+    function localRoomBroadcastState() {
+      const now = Date.now();
+      const packet = {
+        type: 'settings-state',
+        senderId: selfPeerId,
+        activeSenderId: roomState.activeSenderId,
+        activeSenderName: roomState.activeSenderName,
+        activeSenderUntil: roomState.activeSenderUntil,
+        lastSettingsVersion: roomState.lastSettingsVersion,
+        lastSettingsPayload: roomState.lastSettingsPayload,
+        lastSettingsSenderId: roomState.lastSettingsSenderId,
+        lastSettingsSenderName: roomState.lastSettingsSenderName,
+        lastSettingsAtMs: roomState.lastSettingsAtMs,
+        ts: now
+      };
+      sendLocalPacket(packet);
+    }
+
+    function connectLocalRoom(rawRoom) {
+      if (!settings.peerButtonVisible) return;
+      const id = safeRoomId(rawRoom);
+      if (!id) {
+        showToast('ルーム名を入れて');
+        return;
+      }
+
+      stopAllTransports(false);
+      transportMode = 'local';
+      roomId = id;
+      roomDisplayName = rawRoom.trim();
+      peerState = 'connected';
+      setPeerState('connected');
+
+      membersMap.clear();
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName || defaultName(),
+        updatedAtMs: Date.now(),
+        transport: 'local'
+      });
+
+      startLocalHeartbeat();
+      announcePresence();
+      refreshPeerMenuUi();
+      showToast('ローカル通信に入った');
+    }
+
+    function connectFirebaseRoom(rawRoom) {
+      if (!settings.peerButtonVisible) return;
+      if (!firestore) {
+        showToast('Firebaseが使えない');
+        return;
+      }
+
+      const id = safeRoomId(rawRoom);
+      if (!id) {
+        showToast('ルーム名を入れて');
+        return;
+      }
+
+      stopAllTransports(false);
+      transportMode = 'firebase';
+      roomId = id;
+      roomDisplayName = rawRoom.trim();
+      peerState = 'connected';
+      setPeerState('connected');
+
+      membersMap.clear();
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName || defaultName(),
+        updatedAtMs: Date.now(),
+        transport: 'firebase'
+      });
+
+      if (!startFirebaseHeartbeat()) {
+        stopAllTransports(false);
+        return;
+      }
+
+      refreshPeerMenuUi();
+      showToast('Firebaseに入った');
+    }
+
+    function disconnectCurrentTransport(sendLeave = true) {
+      if (transportMode === 'local') stopLocalTransport(sendLeave);
+      if (transportMode === 'firebase') stopFirebaseTransport(sendLeave);
+      setPeerOff();
+      membersMap.clear();
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName || defaultName(),
+        updatedAtMs: Date.now(),
+        transport: transportMode || 'local'
+      });
+      refreshPeerMenuUi();
+    }
+
+    function attemptSendCurrentSettings() {
+      const lock = activeLock();
+      if (lock && lock.senderId !== selfPeerId) {
+        showToast(`${lock.senderName}が送信中…`);
+        return;
+      }
+
+      if (peerState !== 'connected') return;
+
+      const now = Date.now();
+      const version = (roomState.lastSettingsVersion || 0) + 1;
+      const snapshot = captureSettingsSnapshot();
+
+      roomState.activeSenderId = selfPeerId;
+      roomState.activeSenderName = settings.userName || defaultName();
+      roomState.activeSenderUntil = now + 10000;
+      roomState.lastSettingsVersion = version;
+      roomState.lastSettingsPayload = snapshot;
+      roomState.lastSettingsSenderId = selfPeerId;
+      roomState.lastSettingsSenderName = settings.userName || defaultName();
+      roomState.lastSettingsAtMs = now;
+
+      if (transportMode === 'local') {
+        sendLocalPacket({
+          type: 'lock',
+          senderId: selfPeerId,
+          senderName: settings.userName || defaultName(),
+          until: roomState.activeSenderUntil
+        });
+
+        sendLocalPacket({
+          type: 'settings',
+          senderId: selfPeerId,
+          senderName: settings.userName || defaultName(),
+          version,
+          payload: snapshot,
+          ts: now
+        });
+
+        sendLocalPacket({
+          type: 'settings-state',
+          senderId: selfPeerId,
+          activeSenderId: roomState.activeSenderId,
+          activeSenderName: roomState.activeSenderName,
+          activeSenderUntil: roomState.activeSenderUntil,
+          lastSettingsVersion: roomState.lastSettingsVersion,
+          lastSettingsPayload: roomState.lastSettingsPayload,
+          lastSettingsSenderId: roomState.lastSettingsSenderId,
+          lastSettingsSenderName: roomState.lastSettingsSenderName,
+          lastSettingsAtMs: roomState.lastSettingsAtMs,
+          ts: now
+        });
+
+        setTimeout(() => {
+          if (transportMode !== 'local') return;
+          if (roomState.activeSenderId === selfPeerId && Date.now() >= roomState.activeSenderUntil) {
+            roomState.activeSenderId = null;
+            roomState.activeSenderName = '';
+            roomState.activeSenderUntil = 0;
+            sendLocalPacket({
+              type: 'unlock',
+              senderId: selfPeerId,
+              ts: Date.now()
+            });
+            refreshPeerMenuUi();
+          }
+        }, 10200);
+
+        refreshPeerMenuUi();
+        showToast('設定を送った');
+        return;
+      }
+
+      if (transportMode === 'firebase' && firestore && firebaseRoomRef) {
+        runTransaction(firestore, async (tx) => {
+          const snap = await tx.get(firebaseRoomRef);
+          const data = snap.exists() ? (snap.data() || {}) : {};
+          const activeUntil = Number(data.activeSenderUntil) || 0;
+          const activeSenderId = data.activeSenderId || null;
+
+          if (activeSenderId && activeSenderId !== selfPeerId && activeUntil > Date.now()) {
+            throw new Error(data.activeSenderName || '誰か');
+          }
+
+          tx.set(firebaseRoomRef, {
+            roomId,
+            roomDisplayName,
+            updatedAtMs: Date.now(),
+            activeSenderId: selfPeerId,
+            activeSenderName: settings.userName || defaultName(),
+            activeSenderUntil: Date.now() + 10000,
+            lastSettingsVersion: version,
+            lastSettingsPayload: snapshot,
+            lastSettingsSenderId: selfPeerId,
+            lastSettingsSenderName: settings.userName || defaultName(),
+            lastSettingsAtMs: Date.now()
+          }, { merge: true });
+        }).then(() => {
+          refreshPeerMenuUi();
+          showToast('設定を送った');
+        }).catch((err) => {
+          const name = (err && err.message) ? err.message : '誰か';
+          showToast(`${name}が送信中…`);
+          roomState.activeSenderId = null;
+          roomState.activeSenderName = '';
+          roomState.activeSenderUntil = 0;
+          refreshPeerMenuUi();
+        });
+
         return;
       }
     }
 
-    function handleRemoteEffect(packet) {
-      const kind = packet.kind;
-      const payload = packet.payload || {};
-      if (kind === 'tap') {
-        if (typeof payload.x === 'number' && typeof payload.y === 'number') {
-          addTapEffect(payload.x, payload.y, false);
-        }
-      } else if (kind === 'swipe') {
-        const from = payload.from || null;
-        const to = payload.to || null;
-        const dir = payload.dir || null;
-        if (from && to && dir &&
-            typeof from.x === 'number' && typeof from.y === 'number' &&
-            typeof to.x === 'number' && typeof to.y === 'number' &&
-            typeof dir.x === 'number' && typeof dir.y === 'number') {
-          createSwipeEffect(from.x, from.y, dir.x * 100, dir.y * 100, false, {
-            forceFrom: from,
-            forceTo: to,
-            forceRadius: typeof payload.radius === 'number' ? payload.radius : undefined
-          });
-        }
-      } else if (kind === 'loop') {
-        if (Array.isArray(payload.points)) {
-          const points = payload.points
-            .filter(p => p && typeof p.x === 'number' && typeof p.y === 'number')
-            .map(p => ({ x: p.x, y: p.y }));
-          if (points.length >= 3) createLoopEffect(points, false);
+    function setReceiveWindow() {
+      receiveWindowUntil = Date.now() + 10000;
+      showToast('10秒以内の設定を待ってる');
+      if (roomState.lastSettingsPayload && roomState.lastSettingsVersion > appliedSettingsVersion) {
+        if (roomState.lastSettingsSenderId !== selfPeerId && Date.now() - roomState.lastSettingsAtMs <= 10000) {
+          appliedSettingsVersion = roomState.lastSettingsVersion;
+          applySettingsSnapshot(roomState.lastSettingsPayload);
+          showToast(`${roomState.lastSettingsSenderName || '相手'}から受信した`);
         }
       }
     }
 
-    function publishEffect(kind, payload) {
-      const packet = {
-        type: 'effect',
-        kind,
-        payload,
-        senderId: comm.clientId,
-        senderName: getDisplayName(),
-        room: comm.roomCode,
-        id: makeId(),
-        createdAtMs: Date.now()
-      };
+    function sendEffectToRemote(kind, payload) {
+      if (peerState !== 'connected') return;
 
-      if (comm.transport === 'local') {
-        postLocalPacket(packet);
-      } else if (comm.transport === 'firebase' && comm.eventsCol) {
-        addDoc(comm.eventsCol, packet).catch(() => {});
+      if (transportMode === 'local') {
+        sendLocalPacket({
+          type: 'effect',
+          senderId: selfPeerId,
+          senderName: settings.userName || defaultName(),
+          kind,
+          payload,
+          target: null
+        });
+      } else if (transportMode === 'firebase' && firebaseRoomRef) {
+        setDoc(firebaseRoomRef, {
+          updatedAtMs: Date.now(),
+          lastEffectKind: kind,
+          lastEffectPayload: payload,
+          lastEffectSenderId: selfPeerId,
+          lastEffectSenderName: settings.userName || defaultName(),
+          lastEffectAtMs: Date.now()
+        }, { merge: true }).catch(() => {});
       }
     }
 
@@ -2002,9 +2202,7 @@
         duration: 650
       });
 
-      if (broadcast && comm.transport !== 'none') {
-        publishEffect('tap', { x, y });
-      }
+      if (broadcast) sendEffectToRemote('tap', { x, y });
     }
 
     function createSwipeEffect(startX, startY, dirX, dirY, broadcast = true, forced = null) {
@@ -2060,7 +2258,6 @@
       const last = forced && forced.forceTo ? forced.forceTo : hits[hits.length - 1];
       const travel = distance(first.x, first.y, last.x, last.y);
       const duration = clamp(460 + travel * 0.12, 520, 900);
-
       const radius = typeof (forced && forced.forceRadius) === 'number'
         ? forced.forceRadius
         : clamp(Math.min(w, h) * 0.045, 18, 38);
@@ -2075,14 +2272,12 @@
         radius
       });
 
-      if (broadcast && comm.transport !== 'none') {
-        publishEffect('swipe', {
-          from: { x: first.x, y: first.y },
-          to: { x: last.x, y: last.y },
-          dir: { x: dirX, y: dirY },
-          radius
-        });
-      }
+      if (broadcast) sendEffectToRemote('swipe', {
+        from: { x: first.x, y: first.y },
+        to: { x: last.x, y: last.y },
+        dir: { x: dirX, y: dirY },
+        radius
+      });
     }
 
     function createLoopEffect(points, broadcast = true) {
@@ -2096,9 +2291,7 @@
         points: copy
       });
 
-      if (broadcast && comm.transport !== 'none') {
-        publishEffect('loop', { points: copy });
-      }
+      if (broadcast) sendEffectToRemote('loop', { points: copy });
     }
 
     function detectLoop(points, currentX, currentY) {
@@ -2257,7 +2450,9 @@
     }
 
     function render() {
-      const t = nowMs();
+      const t = Date.now();
+
+      normalizeRoomState();
 
       ctx.fillStyle = getBgColor();
       ctx.fillRect(0, 0, w, h);
@@ -2266,331 +2461,319 @@
 
       for (let i = 0; i < effects.length; i++) {
         const effect = effects[i];
-        if (effect.type === 'tap') drawTap(effect, t);
-        else if (effect.type === 'swipe') drawSwipe(effect, t);
-        else if (effect.type === 'loop') drawLoop(effect, t);
+        if (effect.type === 'tap') drawTap(effect, performance.now());
+        else if (effect.type === 'swipe') drawSwipe(effect, performance.now());
+        else if (effect.type === 'loop') drawLoop(effect, performance.now());
       }
 
       for (let i = effects.length - 1; i >= 0; i--) {
-        if (t - effects[i].start >= effects[i].duration) effects.splice(i, 1);
+        if (performance.now() - effects[i].start >= effects[i].duration) effects.splice(i, 1);
       }
 
       requestAnimationFrame(render);
     }
 
-    function setShareableInputsFromSettings() {
-      bgMode.value = settings.bgMode;
-      bgCustomInput.value = settings.bgCustom;
-      bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
-
-      tapColorInput.value = settings.tapColor;
-      swipeColorInput.value = settings.swipeColor;
-      loopColorInput.value = settings.loopColor;
-
-      gridToggle.checked = settings.gridEnabled;
-      gridDetails.classList.toggle('disabled', !settings.gridEnabled);
-
-      gridMode.value = settings.gridMode;
-      gridCustomInput.value = settings.gridCustom;
-      gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
-
-      spacingRange.value = String(settings.gridSpacing);
-      spacingValue.textContent = String(settings.gridSpacing);
-
-      displayNameInput.value = settings.displayName;
+    function getPoint(e) {
+      return { x: e.clientX, y: e.clientY };
     }
 
-    function syncSettingsUi() {
-      setShareableInputsFromSettings();
-      updateSettingsUiAvailability();
-      updatePeerButtonUi();
-      updatePeerMenuUi();
+    function applyAndSave() {
+      document.body.style.background = getBgColor();
+      syncSettingsUi();
+      saveSettings();
     }
 
-    function updateSettingsUiAvailability() {
-      const enabled = !!settings.peerButtonVisible;
-      nameBlock.classList.toggle('disabled', !enabled);
-      displayNameInput.disabled = !enabled;
-      peerButtonToggle.checked = enabled;
+    function resetAllSettings() {
+      const ok = window.confirm('設定を初期状態に戻します。よろしいですか？');
+      if (!ok) return;
+
+      Object.assign(settings, defaults);
+      settings.userName = defaultName();
+
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (_) {}
+
+      if (peerState !== 'off') stopAllTransports(false);
+
+      membersMap.clear();
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName,
+        updatedAtMs: Date.now(),
+        transport: transportMode || 'local'
+      });
+
+      applyAndSave();
+      refreshPeerMenuUi();
     }
 
-    function getVisibleMemberChips() {
-      const list = currentVisibleMembers();
-      const chipNodes = [];
-      for (const member of list) {
-        const chip = document.createElement('span');
-        chip.className = 'peer-chip' + (member.id === comm.clientId ? ' self' : '');
-        chip.textContent = member.name;
-        chipNodes.push(chip);
+    function joinCurrentMode() {
+      const room = joinInput.value;
+      joinDrafts[joinMode] = room;
+
+      if (joinMode === 'local') {
+        connectLocalRoom(room);
+      } else if (joinMode === 'firebase') {
+        connectFirebaseRoom(room);
       }
-      return chipNodes;
+
+      closeJoinOverlay();
+      closePeerMenu();
     }
 
-    function updatePeerMenuUi() {
-      const connected = comm.transport !== 'none';
-      peerTopbar.classList.toggle('open', connected && peerMenuOverlay.classList.contains('open'));
-      peerNamesList.innerHTML = '';
-      for (const chip of getVisibleMemberChips()) peerNamesList.appendChild(chip);
+    function openPeerMenuForCurrentState() {
+      if (!settings.peerButtonVisible) return;
 
-      if (!connected) {
-        peerChoiceLabel1.textContent = 'ローカルで\n通信';
-        peerChoiceLabel2.textContent = 'Firebaseで\n通信';
-        peerChoiceLabel3.textContent = '閉じる';
-        peerChoice1.className = 'peer-choice wifi';
-        peerChoice2.className = 'peer-choice firebase';
-        peerChoice3.className = 'peer-choice close';
+      if (peerState === 'off') {
+        openPeerMenu();
         return;
       }
 
-      const lock = getActiveSendLock();
-      peerChoiceLabel1.textContent = '接続を\n切断';
+      openPeerMenu();
+    }
 
-      if (lock && lock.ownerId !== comm.clientId) {
-        peerChoiceLabel2.textContent = `${truncateName(lock.ownerName)}が\n送信中…`;
-        peerChoice2.className = 'peer-choice send disabledChoice';
-      } else if (lock && lock.ownerId === comm.clientId) {
-        peerChoiceLabel2.textContent = '送信中…';
-        peerChoice2.className = 'peer-choice send disabledChoice';
-      } else {
-        peerChoiceLabel2.textContent = '設定を\n送信';
-        peerChoice2.className = 'peer-choice send';
+    function updateNameFromInput() {
+      settings.userName = safeName(peerNameInput.value);
+      peerNameInput.value = settings.userName;
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName,
+        updatedAtMs: Date.now(),
+        transport: transportMode || 'local'
+      });
+      saveSettings();
+      syncSettingsUi();
+      announcePresence();
+      refreshPeerMenuUi();
+    }
+
+    function stopAllTransports(sendLeave = true) {
+      stopLocalTransport(sendLeave);
+      stopFirebaseTransport(sendLeave);
+      transportMode = null;
+      roomId = '';
+      roomDisplayName = '';
+      receiveWindowUntil = 0;
+      peerState = 'off';
+      roomState.activeSenderId = null;
+      roomState.activeSenderName = '';
+      roomState.activeSenderUntil = 0;
+      roomState.lastSettingsVersion = 0;
+      roomState.lastSettingsPayload = null;
+      roomState.lastSettingsSenderId = null;
+      roomState.lastSettingsSenderName = '';
+      roomState.lastSettingsAtMs = 0;
+      membersMap.clear();
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName,
+        updatedAtMs: Date.now(),
+        transport: 'local'
+      });
+      setPeerState('off');
+      refreshPeerMenuUi();
+    }
+
+    function updateRoomStateFromRemote(data) {
+      const now = Date.now();
+      roomState.activeSenderId = data.activeSenderId || null;
+      roomState.activeSenderName = data.activeSenderName || '';
+      roomState.activeSenderUntil = Number(data.activeSenderUntil) || 0;
+      roomState.lastSettingsVersion = Number(data.lastSettingsVersion) || 0;
+      roomState.lastSettingsPayload = data.lastSettingsPayload || null;
+      roomState.lastSettingsSenderId = data.lastSettingsSenderId || null;
+      roomState.lastSettingsSenderName = data.lastSettingsSenderName || '';
+      roomState.lastSettingsAtMs = Number(data.lastSettingsAtMs) || 0;
+
+      if (roomState.activeSenderId && roomState.activeSenderUntil <= now) {
+        roomState.activeSenderId = null;
+        roomState.activeSenderName = '';
+        roomState.activeSenderUntil = 0;
       }
 
-      peerChoiceLabel3.textContent = '設定を\n受信';
-      peerChoice1.className = 'peer-choice disconnect';
-      peerChoice3.className = 'peer-choice receive';
-    }
-
-    function truncateName(name) {
-      const s = String(name || '').trim();
-      return s.length > 8 ? s.slice(0, 8) + '…' : s;
-    }
-
-    function currentVisibleMembers() {
-      const now = Date.now();
-      const list = [];
-      for (const [id, info] of comm.members.entries()) {
-        if (!info) continue;
-        const seen = typeof info.lastSeenMs === 'number' ? info.lastSeenMs : 0;
-        if (id === comm.clientId || now - seen <= 12000) {
-          list.push({ id, name: sanitizeDisplayName(info.name), lastSeenMs: seen });
+      if (roomState.lastSettingsPayload && roomState.lastSettingsVersion > appliedSettingsVersion) {
+        if (Date.now() <= receiveWindowUntil && roomState.lastSettingsSenderId !== selfPeerId) {
+          appliedSettingsVersion = roomState.lastSettingsVersion;
+          applySettingsSnapshot(roomState.lastSettingsPayload);
+          showToast(`${roomState.lastSettingsSenderName || '相手'}から受信した`);
         }
       }
-      list.sort((a, b) => {
-        if (a.id === comm.clientId) return -1;
-        if (b.id === comm.clientId) return 1;
-        return (b.lastSeenMs || 0) - (a.lastSeenMs || 0);
+
+      refreshPeerMenuUi();
+    }
+
+    function ensureFirebaseAvailability() {
+      return !!firestore;
+    }
+
+    function sendLocalLock(until) {
+      if (transportMode !== 'local') return;
+      sendLocalPacket({
+        type: 'lock',
+        senderId: selfPeerId,
+        senderName: settings.userName,
+        until
       });
-      return list;
     }
 
-    function getActiveSendLock() {
-      const lock = comm.currentSendLock;
-      if (!lock) return null;
-      const exp = typeof lock.expiresAtMs === 'number' ? lock.expiresAtMs : 0;
-      if (exp && Date.now() > exp) return null;
-      return lock;
+    function sendLocalUnlock() {
+      if (transportMode !== 'local') return;
+      sendLocalPacket({
+        type: 'unlock',
+        senderId: selfPeerId,
+        senderName: settings.userName,
+        ts: Date.now()
+      });
     }
 
-    function maybeApplyReceiveFromCurrentLock() {
-      const lock = getActiveSendLock();
-      if (!lock) return;
-      if (lock.ownerId === comm.clientId) return;
-      if (Date.now() > comm.receiveWindowUntil) return;
-      if (comm.lastAppliedLockId === lock.id) return;
-      comm.lastAppliedLockId = lock.id;
-      applyShareableSettingsSnapshot(lock.payload);
-      showToast('設定を受信した');
-    }
-
-    function purgeExpiredSendLock() {
-      const lock = comm.currentSendLock;
-      if (!lock) return;
-      const exp = typeof lock.expiresAtMs === 'number' ? lock.expiresAtMs : 0;
-      if (exp && Date.now() > exp) {
-        comm.currentSendLock = null;
-        updatePeerMenuUi();
+    function attemptSendCurrentSettings() {
+      const lock = activeLock();
+      if (lock && lock.senderId !== selfPeerId) {
+        showToast(`${lock.senderName}が送信中…`);
+        return;
       }
-    }
 
-    function refreshOwnMemberEntry() {
-      comm.members.set(comm.clientId, {
-        id: comm.clientId,
-        name: getDisplayName(),
-        lastSeenMs: Date.now()
-      });
-    }
+      if (peerState !== 'connected') return;
 
-    function claimLocalSendLock(snapshot) {
       const now = Date.now();
-      const lock = getActiveSendLock();
-      if (lock && lock.ownerId !== comm.clientId) return null;
+      const version = (roomState.lastSettingsVersion || 0) + 1;
+      const snapshot = captureSettingsSnapshot();
 
-      const newLock = {
-        id: makeId(),
-        ownerId: comm.clientId,
-        ownerName: getDisplayName(),
-        payload: snapshot,
-        expiresAtMs: now + 10000,
-        createdAtMs: now
-      };
+      roomState.activeSenderId = selfPeerId;
+      roomState.activeSenderName = settings.userName;
+      roomState.activeSenderUntil = now + 10000;
+      roomState.lastSettingsVersion = version;
+      roomState.lastSettingsPayload = snapshot;
+      roomState.lastSettingsSenderId = selfPeerId;
+      roomState.lastSettingsSenderName = settings.userName;
+      roomState.lastSettingsAtMs = now;
 
-      comm.currentSendLock = newLock;
-      postLocalPacket({ type: 'send-lock', room: comm.roomCode, lock: newLock });
-      updatePeerMenuUi();
-      maybeApplyReceiveFromCurrentLock();
-      return newLock;
-    }
+      if (transportMode === 'local') {
+        sendLocalLock(roomState.activeSenderUntil);
 
-    async function claimFirebaseSendLock(snapshot) {
-      const now = Date.now();
-      const roomRef = comm.roomRef;
-      if (!roomRef) return null;
-
-      let claimed = null;
-
-      await runTransaction(db, async (tx) => {
-        const snap = await tx.get(roomRef);
-        const data = snap.data() || {};
-        const lock = data.sendLock || null;
-        const exp = lock && typeof lock.expiresAtMs === 'number' ? lock.expiresAtMs : 0;
-        if (lock && exp > now && lock.ownerId !== comm.clientId) {
-          throw new Error(lock.ownerName || '他の人');
-        }
-
-        claimed = {
-          id: makeId(),
-          ownerId: comm.clientId,
-          ownerName: getDisplayName(),
+        sendLocalPacket({
+          type: 'settings',
+          senderId: selfPeerId,
+          senderName: settings.userName,
+          version,
           payload: snapshot,
-          expiresAtMs: now + 10000,
-          createdAtMs: now
-        };
-
-        tx.set(roomRef, {
-          sendLock: claimed,
-          updatedAtMs: now
-        }, { merge: true });
-      });
-
-      comm.currentSendLock = claimed;
-      updatePeerMenuUi();
-      maybeApplyReceiveFromCurrentLock();
-      return claimed;
-    }
-
-    function claimSendLock(snapshot) {
-      if (comm.transport === 'local') return claimLocalSendLock(snapshot);
-      if (comm.transport === 'firebase') return claimFirebaseSendLock(snapshot);
-      return null;
-    }
-
-    function sendCurrentSettings() {
-      const snapshot = getShareableSettingsSnapshot();
-      const lock = getActiveSendLock();
-
-      if (lock && lock.ownerId !== comm.clientId) {
-        showToast(`${truncateName(lock.ownerName)}が送信中…`);
-        return;
-      }
-
-      const result = claimSendLock(snapshot);
-      if (result && typeof result.then === 'function') {
-        result.then(() => {
-          showToast('設定を送った');
-        }).catch(() => {
-          showToast('送れなかった');
+          ts: now
         });
-      } else if (result) {
+
+        sendLocalPacket({
+          type: 'settings-state',
+          senderId: selfPeerId,
+          activeSenderId: roomState.activeSenderId,
+          activeSenderName: roomState.activeSenderName,
+          activeSenderUntil: roomState.activeSenderUntil,
+          lastSettingsVersion: roomState.lastSettingsVersion,
+          lastSettingsPayload: roomState.lastSettingsPayload,
+          lastSettingsSenderId: roomState.lastSettingsSenderId,
+          lastSettingsSenderName: roomState.lastSettingsSenderName,
+          lastSettingsAtMs: roomState.lastSettingsAtMs,
+          ts: now
+        });
+
+        setTimeout(() => {
+          if (transportMode !== 'local') return;
+          if (roomState.activeSenderId === selfPeerId && Date.now() >= roomState.activeSenderUntil) {
+            roomState.activeSenderId = null;
+            roomState.activeSenderName = '';
+            roomState.activeSenderUntil = 0;
+            sendLocalUnlock();
+            refreshPeerMenuUi();
+          }
+        }, 10200);
+
+        refreshPeerMenuUi();
         showToast('設定を送った');
-      } else {
-        showToast('通信先を選んで');
+        return;
       }
-    }
 
-    function handleIncomingPacket(packet, transport) {
-      if (!packet || typeof packet !== 'object') return;
-      const id = packet.id || packet.messageId || packet.eventId;
-      if (!rememberPacket(id || makeId())) return;
+      if (transportMode === 'firebase' && firestore && firebaseRoomRef) {
+        runTransaction(firestore, async (tx) => {
+          const snap = await tx.get(firebaseRoomRef);
+          const data = snap.exists() ? (snap.data() || {}) : {};
+          const activeUntil = Number(data.activeSenderUntil) || 0;
+          const activeSenderId = data.activeSenderId || null;
 
-      if (packet.room && packet.room !== comm.roomCode) return;
-      if (packet.senderId === comm.clientId) return;
+          if (activeSenderId && activeSenderId !== selfPeerId && activeUntil > Date.now()) {
+            throw new Error(data.activeSenderName || '誰か');
+          }
 
-      if (packet.type === 'presence') {
-        const memberId = packet.id || packet.senderId;
-        if (!memberId) return;
-        comm.members.set(memberId, {
-          id: memberId,
-          name: sanitizeDisplayName(packet.name),
-          lastSeenMs: typeof packet.lastSeenMs === 'number' ? packet.lastSeenMs : Date.now()
+          tx.set(firebaseRoomRef, {
+            roomId,
+            roomDisplayName,
+            updatedAtMs: Date.now(),
+            activeSenderId: selfPeerId,
+            activeSenderName: settings.userName,
+            activeSenderUntil: Date.now() + 10000,
+            lastSettingsVersion: version,
+            lastSettingsPayload: snapshot,
+            lastSettingsSenderId: selfPeerId,
+            lastSettingsSenderName: settings.userName,
+            lastSettingsAtMs: Date.now()
+          }, { merge: true });
+        }).then(() => {
+          refreshPeerMenuUi();
+          showToast('設定を送った');
+        }).catch((err) => {
+          const name = (err && err.message) ? err.message : '誰か';
+          showToast(`${name}が送信中…`);
+          roomState.activeSenderId = null;
+          roomState.activeSenderName = '';
+          roomState.activeSenderUntil = 0;
+          refreshPeerMenuUi();
         });
-        updatePeerMenuUi();
-        return;
-      }
 
-      if (packet.type === 'leave') {
-        const memberId = packet.id || packet.senderId;
-        if (memberId) comm.members.delete(memberId);
-        updatePeerMenuUi();
-        return;
-      }
-
-      if (packet.type === 'send-lock') {
-        const lock = packet.lock || null;
-        if (!lock) return;
-        comm.currentSendLock = lock;
-        updatePeerMenuUi();
-        maybeApplyReceiveFromCurrentLock();
-        return;
-      }
-
-      if (packet.type === 'effect') {
-        handleRemoteEffect(packet);
         return;
       }
     }
 
-    function publishEffect(kind, payload) {
-      const packet = {
-        type: 'effect',
-        kind,
-        payload,
-        senderId: comm.clientId,
-        senderName: getDisplayName(),
-        room: comm.roomCode,
-        id: makeId(),
-        createdAtMs: Date.now()
-      };
+    function setReceiveWindow() {
+      receiveWindowUntil = Date.now() + 10000;
+      showToast('10秒以内の設定を待ってる');
 
-      if (comm.transport === 'local') {
-        postLocalPacket(packet);
-      } else if (comm.transport === 'firebase' && comm.eventsCol) {
-        addDoc(comm.eventsCol, packet).catch(() => {});
+      if (roomState.lastSettingsPayload && roomState.lastSettingsVersion > appliedSettingsVersion) {
+        if (roomState.lastSettingsSenderId !== selfPeerId && Date.now() - roomState.lastSettingsAtMs <= 10000) {
+          appliedSettingsVersion = roomState.lastSettingsVersion;
+          applySettingsSnapshot(roomState.lastSettingsPayload);
+          showToast(`${roomState.lastSettingsSenderName || '相手'}から受信した`);
+        }
       }
     }
 
-    function handleRemoteEffect(packet) {
-      const kind = packet.kind;
-      const payload = packet.payload || {};
+    function applyRemoteEffect(kind, payload) {
+      if (!payload || typeof payload !== 'object') return;
+
       if (kind === 'tap') {
         if (typeof payload.x === 'number' && typeof payload.y === 'number') {
           addTapEffect(payload.x, payload.y, false);
         }
-      } else if (kind === 'swipe') {
-        const from = payload.from || null;
-        const to = payload.to || null;
-        const dir = payload.dir || null;
-        if (from && to && dir &&
-            typeof from.x === 'number' && typeof from.y === 'number' &&
-            typeof to.x === 'number' && typeof to.y === 'number' &&
-            typeof dir.x === 'number' && typeof dir.y === 'number') {
+        return;
+      }
+
+      if (kind === 'swipe') {
+        const from = payload.from;
+        const to = payload.to;
+        const dir = payload.dir;
+        if (
+          from && to && dir &&
+          typeof from.x === 'number' && typeof from.y === 'number' &&
+          typeof to.x === 'number' && typeof to.y === 'number' &&
+          typeof dir.x === 'number' && typeof dir.y === 'number'
+        ) {
           createSwipeEffect(from.x, from.y, dir.x * 100, dir.y * 100, false, {
             forceFrom: from,
             forceTo: to,
             forceRadius: typeof payload.radius === 'number' ? payload.radius : undefined
           });
         }
-      } else if (kind === 'loop') {
+        return;
+      }
+
+      if (kind === 'loop') {
         if (Array.isArray(payload.points)) {
           const points = payload.points
             .filter(p => p && typeof p.x === 'number' && typeof p.y === 'number')
@@ -2600,322 +2783,345 @@
       }
     }
 
-    function postLocalPacket(packet) {
-      packet.room = comm.roomCode;
-      packet.id = packet.id || makeId();
-      packet.senderId = packet.senderId || comm.clientId;
-      packet.senderName = packet.senderName || getDisplayName();
-      packet.createdAtMs = packet.createdAtMs || Date.now();
+    function sendRoomPresenceImmediately() {
+      const now = Date.now();
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName,
+        updatedAtMs: now,
+        transport: transportMode || 'local'
+      });
 
-      if (comm.channel) {
-        try { comm.channel.postMessage(packet); } catch (_) {}
+      if (transportMode === 'local') {
+        sendLocalPacket({
+          type: 'presence',
+          senderId: selfPeerId,
+          name: settings.userName,
+          updatedAtMs: now,
+          transport: transportMode,
+          roomId
+        });
+      } else if (transportMode === 'firebase' && firebaseMemberRef) {
+        setDoc(firebaseMemberRef, {
+          name: settings.userName,
+          updatedAtMs: now,
+          transport: transportMode,
+          roomId
+        }, { merge: true }).catch(() => {});
       }
 
-      try {
-        localStorage.setItem(comm.localBusKey, JSON.stringify(packet));
-      } catch (_) {}
+      refreshPeerMenuUi();
+    }
+
+    function connectLocalRoom(rawRoom) {
+      const id = safeRoomId(rawRoom);
+      if (!id) {
+        showToast('ルーム名を入れて');
+        return;
+      }
+
+      stopAllTransports(false);
+      transportMode = 'local';
+      roomId = id;
+      roomDisplayName = String(rawRoom || '').trim() || id;
+      setPeerState('connected');
+
+      membersMap.clear();
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName,
+        updatedAtMs: Date.now(),
+        transport: 'local'
+      });
+
+      if ('BroadcastChannel' in window) {
+        const channelName = `touch_effect_local_${encodeURIComponent(roomId)}`;
+        try {
+          localChannel = new BroadcastChannel(channelName);
+          localChannel.onmessage = (ev) => handleIncomingPacket(ev.data, 'local');
+        } catch (_) {
+          localChannel = null;
+        }
+      }
+
+      window.addEventListener('storage', onLocalStorage);
+
+      localHeartbeatTimer = setInterval(() => {
+        if (transportMode !== 'local') return;
+        sendRoomPresenceImmediately();
+      }, 3500);
+
+      localCleanupTimer = setInterval(() => {
+        if (transportMode !== 'local') return;
+        pruneMembers();
+        refreshPeerMenuUi();
+      }, 2500);
+
+      sendRoomPresenceImmediately();
+      refreshPeerMenuUi();
+      showToast('ローカル通信に入った');
+    }
+
+    function connectFirebaseRoom(rawRoom) {
+      const id = safeRoomId(rawRoom);
+      if (!id) {
+        showToast('ルーム名を入れて');
+        return;
+      }
+      if (!ensureFirebaseAvailability()) {
+        showToast('Firebaseが使えない');
+        return;
+      }
+
+      stopAllTransports(false);
+      transportMode = 'firebase';
+      roomId = id;
+      roomDisplayName = String(rawRoom || '').trim() || id;
+      setPeerState('connected');
+
+      membersMap.clear();
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName,
+        updatedAtMs: Date.now(),
+        transport: 'firebase'
+      });
+
+      firebaseRoomRef = doc(firestore, 'rooms', roomId);
+      firebaseMemberRef = doc(firestore, 'rooms', roomId, 'members', selfPeerId);
+
+      firebaseRoomUnsub = onSnapshot(firebaseRoomRef, (snap) => {
+        if (!snap.exists()) return;
+        updateRoomStateFromRemote(snap.data() || {});
+      });
+
+      firebaseMembersUnsub = onSnapshot(collection(firestore, 'rooms', roomId, 'members'), (snap) => {
+        const now = Date.now();
+        membersMap.clear();
+        membersMap.set(selfPeerId, {
+          id: selfPeerId,
+          name: settings.userName,
+          updatedAtMs: now,
+          transport: 'firebase'
+        });
+
+        snap.forEach((docSnap) => {
+          const data = docSnap.data() || {};
+          const name = String(data.name || '').trim() || '名無し';
+          const updatedAtMs = Number(data.updatedAtMs) || 0;
+          if (now - updatedAtMs > staleMemberMs) return;
+          membersMap.set(docSnap.id, {
+            id: docSnap.id,
+            name,
+            updatedAtMs,
+            transport: 'firebase'
+          });
+        });
+
+        refreshPeerMenuUi();
+      });
+
+      firebaseHeartbeatTimer = setInterval(() => {
+        if (transportMode !== 'firebase' || !firebaseMemberRef) return;
+        sendRoomPresenceImmediately();
+      }, 4000);
+
+      sendRoomPresenceImmediately();
+      refreshPeerMenuUi();
+      showToast('Firebaseに入った');
+    }
+
+    function handleIncomingSettingsState(data, via) {
+      if (!data || typeof data !== 'object') return;
+      updateRoomStateFromRemote(data, via);
+    }
+
+    function handleIncomingPacket(packet, via) {
+      if (!packet || typeof packet !== 'object') return;
+      if (packet.senderId === selfPeerId) return;
+
+      const now = Date.now();
+
+      if (packet.type === 'presence') {
+        const name = String(packet.name || '').trim() || '名無し';
+        const updatedAtMs = Number(packet.updatedAtMs) || now;
+        membersMap.set(packet.senderId, {
+          id: packet.senderId,
+          name,
+          updatedAtMs,
+          transport: via
+        });
+        refreshPeerMenuUi();
+        return;
+      }
+
+      if (packet.type === 'bye') {
+        membersMap.delete(packet.senderId);
+        refreshPeerMenuUi();
+        return;
+      }
+
+      if (packet.type === 'lock') {
+        roomState.activeSenderId = packet.senderId;
+        roomState.activeSenderName = String(packet.senderName || '誰か');
+        roomState.activeSenderUntil = Number(packet.until) || 0;
+        refreshPeerMenuUi();
+        return;
+      }
+
+      if (packet.type === 'unlock') {
+        if (roomState.activeSenderId === packet.senderId) {
+          roomState.activeSenderId = null;
+          roomState.activeSenderName = '';
+          roomState.activeSenderUntil = 0;
+        }
+        refreshPeerMenuUi();
+        return;
+      }
+
+      if (packet.type === 'settings-state') {
+        handleIncomingSettingsState(packet, via);
+        return;
+      }
+
+      if (packet.type === 'settings') {
+        roomState.lastSettingsVersion = Number(packet.version) || (roomState.lastSettingsVersion + 1);
+        roomState.lastSettingsPayload = packet.payload || null;
+        roomState.lastSettingsSenderId = packet.senderId || null;
+        roomState.lastSettingsSenderName = packet.senderName || '相手';
+        roomState.lastSettingsAtMs = Number(packet.ts) || now;
+
+        if (Date.now() <= receiveWindowUntil && packet.senderId !== selfPeerId) {
+          appliedSettingsVersion = roomState.lastSettingsVersion;
+          applySettingsSnapshot(packet.payload);
+          showToast(`${packet.senderName || '相手'}から受信した`);
+        }
+
+        refreshPeerMenuUi();
+        return;
+      }
+
+      if (packet.type === 'effect') {
+        if (packet.target && packet.target !== selfPeerId) return;
+        applyRemoteEffect(packet.kind, packet.payload);
+        return;
+      }
     }
 
     function onLocalStorage(ev) {
-      if (ev.key !== comm.localBusKey || !ev.newValue) return;
+      if (ev.key !== BUS_KEY || !ev.newValue) return;
       try {
         handleIncomingPacket(JSON.parse(ev.newValue), 'local');
       } catch (_) {}
     }
 
-    function startLocalPresenceTimer() {
-      stopLocalPresenceTimer();
-      localPresenceTimer = setInterval(() => {
-        if (comm.transport !== 'local') return;
-        refreshOwnMemberEntry();
-        postLocalPacket({
-          type: 'presence',
-          room: comm.roomCode,
-          id: comm.clientId,
-          name: getDisplayName(),
-          lastSeenMs: Date.now()
-        });
-      }, 2500);
+    function openJoinForMenuChoice(mode) {
+      joinMode = mode;
+      openJoinOverlay(mode);
     }
 
-    function stopLocalPresenceTimer() {
-      clearInterval(localPresenceTimer);
-      localPresenceTimer = null;
+    function closeJoinFromCancel() {
+      closeJoinOverlay();
+      joinMode = null;
     }
 
-    async function openLocalConnection(code) {
-      stopAllComm(false);
-      comm.transport = 'local';
-      comm.transportState = 'searching';
-      comm.roomCode = code;
-      comm.localBusKey = LOCAL_BUS_PREFIX + code;
-      comm.members = new Map();
-      comm.currentSendLock = null;
-      comm.receiveWindowUntil = 0;
-      comm.lastAppliedLockId = '';
-      comm.members.set(comm.clientId, { id: comm.clientId, name: getDisplayName(), lastSeenMs: Date.now() });
-
-      const channelName = LOCAL_ROOM_PREFIX + code;
-      if ('BroadcastChannel' in window) {
-        try {
-          comm.channel = new BroadcastChannel(channelName);
-          comm.channel.onmessage = (ev) => handleIncomingPacket(ev.data, 'local');
-        } catch (_) {
-          comm.channel = null;
-        }
-      }
-
-      window.addEventListener('storage', onLocalStorage);
-      window.addEventListener('beforeunload', onBeforeUnload, { once: true });
-
-      refreshOwnMemberEntry();
-      postLocalPacket({ type: 'presence', room: comm.roomCode, id: comm.clientId, name: getDisplayName(), lastSeenMs: Date.now() });
-      startLocalPresenceTimer();
-      startCleanupTimer();
-
-      comm.transportState = 'connected';
-      updatePeerButtonUi();
-      updatePeerMenuUi();
+    function updateTransportButtons() {
+      peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
+      peerButton.classList.toggle('searching', peerState === 'searching');
+      peerButton.classList.toggle('connected', peerState === 'connected');
     }
 
-    async function openFirebaseConnection(code) {
-      stopAllComm(false);
-      comm.transport = 'firebase';
-      comm.transportState = 'searching';
-      comm.roomCode = code;
-      comm.members = new Map();
-      comm.currentSendLock = null;
-      comm.receiveWindowUntil = 0;
-      comm.lastAppliedLockId = '';
-      comm.roomRef = doc(db, 'rooms', code);
-      comm.membersCol = collection(comm.roomRef, 'members');
-      comm.eventsCol = collection(comm.roomRef, 'events');
-      comm.memberRef = doc(comm.membersCol, comm.clientId);
-
-      await setDoc(comm.roomRef, {
-        roomCode: code,
-        createdAtMs: Date.now(),
-        updatedAtMs: Date.now()
-      }, { merge: true });
-
-      await setDoc(comm.memberRef, {
-        clientId: comm.clientId,
-        name: getDisplayName(),
-        roomCode: code,
-        lastSeenMs: Date.now(),
-        joinedAtMs: Date.now()
-      }, { merge: true });
-
-      comm.unsubMembers = onSnapshot(query(comm.membersCol, orderBy('joinedAtMs', 'asc')), (snap) => {
-        const next = new Map();
-        next.set(comm.clientId, { id: comm.clientId, name: getDisplayName(), lastSeenMs: Date.now() });
-
-        snap.forEach((docSnap) => {
-          const data = docSnap.data() || {};
-          const id = docSnap.id;
-          const name = sanitizeDisplayName(data.name);
-          const lastSeenMs = typeof data.lastSeenMs === 'number' ? data.lastSeenMs : 0;
-          if (id === comm.clientId || Date.now() - lastSeenMs <= 12000) {
-            next.set(id, { id, name, lastSeenMs });
-          }
-        });
-
-        comm.members = next;
-        updatePeerMenuUi();
-      });
-
-      comm.unsubRoom = onSnapshot(comm.roomRef, (snap) => {
-        const data = snap.data() || {};
-        const lock = data.sendLock || null;
-        comm.currentSendLock = lock && typeof lock === 'object' ? lock : null;
-        purgeExpiredSendLock();
-        updatePeerMenuUi();
-        maybeApplyReceiveFromCurrentLock();
-      });
-
-      comm.unsubEvents = onSnapshot(query(comm.eventsCol, orderBy('createdAtMs', 'asc')), (snap) => {
-        snap.docChanges().forEach((change) => {
-          if (change.type !== 'added') return;
-          const data = change.doc.data() || {};
-          handleIncomingPacket({ ...data, id: change.doc.id }, 'firebase');
-        });
-      });
-
-      comm.heartbeatTimer = setInterval(() => {
-        if (comm.transport !== 'firebase' || !comm.memberRef) return;
-        setDoc(comm.memberRef, {
-          name: getDisplayName(),
-          roomCode: comm.roomCode,
-          lastSeenMs: Date.now()
-        }, { merge: true }).catch(() => {});
-      }, 2500);
-
-      startCleanupTimer();
-      window.addEventListener('beforeunload', onBeforeUnload, { once: true });
-
-      comm.transportState = 'connected';
-      updatePeerButtonUi();
-      updatePeerMenuUi();
-      refreshOwnMemberEntry();
-    }
-
-    function startCleanupTimer() {
-      clearInterval(comm.roomCleanupTimer);
-      comm.roomCleanupTimer = setInterval(() => {
-        if (comm.transport === 'none') return;
-        purgeStaleMembers();
-        purgeExpiredSendLock();
-      }, 1000);
-      comm.localCleanupTimer = comm.roomCleanupTimer;
-    }
-
-    function stopFirebaseTransport(sendLeave = false) {
-      clearInterval(comm.heartbeatTimer);
-      comm.heartbeatTimer = null;
-
-      if (sendLeave && comm.memberRef) {
-        deleteDoc(comm.memberRef).catch(() => {});
-      }
-
-      if (comm.unsubMembers) comm.unsubMembers();
-      if (comm.unsubRoom) comm.unsubRoom();
-      if (comm.unsubEvents) comm.unsubEvents();
-      comm.unsubMembers = null;
-      comm.unsubRoom = null;
-      comm.unsubEvents = null;
-
-      comm.roomRef = null;
-      comm.membersCol = null;
-      comm.eventsCol = null;
-      comm.memberRef = null;
-    }
-
-    function stopLocalTransport(sendLeave = false) {
-      stopLocalPresenceTimer();
-
-      if (sendLeave) {
-        postLocalPacket({ type: 'leave', room: comm.roomCode, id: comm.clientId });
-      }
-
-      if (comm.channel) {
-        try { comm.channel.close(); } catch (_) {}
-        comm.channel = null;
-      }
-
-      window.removeEventListener('storage', onLocalStorage);
-    }
-
-    function stopAllComm(sendLeave = true) {
-      if (comm.transport === 'local') {
-        stopLocalTransport(sendLeave);
-      } else if (comm.transport === 'firebase') {
-        stopFirebaseTransport(sendLeave);
-      }
-
-      comm.transport = 'none';
-      comm.transportState = 'off';
-      comm.roomCode = '';
-      comm.currentSendLock = null;
-      comm.receiveWindowUntil = 0;
-      comm.lastAppliedLockId = '';
-      comm.members = new Map();
-      clearInterval(comm.heartbeatTimer);
-      clearInterval(comm.roomCleanupTimer);
-      clearInterval(comm.localCleanupTimer);
-      comm.heartbeatTimer = null;
-      comm.roomCleanupTimer = null;
-      comm.localCleanupTimer = null;
-
-      updatePeerButtonUi();
-      updatePeerMenuUi();
-    }
-
-    function onBeforeUnload() {
-      if (comm.transport === 'local') {
-        stopLocalTransport(true);
-      } else if (comm.transport === 'firebase') {
-        stopFirebaseTransport(true);
-      }
-    }
-
-    function openPeerConnectionFlow(mode) {
-      connectMode = mode;
-      closePeerMenu();
-      openConnectDialog(mode);
-    }
-
-    function startTransportFromDialog() {
-      const raw = roomCodeInput.value.trim();
-      if (!raw) {
-        showToast('文字を入れて');
-        return;
-      }
-
-      const code = raw.replace(/\s+/g, '').slice(0, 32);
-      if (!code) {
-        showToast('文字を入れて');
-        return;
-      }
-
-      closeConnectDialog();
-
-      if (connectMode === 'local') {
-        openLocalConnection(code).then(() => {
-          showToast('ローカル通信に参加した');
-        }).catch(() => {
-          showToast('参加できなかった');
-        });
-      } else {
-        openFirebaseConnection(code).then(() => {
-          showToast('Firebase通信に参加した');
-        }).catch(() => {
-          showToast('参加できなかった');
-          stopAllComm(false);
-        });
-      }
-    }
-
-    function handlePeerButtonClick() {
+    function openPeerMenuByCurrentState() {
       if (!settings.peerButtonVisible) return;
-
-      if (comm.transportState === 'searching') {
-        stopAllComm(true);
-        showToast('キャンセルした');
-        return;
-      }
-
-      if (comm.transport === 'none') {
-        openPeerMenu();
-        return;
-      }
-
       openPeerMenu();
     }
 
-    function resetAllSettings() {
-      const ok = window.confirm('設定を初期状態に戻します。よろしいですか？');
-      if (!ok) return;
-
-      Object.assign(settings, defaults);
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch (_) {}
-      if (comm.transport !== 'none') stopAllComm(true);
-      syncSettingsUi();
-      document.body.style.background = getBgColor();
+    function cleanupExpiredStuff() {
+      normalizeRoomState();
+      updateTransportButtons();
     }
+
+    function sendCurrentSettingsIfPossible() {
+      attemptSendCurrentSettings();
+    }
+
+    function maybeApplyLatestSettingsNow() {
+      if (roomState.lastSettingsPayload && roomState.lastSettingsVersion > appliedSettingsVersion) {
+        if (roomState.lastSettingsSenderId !== selfPeerId && Date.now() - roomState.lastSettingsAtMs <= 10000) {
+          appliedSettingsVersion = roomState.lastSettingsVersion;
+          applySettingsSnapshot(roomState.lastSettingsPayload);
+          showToast(`${roomState.lastSettingsSenderName || '相手'}から受信した`);
+        }
+      }
+    }
+
+    function getMemberListArray() {
+      const now = Date.now();
+      return Array.from(membersMap.values())
+        .filter(item => item && (now - (Number(item.updatedAtMs) || 0) <= staleMemberMs || item.id === selfPeerId))
+        .sort((a, b) => {
+          if (a.id === selfPeerId) return -1;
+          if (b.id === selfPeerId) return 1;
+          return a.name.localeCompare(b.name, 'ja');
+        });
+    }
+
+    function refreshPeerMenuUiExternal() {
+      refreshPeerMenuUi();
+    }
+
+    function openOrClosePeerMenu() {
+      if (!settings.peerButtonVisible) return;
+      if (peerMenuOpen) {
+        closePeerMenu();
+        return;
+      }
+      openPeerMenuByCurrentState();
+    }
+
+    function updatePeerButtonUi() {
+      updateTransportButtons();
+    }
+
+    openSettings.addEventListener('click', openOverlay);
+    closeSettings.addEventListener('click', closeOverlay);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeOverlay();
+    });
+
+    peerButton.addEventListener('click', () => {
+      if (!settings.peerButtonVisible) return;
+      if (peerState === 'connected') {
+        openOrClosePeerMenu();
+        return;
+      }
+      if (peerState === 'searching') {
+        stopAllTransports(true);
+        showToast('キャンセルした');
+        return;
+      }
+      openOrClosePeerMenu();
+    });
+
+    peerMenuOverlay.addEventListener('click', (e) => {
+      if (e.target === peerMenuOverlay) closePeerMenu();
+    });
+
+    joinOverlay.addEventListener('click', (e) => {
+      if (e.target === joinOverlay) closeJoinOverlay();
+    });
 
     bgMode.addEventListener('change', () => {
       settings.bgMode = bgMode.value;
       bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
-      document.body.style.background = getBgColor();
-      saveSettings();
+      applyAndSave();
+      maybeApplyLatestSettingsNow();
     });
 
     bgCustomInput.addEventListener('input', () => {
       settings.bgCustom = bgCustomInput.value.trim();
-      document.body.style.background = getBgColor();
-      saveSettings();
+      applyAndSave();
+      maybeApplyLatestSettingsNow();
     });
 
     tapColorInput.addEventListener('input', () => {
@@ -2959,170 +3165,78 @@
     peerButtonToggle.addEventListener('change', () => {
       settings.peerButtonVisible = peerButtonToggle.checked;
       if (!settings.peerButtonVisible) {
-        stopAllComm(true);
+        stopAllTransports(false);
       }
-      updateSettingsUiAvailability();
-      updatePeerButtonUi();
-      updatePeerMenuUi();
+      updateTransportButtons();
+      syncSettingsUi();
       saveSettings();
     });
 
-    displayNameInput.addEventListener('input', () => {
-      settings.displayName = sanitizeDisplayName(displayNameInput.value);
-      displayNameInput.value = settings.displayName;
+    peerNameInput.addEventListener('input', () => {
+      settings.userName = safeName(peerNameInput.value);
+      peerNameInput.value = settings.userName;
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName,
+        updatedAtMs: Date.now(),
+        transport: transportMode || 'local'
+      });
       saveSettings();
-      refreshOwnPresence();
-      updatePeerMenuUi();
+      syncSettingsUi();
+      sendRoomPresenceImmediately();
+      refreshPeerMenuUi();
     });
 
     resetSettings.addEventListener('click', resetAllSettings);
 
-    openSettings.addEventListener('click', () => openOverlay(overlay));
-    closeSettings.addEventListener('click', () => closeOverlay(overlay));
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeOverlay(overlay);
-    });
+    joinConfirm.addEventListener('click', joinCurrentMode);
+    joinCancel.addEventListener('click', closeJoinFromCancel);
 
-    peerButton.addEventListener('click', handlePeerButtonClick);
-
-    peerMenuOverlay.addEventListener('click', (e) => {
-      if (e.target === peerMenuOverlay) closePeerMenu();
+    joinInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        joinCurrentMode();
+      }
     });
 
     peerChoice1.addEventListener('click', () => {
-      if (comm.transport === 'none') {
-        openPeerConnectionFlow('local');
-      } else {
-        stopAllComm(true);
-        closePeerMenu();
+      if (peerState === 'connected') {
+        disconnectCurrentTransport(true);
         showToast('切断した');
+        return;
       }
+      closePeerMenu();
+      openJoinForMenuChoice('local');
     });
 
     peerChoice2.addEventListener('click', () => {
-      if (comm.transport === 'none') {
-        openPeerConnectionFlow('firebase');
-      } else {
-        const lock = getActiveSendLock();
-        if (lock && lock.ownerId !== comm.clientId) return;
-        sendCurrentSettings();
+      if (peerState === 'connected') {
+        sendCurrentSettingsIfPossible();
+        return;
       }
+      closePeerMenu();
+      openJoinForMenuChoice('firebase');
     });
 
     peerChoice3.addEventListener('click', () => {
-      if (comm.transport === 'none') {
+      if (peerState === 'connected') {
+        setReceiveWindow();
         closePeerMenu();
-      } else {
-        comm.receiveWindowUntil = Date.now() + 10000;
-        maybeApplyReceiveFromCurrentLock();
-        showToast('10秒以内の設定を待ってる');
+        return;
       }
+      closePeerMenu();
     });
-
-    connectOverlay.addEventListener('click', (e) => {
-      if (e.target === connectOverlay) closeConnectDialog();
-    });
-
-    connectJoinButton.addEventListener('click', startTransportFromDialog);
-    connectCancelButton.addEventListener('click', closeConnectDialog);
-
-    roomCodeInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') startTransportFromDialog();
-    });
-
-    function openPeerMenuIfConnected() {
-      openPeerMenu();
-      updatePeerMenuUi();
-    }
-
-    function closePeerMenu() {
-      closeOverlay(peerMenuOverlay);
-      peerTopbar.classList.remove('open');
-    }
-
-    function openConnectDialog(mode) {
-      connectMode = mode;
-      roomCodeInput.value = '';
-      if (mode === 'local') {
-        connectTitle.textContent = 'ローカル通信';
-        connectText.textContent = '同じ文字を入れた人とつながる';
-      } else {
-        connectTitle.textContent = 'Firebase通信';
-        connectText.textContent = '同じ文字を入れた人とつながる';
-      }
-      openOverlay(connectOverlay);
-      setTimeout(() => roomCodeInput.focus(), 50);
-    }
-
-    function closeConnectDialog() {
-      closeOverlay(connectOverlay);
-    }
-
-    function openPeerMenu() {
-      if (!settings.peerButtonVisible) return;
-      updatePeerMenuUi();
-      openOverlay(peerMenuOverlay);
-
-      const rect = peerButton.getBoundingClientRect();
-      const stageRect = document.getElementById('peerMenuStage').getBoundingClientRect();
-      const stageW = stageRect.width || window.innerWidth;
-      const stageH = stageRect.height || window.innerHeight;
-
-      const anchorX = rect.left + rect.width / 2 - stageW / 2;
-      const anchorY = rect.top + rect.height / 2 - stageH / 2;
-
-      const setFrom = (el, tx, ty) => {
-        el.style.setProperty('--from-x', `${anchorX}px`);
-        el.style.setProperty('--from-y', `${anchorY}px`);
-        el.style.setProperty('--to-x', `${tx}px`);
-        el.style.setProperty('--to-y', `${ty}px`);
-      };
-
-      if (comm.transport === 'none') {
-        peerChoice1.className = 'peer-choice wifi';
-        peerChoice2.className = 'peer-choice firebase';
-        peerChoice3.className = 'peer-choice close';
-        peerChoiceLabel1.textContent = 'ローカルで\n通信';
-        peerChoiceLabel2.textContent = 'Firebaseで\n通信';
-        peerChoiceLabel3.textContent = '閉じる';
-      } else {
-        const lock = getActiveSendLock();
-        peerChoice1.className = 'peer-choice disconnect';
-        peerChoice3.className = 'peer-choice receive';
-
-        if (lock && lock.ownerId !== comm.clientId) {
-          peerChoice2.className = 'peer-choice send disabledChoice';
-          peerChoiceLabel2.textContent = `${truncateName(lock.ownerName)}が\n送信中…`;
-        } else if (lock && lock.ownerId === comm.clientId) {
-          peerChoice2.className = 'peer-choice send disabledChoice';
-          peerChoiceLabel2.textContent = '送信中…';
-        } else {
-          peerChoice2.className = 'peer-choice send';
-          peerChoiceLabel2.textContent = '設定を\n送信';
-        }
-
-        peerChoiceLabel1.textContent = '接続を\n切断';
-        peerChoiceLabel3.textContent = '設定を\n受信';
-      }
-
-      setFrom(peerChoice1, 0, -118);
-      setFrom(peerChoice2, -118, 108);
-      setFrom(peerChoice3, 118, 108);
-
-      peerTopbar.classList.toggle('open', comm.transport !== 'none');
-      updatePeerMenuUi();
-    }
 
     canvas.addEventListener('pointerdown', (e) => {
       if (overlay.classList.contains('open')) return;
       if (peerMenuOverlay.classList.contains('open')) return;
-      if (connectOverlay.classList.contains('open')) return;
+      if (joinOverlay.classList.contains('open')) return;
       if (activePointerId !== null) return;
 
       activePointerId = e.pointerId;
       canvas.setPointerCapture(activePointerId);
 
-      const p = { x: e.clientX, y: e.clientY };
+      const p = getPoint(e);
       pointerDownTime = nowMs();
       pointerDownPos = { x: p.x, y: p.y };
       lastPos = { x: p.x, y: p.y };
@@ -3135,7 +3249,7 @@
     canvas.addEventListener('pointermove', (e) => {
       if (activePointerId !== e.pointerId) return;
 
-      const p = { x: e.clientX, y: e.clientY };
+      const p = getPoint(e);
       const t = nowMs();
 
       if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
@@ -3158,7 +3272,7 @@
     function finishPointer(e) {
       if (activePointerId !== e.pointerId) return;
 
-      const p = { x: e.clientX, y: e.clientY };
+      const p = getPoint(e);
       const elapsed = nowMs() - pointerDownTime;
       const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
 
@@ -3175,6 +3289,7 @@
       activePointerId = null;
       strokePoints = [];
       pointerHadLoop = false;
+
       e.preventDefault();
     }
 
@@ -3188,25 +3303,94 @@
 
     const darkMql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
-    loadSettings();
-    updateTheme();
-    resize();
-    syncSettingsUi();
-    document.body.style.background = getBgColor();
-    updatePeerButtonUi();
-    updatePeerMenuUi();
+    function init() {
+      loadSettings();
 
-    if (darkMql) {
-      if (typeof darkMql.addEventListener === 'function') {
-        darkMql.addEventListener('change', updateTheme);
-      } else if (typeof darkMql.addListener === 'function') {
-        darkMql.addListener(updateTheme);
+      if (!settings.userName || settings.userName === 'ユーザー') {
+        settings.userName = defaultName();
       }
+
+      membersMap.clear();
+      membersMap.set(selfPeerId, {
+        id: selfPeerId,
+        name: settings.userName,
+        updatedAtMs: Date.now(),
+        transport: 'local'
+      });
+
+      updateTheme();
+      resize();
+      syncSettingsUi();
+      document.body.style.background = getBgColor();
+      updateTransportButtons();
+      refreshPeerMenuUi();
+
+      if (darkMql) {
+        if (typeof darkMql.addEventListener === 'function') {
+          darkMql.addEventListener('change', updateTheme);
+        } else if (typeof darkMql.addListener === 'function') {
+          darkMql.addListener(updateTheme);
+        }
+      }
+
+      window.addEventListener('resize', resize);
+      requestAnimationFrame(render);
     }
 
-    window.addEventListener('resize', resize);
+    init();
 
-    requestAnimationFrame(render);
+    function refreshPeerMenuUi() {
+      if (!settings.peerButtonVisible) {
+        peerButton.classList.add('hidden');
+      } else {
+        peerButton.classList.remove('hidden');
+      }
+
+      const list = getMemberListArray();
+      peerMembers.innerHTML = '';
+
+      for (const item of list) {
+        const chip = document.createElement('div');
+        chip.className = 'peer-member';
+        chip.textContent = item.id === selfPeerId ? `${item.name}（自分）` : item.name;
+        peerMembers.appendChild(chip);
+      }
+
+      peerRoomLabel.textContent = roomDisplayName
+        ? `${roomDisplayName} / ${transportMode === 'firebase' ? 'Firebase' : 'ローカル'}`
+        : '未接続';
+
+      const lock = activeLock();
+      if (peerState === 'connected') {
+        peerRoomStatus.textContent = lock && lock.senderId !== selfPeerId
+          ? `${lock.senderName}が送信中…`
+          : `${list.length}人接続中`;
+      } else if (peerState === 'searching') {
+        peerRoomStatus.textContent = '接続中…';
+      } else {
+        peerRoomStatus.textContent = `${list.length}人`;
+      }
+
+      if (peerState === 'connected') {
+        peerChoiceLabel1.textContent = '接続を\n切断';
+        peerChoiceLabel2.textContent = lock && lock.senderId !== selfPeerId ? `${lock.senderName}が\n送信中…` : '設定を\n送信';
+        peerChoiceLabel3.textContent = '設定を\n受信';
+        peerChoice1.className = 'peer-choice disconnect';
+        peerChoice2.className = 'peer-choice send';
+        peerChoice3.className = 'peer-choice receive';
+        peerChoice2.disabled = !!(lock && lock.senderId !== selfPeerId);
+      } else {
+        peerChoiceLabel1.textContent = 'ローカルで\n通信';
+        peerChoiceLabel2.textContent = 'Firebaseで\n通信';
+        peerChoiceLabel3.textContent = 'やめる';
+        peerChoice1.className = 'peer-choice wifi';
+        peerChoice2.className = 'peer-choice online';
+        peerChoice3.className = 'peer-choice cancel';
+        peerChoice2.disabled = false;
+      }
+
+      updateTransportButtons();
+    }
   </script>
 </body>
 </html>
