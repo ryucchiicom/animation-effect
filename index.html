@@ -6,1729 +6,2601 @@
   <meta name="color-scheme" content="light dark" />
   <title>Touch Effects</title>
   <style>
-    :root{
-      --bg:#fff;
-      --edge:#111;
-      --panel-bg:rgba(255,255,255,.84);
-      --panel-border:rgba(0,0,0,.14);
-      --text:#101010;
-      --muted:rgba(16,16,16,.45);
-      --track:rgba(0,0,0,.12);
-      --track-disabled:rgba(0,0,0,.06);
-      --thumb:rgba(0,0,0,.72);
-      --peer-blue:#2f78ff;
+    :root {
+      --bg: #fff;
+      --edge: #111;
+      --panel-bg: rgba(255, 255, 255, 0.84);
+      --panel-border: rgba(0, 0, 0, 0.14);
+      --text: #101010;
+      --muted: rgba(16, 16, 16, 0.45);
+      --track: rgba(0, 0, 0, 0.12);
+      --track-disabled: rgba(0, 0, 0, 0.06);
+      --thumb: rgba(0, 0, 0, 0.72);
+      --peer-blue: #2f78ff;
     }
-    @media (prefers-color-scheme: dark){
-      :root{
-        --bg:#000;
-        --edge:#fafafa;
-        --panel-bg:rgba(0,0,0,.82);
-        --panel-border:rgba(255,255,255,.16);
-        --text:#f5f5f5;
-        --muted:rgba(245,245,245,.45);
-        --track:rgba(255,255,255,.14);
-        --track-disabled:rgba(255,255,255,.07);
-        --thumb:rgba(255,255,255,.78);
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #000;
+        --edge: #fafafa;
+        --panel-bg: rgba(0, 0, 0, 0.82);
+        --panel-border: rgba(255, 255, 255, 0.16);
+        --text: #f5f5f5;
+        --muted: rgba(245, 245, 245, 0.45);
+        --track: rgba(255, 255, 255, 0.14);
+        --track-disabled: rgba(255, 255, 255, 0.07);
+        --thumb: rgba(255, 255, 255, 0.78);
       }
     }
-    html,body{
-      margin:0;
-      width:100%;
-      height:100%;
-      overflow:hidden;
-      background:var(--bg);
-      color-scheme:light dark;
-      touch-action:none;
-      user-select:none;
-      -webkit-user-select:none;
-      overscroll-behavior:none;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    }
-    body{ position:relative; background:var(--bg); }
-    canvas{ display:block; width:100vw; height:100vh; touch-action:none; }
 
-    .gear-btn,.peer-btn{
-      position:fixed;
-      width:46px;height:46px;
-      border-radius:50%;
-      border:1.7px solid var(--edge);
-      background:transparent;
-      color:transparent;
-      padding:0;
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      z-index:20;
-      -webkit-tap-highlight-color:transparent;
-      -webkit-appearance:none;
-      appearance:none;
-      box-sizing:border-box;
-      text-shadow:none;
-    }
-    .gear-btn{ top:calc(env(safe-area-inset-top,0px) + 10px); right:calc(env(safe-area-inset-right,0px) + 10px); }
-    .peer-btn{ top:calc(env(safe-area-inset-top,0px) + 10px); left:calc(env(safe-area-inset-left,0px) + 10px); }
-    .gear-btn span,.peer-btn .peer-icon{
-      font-size:20px;
-      font-weight:400;
-      line-height:1;
-      transform:translateY(-.5px);
-      color:var(--edge);
-      -webkit-text-stroke:0;
-      text-shadow:none;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI Symbol",sans-serif;
-    }
-    .gear-btn:active,.peer-btn:active{ transform:scale(.97); }
-    .peer-btn.hidden{ display:none; }
-    .peer-btn.searching,.peer-btn.connected{ border-color:var(--peer-blue); color:var(--peer-blue); }
-    .peer-btn.connected .peer-icon{ color:var(--peer-blue); }
-    .peer-icon{ display:block; width:20px; text-align:center; }
-    .peer-spinner{ display:none; position:relative; width:20px; height:20px; color:var(--peer-blue); }
-    .peer-btn.searching .peer-icon{ display:none; }
-    .peer-btn.searching .peer-spinner{ display:block; animation:peer-spin .9s linear infinite; }
-    .peer-spinner span{
-      position:absolute; left:50%; top:50%;
-      width:4px; height:4px; margin:-2px 0 0 -2px;
-      border-radius:50%;
-      background:currentColor;
-      transform-origin:0 0;
-    }
-    .peer-spinner span:nth-child(1){ transform:translate(0,-8px); opacity:1; }
-    .peer-spinner span:nth-child(2){ transform:translate(5.5px,-5.5px); opacity:.82; }
-    .peer-spinner span:nth-child(3){ transform:translate(8px,0); opacity:.64; }
-    .peer-spinner span:nth-child(4){ transform:translate(5.5px,5.5px); opacity:.46; }
-    .peer-spinner span:nth-child(5){ transform:translate(0,8px); opacity:.34; }
-    .peer-spinner span:nth-child(6){ transform:translate(-5.5px,5.5px); opacity:.46; }
-    .peer-spinner span:nth-child(7){ transform:translate(-8px,0); opacity:.64; }
-    .peer-spinner span:nth-child(8){ transform:translate(-5.5px,-5.5px); opacity:.82; }
-    @keyframes peer-spin{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
-
-    .overlay,.peer-menu-overlay,.qr-overlay,.room-overlay{
-      position:fixed;
-      inset:0;
-      z-index:40;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      background:rgba(0,0,0,.34);
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
-      padding:18px;
-      box-sizing:border-box;
-    }
-    .overlay.open,.peer-menu-overlay.open,.qr-overlay.open,.room-overlay.open{ display:flex; }
-
-    .panel{
-      width:min(92vw,460px);
-      max-height:min(84vh,680px);
-      overflow:auto;
-      border-radius:26px;
-      background:var(--panel-bg);
-      border:1px solid var(--panel-border);
-      box-shadow:0 14px 40px rgba(0,0,0,.22);
-      color:var(--text);
-      padding:18px 18px 16px;
-      box-sizing:border-box;
-      scrollbar-width:thin;
-    }
-    .panel-header{
-      position:sticky;
-      top:0;
-      z-index:2;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin:-18px -18px 18px;
-      padding:18px 18px 14px;
-      background:linear-gradient(to bottom, var(--panel-bg) 80%, rgba(0,0,0,0));
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
-      border-bottom:1px solid rgba(127,127,127,.12);
-    }
-    .panel-title{ font-size:18px; font-weight:700; letter-spacing:.02em; }
-
-    .close-btn,.ghost-btn,.danger-btn{
-      appearance:none;
-      -webkit-tap-highlight-color:transparent;
-      cursor:pointer;
-      border-radius:14px;
-      font-weight:650;
-    }
-    .close-btn{
-      border:1.5px solid var(--edge);
-      background:transparent;
-      color:var(--text);
-      min-width:42px;
-      height:36px;
-      padding:0 14px;
-      font-size:14px;
-    }
-    .close-btn:active,.ghost-btn:active,.danger-btn:active{ transform:scale(.98); }
-
-    .setting-block{ padding:14px 0 4px; border-top:1px solid rgba(127,127,127,.16); }
-    .setting-block:first-of-type{ border-top:0; padding-top:0; }
-    .setting-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .setting-label{ display:flex; flex-direction:column; gap:4px; min-width:0; }
-    .setting-label .main{ font-size:15px; font-weight:650; line-height:1.2; }
-    .setting-label .sub{ font-size:12px; color:var(--muted); line-height:1.3; }
-
-    .switch{ position:relative; width:56px; height:34px; flex:0 0 auto; }
-    .switch input{ opacity:0; width:0; height:0; position:absolute; }
-    .slider{
-      position:absolute; inset:0; background:rgba(127,127,127,.18); border:1px solid var(--panel-border); border-radius:999px; transition:.2s ease; cursor:pointer;
-    }
-    .slider::before{
-      content:"";
-      position:absolute; left:4px; top:4px; width:24px; height:24px; border-radius:50%; background:var(--thumb); transition:.2s ease;
-    }
-    .switch input:checked + .slider{ background:rgba(55,180,90,.22); }
-    .switch input:checked + .slider::before{ transform:translateX(22px); }
-
-    .control-row{ display:flex; align-items:center; gap:10px; justify-content:space-between; margin-top:10px; }
-    .mode-select{
-      width:128px; height:36px; border-radius:12px; border:1px solid var(--panel-border); background:transparent; color:var(--text);
-      padding:0 10px; font-size:14px; outline:none; appearance:none; -webkit-appearance:none;
-    }
-    .hex-input{
-      width:100%; box-sizing:border-box; height:38px; border-radius:12px; border:1px solid var(--panel-border);
-      background:transparent; color:var(--text); padding:0 12px; font-size:14px; outline:none;
-    }
-    .hex-input::placeholder{ color:var(--muted); }
-    .sub-input-wrap{ margin-top:10px; }
-    .disabled{ opacity:.34; pointer-events:none; }
-
-    .range-wrap{ margin-top:12px; padding-left:2px; }
-    .range-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:8px; }
-    .range-title{ font-size:13px; font-weight:650; }
-    .range-value{ font-size:12px; color:var(--muted); }
-
-    input[type="range"]{
-      width:100%;
-      margin:0;
-      appearance:none;
-      -webkit-appearance:none;
-      background:transparent;
-      height:28px;
-      outline:none;
-    }
-    input[type="range"]::-webkit-slider-runnable-track{ height:7px; border-radius:999px; background:var(--track); }
-    .disabled input[type="range"]::-webkit-slider-runnable-track{ background:var(--track-disabled); }
-    input[type="range"]::-webkit-slider-thumb{
-      -webkit-appearance:none; appearance:none; width:22px; height:22px; border-radius:50%; margin-top:-7.5px; background:var(--thumb); border:0;
-      box-shadow:0 0 0 3px rgba(127,127,127,.15);
-    }
-    input[type="range"]::-moz-range-track{ height:7px; border-radius:999px; background:var(--track); }
-    .disabled input[type="range"]::-moz-range-track{ background:var(--track-disabled); }
-    input[type="range"]::-moz-range-thumb{
-      width:22px; height:22px; border-radius:50%; background:var(--thumb); border:0; box-shadow:0 0 0 3px rgba(127,127,127,.15);
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color-scheme: light dark;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      overscroll-behavior: none;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    .effect-grid{ display:grid; grid-template-columns:1fr; gap:10px; margin-top:12px; }
-    .effect-item{ display:flex; flex-direction:column; gap:6px; padding:10px 0 0; }
-    .effect-item + .effect-item{ border-top:1px solid rgba(127,127,127,.12); padding-top:12px; }
-    .effect-name{ font-size:13px; font-weight:650; }
-    .effect-desc{ font-size:12px; color:var(--muted); line-height:1.35; }
-
-    .footer-actions{ display:flex; gap:10px; margin-top:14px; }
-    .danger-btn{
-      border:1.5px solid rgba(220,40,40,.55);
-      background:transparent;
-      color:#d23636;
-      min-width:0;
-      height:40px;
-      padding:0 14px;
-      font-size:14px;
-      flex:1 1 auto;
-    }
-    .ghost-btn{
-      border:1.5px solid var(--panel-border);
-      background:transparent;
-      color:var(--text);
-      height:40px;
-      padding:0 14px;
-      font-size:14px;
+    body {
+      position: relative;
+      background: var(--bg);
     }
 
-    .dialog{
-      width:min(92vw,520px);
-      border-radius:26px;
-      background:var(--panel-bg);
-      border:1px solid var(--panel-border);
-      box-shadow:0 14px 40px rgba(0,0,0,.22);
-      color:var(--text);
-      padding:18px;
-      box-sizing:border-box;
-      max-height:min(86vh,720px);
-      overflow:auto;
-    }
-    .dialog-title{ font-size:18px; font-weight:700; margin-bottom:12px; }
-    .dialog-text{ font-size:13px; color:var(--muted); line-height:1.45; margin-bottom:12px; }
-
-    .qr-box{
-      width:min(72vw,320px); aspect-ratio:1/1; margin:0 auto 12px; border-radius:18px; overflow:hidden;
-      background:rgba(255,255,255,.95); border:1px solid rgba(0,0,0,.08); display:grid; place-items:center;
-    }
-    .qr-box img{ width:100%; height:100%; object-fit:cover; display:block; }
-
-    .qr-actions,.room-actions{ display:flex; gap:10px; flex-wrap:wrap; }
-    .room-code-list{ display:flex; gap:8px; flex-wrap:wrap; padding-top:12px; margin-bottom:8px; }
-    .room-code-pill{
-      border:1px solid rgba(47,120,255,.36);
-      color:var(--peer-blue);
-      border-radius:999px;
-      padding:6px 10px;
-      font-size:12px;
-      line-height:1;
-      background:rgba(47,120,255,.06);
-      white-space:nowrap;
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
     }
 
-    .toast{
-      position:fixed;
-      left:50%;
-      bottom:calc(env(safe-area-inset-bottom, 0px) + 14px);
-      transform:translateX(-50%) translateY(12px);
-      background:rgba(0,0,0,.72);
-      color:#fff;
-      border-radius:999px;
-      padding:10px 14px;
-      font-size:13px;
-      line-height:1;
-      z-index:60;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .2s ease, transform .2s ease;
-      max-width:min(90vw,420px);
-      text-align:center;
-      box-sizing:border-box;
-    }
-    .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
-    .hidden{ display:none !important; }
-
-    .peer-menu-stage{
-      position:relative;
-      width:min(92vw,460px);
-      height:min(84vh,460px);
-      pointer-events:none;
-    }
-    .peer-burst-ring{
-      position:absolute;
-      left:50%;
-      top:50%;
-      width:88px;
-      height:88px;
-      border-radius:50%;
-      border:1.8px solid rgba(47,120,255,.35);
-      transform:translate(-50%,-50%) scale(.25);
-      opacity:0;
-      transition:transform 1s ease, opacity .5s ease;
-      pointer-events:none;
-    }
-    .peer-menu-overlay.open .peer-burst-ring{
-      transform:translate(-50%,-50%) scale(2.45);
-      opacity:1;
+    .gear-btn,
+    .peer-btn {
+      position: fixed;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1.7px solid var(--edge);
+      background: transparent;
+      color: transparent;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      z-index: 20;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-appearance: none;
+      appearance: none;
+      box-sizing: border-box;
+      text-shadow: none;
     }
 
-    .peer-names-bar{
-      position:absolute;
-      left:50%;
-      top:10px;
-      transform:translateX(-50%);
-      width:min(88vw,420px);
-      display:none;
-      gap:6px;
-      flex-wrap:wrap;
-      justify-content:center;
-      pointer-events:none;
-      z-index:2;
-    }
-    .peer-menu-overlay.connected .peer-names-bar{ display:flex; }
-    .peer-name-chip{
-      border:1px solid rgba(47,120,255,.32);
-      background:rgba(47,120,255,.08);
-      color:var(--peer-blue);
-      padding:6px 10px;
-      font-size:12px;
-      border-radius:999px;
-      line-height:1;
-      white-space:nowrap;
-      max-width:100%;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .gear-btn {
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+      right: calc(env(safe-area-inset-right, 0px) + 10px);
     }
 
-    .peer-choice{
-      position:absolute;
-      left:50%;
-      top:50%;
-      width:122px;
-      height:122px;
-      border:1.7px solid rgba(47,120,255,.82);
-      background:rgba(255,255,255,.08);
-      border-radius:50%;
-      padding:0;
-      cursor:pointer;
-      pointer-events:auto;
-      -webkit-tap-highlight-color:transparent;
-      transform:translate(-50%,-50%) translate(var(--from-x), var(--from-y)) scale(.12);
-      opacity:0;
-      transition:transform 1s cubic-bezier(.2,.8,.2,1), opacity .5s ease;
-      display:grid;
-      place-items:center;
-      box-sizing:border-box;
-      color:#2f78ff;
+    .peer-btn {
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+      left: calc(env(safe-area-inset-left, 0px) + 10px);
     }
-    .peer-menu-overlay.open .peer-choice{
-      transform:translate(-50%,-50%) translate(var(--to-x), var(--to-y)) scale(1);
-      opacity:1;
-    }
-    .peer-choice:active{
-      transform:translate(-50%,-50%) translate(var(--to-x), var(--to-y)) scale(.97);
-    }
-    .peer-choice:disabled{ opacity:.42; cursor:default; filter:grayscale(.15); }
-    .peer-choice .peer-choice-label{
-      font-size:14px;
-      font-weight:700;
-      text-align:center;
-      line-height:1.25;
-      padding:0 12px;
-      color:#2f78ff;
-      opacity:0;
-      transition:opacity .5s ease;
-      transition-delay:1s;
-      word-break:keep-all;
-      white-space:pre-line;
-    }
-    .peer-menu-overlay.open .peer-choice .peer-choice-label{ opacity:1; }
-    .peer-choice::before{
-      content:"";
-      position:absolute;
-      inset:7px;
-      border-radius:50%;
-      border:1px solid rgba(47,120,255,.2);
-      background:rgba(47,120,255,.03);
-      pointer-events:none;
-    }
-    .peer-choice.local{ --to-x:0px; --to-y:-118px; }
-    .peer-choice.firebase{ --to-x:-118px; --to-y:108px; }
-    .peer-choice.qr{ --to-x:118px; --to-y:108px; }
-    .peer-choice.disconnect{ --to-x:0px; --to-y:-118px; }
-    .peer-choice.send{ --to-x:-118px; --to-y:108px; }
-    .peer-choice.receive{ --to-x:118px; --to-y:108px; }
 
-    .name-input-wrap{ margin-top:10px; }
-    .name-input-wrap.disabled{ opacity:.34; pointer-events:none; }
-    .room-overlay .dialog{ max-width:520px; }
-    .room-overlay .ghost-btn{ flex:1 1 140px; }
+    .gear-btn span,
+    .peer-btn .peer-icon {
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1;
+      transform: translateY(-0.5px);
+      color: var(--edge);
+      -webkit-text-stroke: 0;
+      text-shadow: none;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Symbol", sans-serif;
+    }
+
+    .gear-btn:active,
+    .peer-btn:active {
+      transform: scale(0.97);
+    }
+
+    .peer-btn.hidden {
+      display: none;
+    }
+
+    .peer-btn.searching {
+      border-color: var(--peer-blue);
+      color: var(--peer-blue);
+    }
+
+    .peer-btn.connected {
+      border-color: var(--peer-blue);
+      color: var(--peer-blue);
+    }
+
+    .peer-btn.connected .peer-icon {
+      color: var(--peer-blue);
+    }
+
+    .peer-icon {
+      display: block;
+      width: 20px;
+      text-align: center;
+    }
+
+    .peer-spinner {
+      display: none;
+      position: relative;
+      width: 20px;
+      height: 20px;
+      color: var(--peer-blue);
+    }
+
+    .peer-btn.searching .peer-icon {
+      display: none;
+    }
+
+    .peer-btn.searching .peer-spinner {
+      display: block;
+      animation: peer-spin 0.9s linear infinite;
+    }
+
+    .peer-spinner span {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 4px;
+      height: 4px;
+      margin: -2px 0 0 -2px;
+      border-radius: 50%;
+      background: currentColor;
+      transform-origin: 0 0;
+    }
+
+    .peer-spinner span:nth-child(1) { transform: translate(0, -8px); opacity: 1; }
+    .peer-spinner span:nth-child(2) { transform: translate(5.5px, -5.5px); opacity: 0.82; }
+    .peer-spinner span:nth-child(3) { transform: translate(8px, 0); opacity: 0.64; }
+    .peer-spinner span:nth-child(4) { transform: translate(5.5px, 5.5px); opacity: 0.46; }
+    .peer-spinner span:nth-child(5) { transform: translate(0, 8px); opacity: 0.34; }
+    .peer-spinner span:nth-child(6) { transform: translate(-5.5px, 5.5px); opacity: 0.46; }
+    .peer-spinner span:nth-child(7) { transform: translate(-8px, 0); opacity: 0.64; }
+    .peer-spinner span:nth-child(8) { transform: translate(-5.5px, -5.5px); opacity: 0.82; }
+
+    @keyframes peer-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.26);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 18px;
+      box-sizing: border-box;
+    }
+
+    .overlay.open {
+      display: flex;
+    }
+
+    .panel {
+      width: min(92vw, 460px);
+      max-height: min(84vh, 680px);
+      overflow: auto;
+      border-radius: 26px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+      color: var(--text);
+      padding: 18px 18px 16px;
+      box-sizing: border-box;
+      scrollbar-width: thin;
+    }
+
+    .panel-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: -18px -18px 18px;
+      padding: 18px 18px 14px;
+      background: linear-gradient(to bottom, var(--panel-bg) 80%, rgba(0,0,0,0));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(127, 127, 127, 0.12);
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .close-btn {
+      appearance: none;
+      border: 1.5px solid var(--edge);
+      background: transparent;
+      color: var(--text);
+      border-radius: 999px;
+      min-width: 42px;
+      height: 36px;
+      padding: 0 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .close-btn:active {
+      transform: scale(0.98);
+    }
+
+    .setting-block {
+      padding: 14px 0 4px;
+      border-top: 1px solid rgba(127, 127, 127, 0.16);
+    }
+
+    .setting-block:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .setting-label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .setting-label .main {
+      font-size: 15px;
+      font-weight: 650;
+      line-height: 1.2;
+    }
+
+    .setting-label .sub {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .switch {
+      position: relative;
+      width: 56px;
+      height: 34px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(127, 127, 127, 0.18);
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--thumb);
+      transition: 0.2s ease;
+    }
+
+    .switch input:checked + .slider {
+      background: rgba(55, 180, 90, 0.22);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(22px);
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .mode-select {
+      width: 128px;
+      height: 36px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      padding: 0 10px;
+      font-size: 14px;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .hex-input {
+      width: 100%;
+      box-sizing: border-box;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      padding: 0 12px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .hex-input::placeholder {
+      color: var(--muted);
+    }
+
+    .sub-input-wrap {
+      margin-top: 10px;
+    }
+
+    .disabled {
+      opacity: 0.34;
+      pointer-events: none;
+    }
+
+    .range-wrap {
+      margin-top: 12px;
+      padding-left: 2px;
+    }
+
+    .range-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .range-title {
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .range-value {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      height: 28px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 7px;
+      border-radius: 999px;
+      background: var(--track);
+    }
+
+    .disabled input[type="range"]::-webkit-slider-runnable-track {
+      background: var(--track-disabled);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      margin-top: -7.5px;
+      background: var(--thumb);
+      border: 0;
+      box-shadow: 0 0 0 3px rgba(127, 127, 127, 0.15);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 7px;
+      border-radius: 999px;
+      background: var(--track);
+    }
+
+    .disabled input[type="range"]::-moz-range-track {
+      background: var(--track-disabled);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--thumb);
+      border: 0;
+      box-shadow: 0 0 0 3px rgba(127, 127, 127, 0.15);
+    }
+
+    .effect-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .effect-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 0 0;
+    }
+
+    .effect-item + .effect-item {
+      border-top: 1px solid rgba(127, 127, 127, 0.12);
+      padding-top: 12px;
+    }
+
+    .effect-name {
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .effect-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .danger-btn {
+      appearance: none;
+      border: 1.5px solid rgba(220, 40, 40, 0.55);
+      background: transparent;
+      color: #d23636;
+      border-radius: 14px;
+      min-width: 0;
+      height: 40px;
+      padding: 0 14px;
+      font-size: 14px;
+      font-weight: 650;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      flex: 1 1 auto;
+    }
+
+    .danger-btn:active {
+      transform: scale(0.98);
+    }
+
+    .peer-menu-overlay,
+    .qr-overlay,
+    .scan-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 18px;
+      box-sizing: border-box;
+    }
+
+    .peer-menu-overlay.open,
+    .qr-overlay.open,
+    .scan-overlay.open {
+      display: flex;
+    }
+
+    .peer-menu-stage {
+      position: relative;
+      width: min(92vw, 420px);
+      height: min(84vh, 420px);
+      pointer-events: none;
+    }
+
+    .peer-burst-ring {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 1.8px solid rgba(47, 120, 255, 0.35);
+      transform: translate(-50%, -50%) scale(0.25);
+      opacity: 0;
+      transition: transform 1s ease, opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    .peer-menu-overlay.open .peer-burst-ring {
+      transform: translate(-50%, -50%) scale(2.45);
+      opacity: 1;
+    }
+
+    .peer-choice {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 122px;
+      height: 122px;
+      border: 1.7px solid rgba(47, 120, 255, 0.82);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+      padding: 0;
+      cursor: pointer;
+      pointer-events: auto;
+      -webkit-tap-highlight-color: transparent;
+      transform:
+        translate(-50%, -50%)
+        translate(var(--from-x), var(--from-y))
+        scale(0.12);
+      opacity: 0;
+      transition:
+        transform 1s cubic-bezier(.2,.8,.2,1),
+        opacity 0.5s ease;
+      display: grid;
+      place-items: center;
+      box-sizing: border-box;
+      color: #2f78ff;
+    }
+
+    .peer-menu-overlay.open .peer-choice {
+      transform:
+        translate(-50%, -50%)
+        translate(var(--to-x), var(--to-y))
+        scale(1);
+      opacity: 1;
+    }
+
+    .peer-choice:active {
+      transform:
+        translate(-50%, -50%)
+        translate(var(--to-x), var(--to-y))
+        scale(0.97);
+    }
+
+    .peer-choice .peer-choice-label {
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.35;
+      padding: 0 12px;
+      color: #2f78ff;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      transition-delay: 1.0s;
+      word-break: keep-all;
+    }
+
+    .peer-menu-overlay.open .peer-choice .peer-choice-label {
+      opacity: 1;
+    }
+
+    .peer-choice::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border-radius: 50%;
+      border: 1px solid rgba(47, 120, 255, 0.2);
+      background: rgba(47, 120, 255, 0.03);
+      pointer-events: none;
+    }
+
+    .peer-choice.wifi {
+      --to-x: 0px;
+      --to-y: -118px;
+    }
+
+    .peer-choice.qr-show {
+      --to-x: -118px;
+      --to-y: 108px;
+    }
+
+    .peer-choice.qr-read {
+      --to-x: 118px;
+      --to-y: 108px;
+    }
+
+    .peer-choice.disconnect {
+      --to-x: 0px;
+      --to-y: -118px;
+    }
+
+    .peer-choice.send {
+      --to-x: -118px;
+      --to-y: 108px;
+    }
+
+    .peer-choice.receive {
+      --to-x: 118px;
+      --to-y: 108px;
+    }
+
+    .dialog {
+      width: min(92vw, 520px);
+      border-radius: 26px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+      color: var(--text);
+      padding: 18px;
+      box-sizing: border-box;
+      max-height: min(86vh, 720px);
+      overflow: auto;
+    }
+
+    .dialog-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .dialog-text {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    .qr-box {
+      width: min(72vw, 320px);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto 12px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0,0,0,0.08);
+      display: grid;
+      place-items: center;
+    }
+
+    .qr-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .qr-actions,
+    .scan-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ghost-btn {
+      appearance: none;
+      border: 1.5px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      border-radius: 14px;
+      height: 40px;
+      padding: 0 14px;
+      font-size: 14px;
+      font-weight: 650;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ghost-btn:active {
+      transform: scale(0.98);
+    }
+
+    .scan-preview {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.35);
+      overflow: hidden;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .scan-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .scan-fallback {
+      border: 1px dashed rgba(127,127,127,0.45);
+      border-radius: 18px;
+      padding: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .scan-input {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 92px;
+      border-radius: 14px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 13px;
+      outline: none;
+      resize: vertical;
+      margin-bottom: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+      transform: translateX(-50%) translateY(12px);
+      background: rgba(0, 0, 0, 0.72);
+      color: #fff;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1;
+      z-index: 60;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      max-width: min(90vw, 420px);
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .hidden {
+      display: none !important;
+    }
   </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import {
-      getFirestore,
-      doc,
-      collection,
-      setDoc,
-      deleteDoc,
-      onSnapshot,
-      runTransaction,
-      addDoc,
-      query,
-      orderBy,
-      limit
-    } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+  <button class="gear-btn" id="openSettings" aria-label="設定を開く">
+    <span>⛭</span>
+  </button>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAYPZs5qIydcNiFs_2KQDgtkb9oNsnvI2E",
-      authDomain: "effect-animation-2b30b.firebaseapp.com",
-      projectId: "effect-animation-2b30b",
-      storageBucket: "effect-animation-2b30b.firebasestorage.app",
-      messagingSenderId: "647910459483",
-      appId: "1:647910459483:web:150b791ae0d61fe18e977e",
-      measurementId: "G-QX5C0SHB9Y"
-    };
+  <button class="peer-btn hidden" id="peerButton" aria-label="ローカル通信">
+    <span class="peer-icon">☋</span>
+    <span class="peer-spinner" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+    </span>
+  </button>
 
-    initializeApp(firebaseConfig);
-    const db = getFirestore();
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="panel" role="dialog" aria-modal="true" aria-label="設定">
+      <div class="panel-header">
+        <div class="panel-title">設定</div>
+        <button class="close-btn" id="closeSettings">戻る</button>
+      </div>
 
-    const el = {
-      canvas: document.getElementById('c'),
-      openSettings: document.getElementById('openSettings'),
-      closeSettings: document.getElementById('closeSettings'),
-      overlay: document.getElementById('overlay'),
-      peerButton: document.getElementById('peerButton'),
-      bgMode: document.getElementById('bgMode'),
-      bgCustomWrap: document.getElementById('bgCustomWrap'),
-      bgCustomInput: document.getElementById('bgCustomInput'),
-      tapColorInput: document.getElementById('tapColorInput'),
-      swipeColorInput: document.getElementById('swipeColorInput'),
-      loopColorInput: document.getElementById('loopColorInput'),
-      gridToggle: document.getElementById('gridToggle'),
-      gridDetails: document.getElementById('gridDetails'),
-      gridMode: document.getElementById('gridMode'),
-      gridCustomWrap: document.getElementById('gridCustomWrap'),
-      gridCustomInput: document.getElementById('gridCustomInput'),
-      spacingRange: document.getElementById('spacingRange'),
-      spacingValue: document.getElementById('spacingValue'),
-      peerButtonToggle: document.getElementById('peerButtonToggle'),
-      displayNameWrap: document.getElementById('displayNameWrap'),
-      displayNameInput: document.getElementById('displayNameInput'),
-      resetSettings: document.getElementById('resetSettings'),
-      peerMenuOverlay: document.getElementById('peerMenuOverlay'),
-      peerMenuStage: document.getElementById('peerMenuStage'),
-      peerNamesBar: document.getElementById('peerNamesBar'),
-      peerChoice1: document.getElementById('peerChoice1'),
-      peerChoice2: document.getElementById('peerChoice2'),
-      peerChoice3: document.getElementById('peerChoice3'),
-      peerChoiceLabel1: document.getElementById('peerChoiceLabel1'),
-      peerChoiceLabel2: document.getElementById('peerChoiceLabel2'),
-      peerChoiceLabel3: document.getElementById('peerChoiceLabel3'),
-      qrOverlay: document.getElementById('qrOverlay'),
-      qrTitle: document.getElementById('qrTitle'),
-      qrText: document.getElementById('qrText'),
-      qrImage: document.getElementById('qrImage'),
-      qrCloseButton: document.getElementById('qrCloseButton'),
-      roomOverlay: document.getElementById('roomOverlay'),
-      roomTitle: document.getElementById('roomTitle'),
-      roomText: document.getElementById('roomText'),
-      roomCodeInput: document.getElementById('roomCodeInput'),
-      roomJoinButton: document.getElementById('roomJoinButton'),
-      roomQrToggleButton: document.getElementById('roomQrToggleButton'),
-      roomCancelButton: document.getElementById('roomCancelButton'),
-      toast: document.getElementById('toast'),
-    };
+      <div class="setting-block">
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="main">背景色</div>
+            <div class="sub">システム / 白 / 黒 / カスタム</div>
+          </div>
+          <select class="mode-select" id="bgMode">
+            <option value="system">システム</option>
+            <option value="white">白</option>
+            <option value="black">黒</option>
+            <option value="custom">カスタム</option>
+          </select>
+        </div>
+        <div class="sub-input-wrap hidden" id="bgCustomWrap">
+          <input class="hex-input" id="bgCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ffffff" />
+        </div>
+      </div>
 
-    const ctx = el.canvas.getContext('2d', { alpha: true });
+      <div class="setting-block">
+        <div class="setting-label">
+          <div class="main">色</div>
+          <div class="sub">タップ / スワイプ / 囲い の色をカラーコードで指定</div>
+        </div>
 
-    const STORAGE_KEY = 'touch_effect_settings_v6';
-    const LOCAL_PREFIX = 'touch_effect_local_bus_';
-    const QR_API = 'https://api.qrserver.com/v1/create-qr-code/?size=420x420&margin=10&data=';
+        <div class="effect-grid">
+          <div class="effect-item">
+            <div class="effect-name">タップの色</div>
+            <input class="hex-input" id="tapColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#46ff78" />
+          </div>
+          <div class="effect-item">
+            <div class="effect-name">スワイプの色</div>
+            <input class="hex-input" id="swipeColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#6ea5ff" />
+          </div>
+          <div class="effect-item">
+            <div class="effect-name">囲いの色</div>
+            <input class="hex-input" id="loopColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ff4e4e" />
+          </div>
+        </div>
+      </div>
 
-    const defaults = {
-      bgMode: 'system',
-      bgCustom: '#ffffff',
-      tapColor: '#46ff78',
-      swipeColor: '#6ea5ff',
-      loopColor: '#ff4e4e',
-      gridEnabled: false,
-      gridMode: 'system',
-      gridCustom: '#e8e8e8',
-      gridSpacing: 36,
-      peerButtonVisible: false,
-      displayName: '自分',
-    };
+      <div class="setting-block">
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="main">グリッドを表示</div>
+            <div class="sub">ONで背景に格子を出します</div>
+          </div>
+          <label class="switch" aria-label="グリッドを表示">
+            <input type="checkbox" id="gridToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
 
-    const settings = { ...defaults };
+        <div id="gridDetails">
+          <div class="range-wrap">
+            <div class="range-head">
+              <div class="range-title">間隔</div>
+              <div class="range-value"><span id="spacingValue">36</span>px</div>
+            </div>
+            <input type="range" id="spacingRange" min="18" max="100" step="1" value="36" />
+          </div>
 
-    const appState = {
-      roomCode: '',
-      roomMode: 'local',
-      transport: 'none',
-      peerState: 'off',
-      showQrAfterJoin: false,
-      roomMenuMode: 'off',
-      localChannel: null,
-      localBusKey: '',
-      localHeartbeat: null,
-      localStorageHandler: null,
-      firebase: {
-        roomRef: null,
-        settingsRef: null,
-        participantsRef: null,
-        eventsRef: null,
-        selfPresenceRef: null,
-        unsubRoom: null,
-        unsubSettings: null,
-        unsubParticipants: null,
-        unsubEvents: null,
-        heartbeat: null,
-      },
-      participants: new Map(),
-      sendLock: { byId: '', byName: '', until: 0, token: '' },
-      receiveWindowUntil: 0,
-      currentSettingsToken: '',
-      seenPackets: new Set(),
-      seenQueue: [],
-      maybeConnectedToastShown: false,
-      roomSyncTimer: null,
-    };
+          <div class="control-row">
+            <div class="setting-label">
+              <div class="main" style="font-size: 13px;">グリッド色</div>
+              <div class="sub">システム / 白 / 黒 / カスタム</div>
+            </div>
+            <select class="mode-select" id="gridMode">
+              <option value="system">システム</option>
+              <option value="white">白</option>
+              <option value="black">黒</option>
+              <option value="custom">カスタム</option>
+            </select>
+          </div>
 
-    let darkMode = false;
-    let w = 0, h = 0, dpr = 1;
-    const effects = [];
+          <div class="sub-input-wrap hidden" id="gridCustomWrap">
+            <input class="hex-input" id="gridCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#e8e8e8" />
+          </div>
+        </div>
+      </div>
 
-    let pointerIdActive = null;
-    let pointerDownTime = 0;
-    let pointerDownPos = { x: 0, y: 0 };
-    let lastPos = { x: 0, y: 0 };
-    let strokePoints = [];
-    let pointerHadLoop = false;
-    let lastLoopAt = 0;
+      <div class="setting-block">
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="main">ローカル通信ボタンを表示</div>
+            <div class="sub">左上に通信ボタンを出します</div>
+          </div>
+          <label class="switch" aria-label="ローカル通信ボタンを表示">
+            <input type="checkbox" id="peerButtonToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
 
-    const SWIPE_MIN_DISTANCE = 42;
-    const TAP_MAX_DISTANCE = 12;
-    const TAP_MAX_TIME = 320;
-    const LASSO_MIN_POINTS = 20;
-    const LASSO_HIT_RADIUS = 18;
-    const LASSO_IGNORE_RECENT_SEGMENTS = 10;
-    const LASSO_COOLDOWN = 140;
+      <div class="setting-block">
+        <div class="footer-actions">
+          <button class="danger-btn" id="resetSettings">設定をリセット</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    function showToast(message, duration = 1600) {
-      el.toast.textContent = message;
-      el.toast.classList.add('show');
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => el.toast.classList.remove('show'), duration);
-    }
-    function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
-    function nowMs() { return performance.now(); }
-    function nowEpoch() { return Date.now(); }
-    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-    function distance(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
-    function isValidMode(v) { return v === 'system' || v === 'white' || v === 'black' || v === 'custom'; }
-    function makeId() {
-      if (crypto.randomUUID) return crypto.randomUUID();
-      const bytes = new Uint8Array(16);
-      crypto.getRandomValues(bytes);
-      return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
-    }
-    function normalizeHexColor(raw) {
-      if (typeof raw !== 'string') return null;
-      let s = raw.trim();
-      if (!s) return null;
-      if (s[0] === '#') s = s.slice(1);
-      if (!/^[0-9a-fA-F]+$/.test(s)) return null;
-      if (s.length === 3 || s.length === 4) s = s.split('').map(ch => ch + ch).join('');
-      if (s.length !== 6 && s.length !== 8) return null;
-      return '#' + s.toLowerCase();
-    }
-    function hexToRgba(rawHex, alphaOverride = 1) {
-      const hex = normalizeHexColor(rawHex);
-      if (!hex) return null;
-      const s = hex.slice(1);
-      const r = parseInt(s.slice(0, 2), 16);
-      const g = parseInt(s.slice(2, 4), 16);
-      const b = parseInt(s.slice(4, 6), 16);
-      const a = s.length === 8 ? parseInt(s.slice(6, 8), 16) / 255 : 1;
-      return `rgba(${r}, ${g}, ${b}, ${clamp(a * alphaOverride, 0, 1)})`;
-    }
-    function resolveModeColor(mode, customRaw, lightHex, darkHex) {
-      const fallback = darkMode ? darkHex : lightHex;
-      if (mode === 'system') return fallback;
-      if (mode === 'white') return '#ffffff';
-      if (mode === 'black') return '#000000';
-      if (mode === 'custom') return normalizeHexColor(customRaw) || fallback;
-      return fallback;
-    }
-    function currentDisplayName() {
-      const n = (settings.displayName || '自分').trim();
-      return (n || '自分').slice(0, 20);
-    }
+  <div class="peer-menu-overlay" id="peerMenuOverlay" aria-hidden="true">
+    <div class="peer-menu-stage" id="peerMenuStage">
+      <div class="peer-burst-ring"></div>
+      <button class="peer-choice" id="peerChoice1"><span class="peer-choice-label" id="peerChoiceLabel1"></span></button>
+      <button class="peer-choice" id="peerChoice2"><span class="peer-choice-label" id="peerChoiceLabel2"></span></button>
+      <button class="peer-choice" id="peerChoice3"><span class="peer-choice-label" id="peerChoiceLabel3"></span></button>
+    </div>
+  </div>
 
-    function saveSettings() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch {}
-    }
-    function loadSettings() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return;
-        const data = JSON.parse(raw);
-        if (isValidMode(data.bgMode)) settings.bgMode = data.bgMode;
-        if (typeof data.bgCustom === 'string') settings.bgCustom = data.bgCustom;
-        if (typeof data.tapColor === 'string') settings.tapColor = data.tapColor;
-        if (typeof data.swipeColor === 'string') settings.swipeColor = data.swipeColor;
-        if (typeof data.loopColor === 'string') settings.loopColor = data.loopColor;
-        if (typeof data.gridEnabled === 'boolean') settings.gridEnabled = data.gridEnabled;
-        if (isValidMode(data.gridMode)) settings.gridMode = data.gridMode;
-        if (typeof data.gridCustom === 'string') settings.gridCustom = data.gridCustom;
-        if (typeof data.gridSpacing === 'number' && Number.isFinite(data.gridSpacing)) settings.gridSpacing = clamp(Math.round(data.gridSpacing), 18, 100);
-        if (typeof data.peerButtonVisible === 'boolean') settings.peerButtonVisible = data.peerButtonVisible;
-        if (typeof data.displayName === 'string' && data.displayName.trim()) settings.displayName = data.displayName.trim().slice(0, 20);
-      } catch {}
-    }
+  <div class="qr-overlay" id="qrOverlay" aria-hidden="true">
+    <div class="dialog">
+      <div class="dialog-title" id="qrTitle">QRコード</div>
+      <div class="dialog-text" id="qrText">読み込み中…</div>
+      <div class="qr-box"><img id="qrImage" alt="QRコード" /></div>
+      <div class="qr-actions">
+        <button class="ghost-btn" id="qrModeButton">QRを読み取る</button>
+        <button class="ghost-btn" id="qrCloseButton">閉じる</button>
+      </div>
+    </div>
+  </div>
 
-    function syncUi() {
-      el.bgMode.value = settings.bgMode;
-      el.bgCustomInput.value = settings.bgCustom;
-      el.bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
-      el.tapColorInput.value = settings.tapColor;
-      el.swipeColorInput.value = settings.swipeColor;
-      el.loopColorInput.value = settings.loopColor;
-      el.gridToggle.checked = settings.gridEnabled;
-      el.gridDetails.classList.toggle('disabled', !settings.gridEnabled);
-      el.gridMode.value = settings.gridMode;
-      el.gridCustomInput.value = settings.gridCustom;
-      el.gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
-      el.spacingRange.value = String(settings.gridSpacing);
-      el.spacingValue.textContent = String(settings.gridSpacing);
-      el.peerButtonToggle.checked = settings.peerButtonVisible;
-      el.displayNameInput.value = settings.displayName;
-      el.displayNameInput.disabled = !settings.peerButtonVisible;
-      el.displayNameWrap.classList.toggle('disabled', !settings.peerButtonVisible);
-      el.peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
-      document.body.style.background = getBgColor();
-      updatePeerButtonUi();
-      refreshPeerMenuUi();
-      updateRoomOverlayText();
-    }
+  <div class="scan-overlay" id="scanOverlay" aria-hidden="true">
+    <div class="dialog">
+      <div class="dialog-title">QRコードを読み取り</div>
+      <div class="dialog-text">カメラで読み取るか、下に文字列を貼り付けて読み込めます。</div>
+      <div class="scan-preview">
+        <video id="scanVideo" playsinline muted></video>
+      </div>
+      <div class="scan-fallback" id="scanFallback">
+        カメラ読み取りが使えない場合でも、貼り付けで進められます。
+      </div>
+      <textarea class="scan-input" id="scanInput" placeholder="QRの文字列を貼り付け"></textarea>
+      <div class="scan-actions">
+        <button class="ghost-btn" id="scanAcceptButton">読み込む</button>
+        <button class="ghost-btn" id="scanCloseButton">閉じる</button>
+      </div>
+    </div>
+  </div>
 
-    function updateTheme() {
-      darkMode = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.style.setProperty('--bg', darkMode ? '#000' : '#fff');
-      document.documentElement.style.setProperty('--edge', darkMode ? '#fafafa' : '#111');
-      document.documentElement.style.setProperty('--panel-bg', darkMode ? 'rgba(0,0,0,.82)' : 'rgba(255,255,255,.84)');
-      document.documentElement.style.setProperty('--panel-border', darkMode ? 'rgba(255,255,255,.16)' : 'rgba(0,0,0,.14)');
-      document.documentElement.style.setProperty('--text', darkMode ? '#f5f5f5' : '#101010');
-      document.documentElement.style.setProperty('--muted', darkMode ? 'rgba(245,245,245,.45)' : 'rgba(16,16,16,.45)');
-      document.documentElement.style.setProperty('--track', darkMode ? 'rgba(255,255,255,.14)' : 'rgba(0,0,0,.12)');
-      document.documentElement.style.setProperty('--track-disabled', darkMode ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.06)');
-      document.documentElement.style.setProperty('--thumb', darkMode ? 'rgba(255,255,255,.78)' : 'rgba(0,0,0,.72)');
-      document.body.style.background = getBgColor();
-    }
-    function resize() {
-      dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
-      w = window.innerWidth;
-      h = window.innerHeight;
-      el.canvas.width = Math.floor(w * dpr);
-      el.canvas.height = Math.floor(h * dpr);
-      el.canvas.style.width = w + 'px';
-      el.canvas.style.height = h + 'px';
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    function getBgColor() { return resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000'); }
-    function getGridBaseColor() { return resolveModeColor(settings.gridMode, settings.gridCustom, darkMode ? '#262626' : '#e8e8e8', darkMode ? '#262626' : '#e8e8e8'); }
-    function getTapBaseColor() { return normalizeHexColor(settings.tapColor) || defaults.tapColor; }
-    function getSwipeBaseColor() { return normalizeHexColor(settings.swipeColor) || defaults.swipeColor; }
-    function getLoopBaseColor() { return normalizeHexColor(settings.loopColor) || defaults.loopColor; }
+  <div class="toast" id="toast"></div>
 
-    function openOverlay() { el.overlay.classList.add('open'); el.overlay.setAttribute('aria-hidden', 'false'); }
-    function closeOverlay() { el.overlay.classList.remove('open'); el.overlay.setAttribute('aria-hidden', 'true'); }
+  <script>
+    (() => {
+      const canvas = document.getElementById('c');
+      const ctx = canvas.getContext('2d', { alpha: true });
 
-    function updateRoomOverlayText() {
-      el.roomTitle.textContent = appState.roomMode === 'firebase' ? 'オンラインで通信' : 'ローカルで通信';
-      el.roomText.textContent = appState.roomMode === 'firebase'
-        ? '同じ文字を入力した人と同じ部屋になります。マッチング中も普通に遊べます。'
-        : '同じ文字を入力した人と同じローカル部屋になります。マッチング中も普通に遊べます。';
-      el.roomJoinButton.textContent = appState.showQrAfterJoin ? '表示して参加' : '参加する';
-      el.roomQrToggleButton.textContent = appState.showQrAfterJoin ? 'QR表示: ON' : 'QR表示: OFF';
-    }
-    function openRoomOverlay(mode, showQr = false) {
-      appState.roomMode = mode;
-      appState.showQrAfterJoin = showQr;
-      updateRoomOverlayText();
-      el.roomCodeInput.value = '';
-      el.roomOverlay.classList.add('open');
-      el.roomOverlay.setAttribute('aria-hidden', 'false');
-      setTimeout(() => el.roomCodeInput.focus(), 50);
-    }
-    function closeRoomOverlay() { el.roomOverlay.classList.remove('open'); el.roomOverlay.setAttribute('aria-hidden', 'true'); }
+      const overlay = document.getElementById('overlay');
+      const openSettings = document.getElementById('openSettings');
+      const closeSettings = document.getElementById('closeSettings');
 
-    function openQrOverlay(title, text, payload) {
-      el.qrTitle.textContent = title;
-      el.qrText.textContent = text;
-      el.qrImage.src = QR_API + encodeURIComponent(payload);
-      el.qrOverlay.classList.add('open');
-      el.qrOverlay.setAttribute('aria-hidden', 'false');
-    }
-    function closeQrOverlay() {
-      el.qrOverlay.classList.remove('open');
-      el.qrOverlay.setAttribute('aria-hidden', 'true');
-      el.qrImage.removeAttribute('src');
-    }
+      const peerButton = document.getElementById('peerButton');
 
-    function participantsAlive() {
-      const now = nowEpoch();
-      return Array.from(appState.participants.values()).filter(p => p && typeof p.lastSeen === 'number' && now - p.lastSeen <= 7000);
-    }
-    function updateConnectionStateFromParticipants() {
-      if (!appState.roomCode || appState.transport === 'none') appState.peerState = 'off';
-      else appState.peerState = participantsAlive().length >= 2 ? 'connected' : 'searching';
-      updatePeerButtonUi();
-      refreshPeerMenuUi();
-      maybeShowConnectedToast();
-    }
-    function updatePeerButtonUi() {
-      el.peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
-      el.peerButton.classList.toggle('searching', appState.peerState === 'searching');
-      el.peerButton.classList.toggle('connected', appState.peerState === 'connected');
-    }
-    function maybeShowConnectedToast() {
-      if (appState.peerState === 'connected' && !appState.maybeConnectedToastShown) {
-        appState.maybeConnectedToastShown = true;
-        showToast('接続した');
-      }
-      if (appState.peerState !== 'connected') appState.maybeConnectedToastShown = false;
-    }
-    function cleanupParticipants() {
-      const now = nowEpoch();
-      for (const [id, p] of appState.participants.entries()) {
-        if (id === 'self') continue;
-        if (!p || typeof p.lastSeen !== 'number' || now - p.lastSeen > 7000) appState.participants.delete(id);
-      }
-      appState.participants.set('self', { id:'self', name:currentDisplayName(), lastSeen:now, self:true });
-      updateConnectionStateFromParticipants();
-    }
+      const bgMode = document.getElementById('bgMode');
+      const bgCustomWrap = document.getElementById('bgCustomWrap');
+      const bgCustomInput = document.getElementById('bgCustomInput');
 
-    function renderPeerNamesBar() {
-      const list = participantsAlive();
-      el.peerNamesBar.innerHTML = '';
-      for (const p of list) {
-        const chip = document.createElement('div');
-        chip.className = 'peer-name-chip';
-        chip.textContent = p.self ? `${p.name || '自分'}（自分）` : (p.name || '名無し');
-        el.peerNamesBar.appendChild(chip);
-      }
-    }
+      const tapColorInput = document.getElementById('tapColorInput');
+      const swipeColorInput = document.getElementById('swipeColorInput');
+      const loopColorInput = document.getElementById('loopColorInput');
 
-    function refreshPeerMenuUi() {
-      if (appState.peerState === 'connected') {
-        el.peerMenuOverlay.classList.add('connected');
-        const lock = appState.sendLock;
-        const active = isLockActive(lock);
-        el.peerChoice1.className = 'peer-choice disconnect';
-        el.peerChoice2.className = 'peer-choice send';
-        el.peerChoice3.className = 'peer-choice receive';
-        el.peerChoice1.disabled = false;
-        el.peerChoice2.disabled = active && lock.byId !== 'self';
-        el.peerChoice3.disabled = false;
-        el.peerChoiceLabel1.textContent = '接続を\n切断';
-        el.peerChoiceLabel2.textContent = active ? (lock.byId === 'self' ? '送信中…' : `${lock.byName || '誰か'}が\n送信中…`) : '設定を\n送信';
-        el.peerChoiceLabel3.textContent = '設定を\n受信';
-      } else {
-        el.peerMenuOverlay.classList.remove('connected');
-      }
-      renderPeerNamesBar();
-    }
+      const gridToggle = document.getElementById('gridToggle');
+      const gridDetails = document.getElementById('gridDetails');
+      const gridMode = document.getElementById('gridMode');
+      const gridCustomWrap = document.getElementById('gridCustomWrap');
+      const gridCustomInput = document.getElementById('gridCustomInput');
+      const spacingRange = document.getElementById('spacingRange');
+      const spacingValue = document.getElementById('spacingValue');
 
-    function openPeerMenu(mode) {
-      appState.roomMenuMode = mode;
-      refreshPeerMenuUi();
+      const peerButtonToggle = document.getElementById('peerButtonToggle');
+      const resetSettings = document.getElementById('resetSettings');
 
-      const rect = el.peerButton.getBoundingClientRect();
-      const stageRect = el.peerMenuStage.getBoundingClientRect();
-      const stageW = stageRect.width || window.innerWidth;
-      const stageH = stageRect.height || window.innerHeight;
-      const anchorX = rect.left + rect.width / 2 - stageW / 2;
-      const anchorY = rect.top + rect.height / 2 - stageH / 2;
+      const peerMenuOverlay = document.getElementById('peerMenuOverlay');
+      const peerChoice1 = document.getElementById('peerChoice1');
+      const peerChoice2 = document.getElementById('peerChoice2');
+      const peerChoice3 = document.getElementById('peerChoice3');
+      const peerChoiceLabel1 = document.getElementById('peerChoiceLabel1');
+      const peerChoiceLabel2 = document.getElementById('peerChoiceLabel2');
+      const peerChoiceLabel3 = document.getElementById('peerChoiceLabel3');
 
-      const setFrom = (btn, x, y) => {
-        btn.style.setProperty('--from-x', `${anchorX}px`);
-        btn.style.setProperty('--from-y', `${anchorY}px`);
-        btn.style.setProperty('--to-x', `${x}px`);
-        btn.style.setProperty('--to-y', `${y}px`);
+      const qrOverlay = document.getElementById('qrOverlay');
+      const qrTitle = document.getElementById('qrTitle');
+      const qrText = document.getElementById('qrText');
+      const qrImage = document.getElementById('qrImage');
+      const qrModeButton = document.getElementById('qrModeButton');
+      const qrCloseButton = document.getElementById('qrCloseButton');
+
+      const scanOverlay = document.getElementById('scanOverlay');
+      const scanVideo = document.getElementById('scanVideo');
+      const scanFallback = document.getElementById('scanFallback');
+      const scanInput = document.getElementById('scanInput');
+      const scanAcceptButton = document.getElementById('scanAcceptButton');
+      const scanCloseButton = document.getElementById('scanCloseButton');
+
+      const toast = document.getElementById('toast');
+
+      const STORAGE_KEY = 'touch_effect_settings_v5';
+      const WIFI_BUS_KEY = 'touch_effect_wifi_bus_v1';
+      const WIFI_ROOM_KEY = 'touch_effect_wifi_room_v1';
+
+      const defaults = {
+        bgMode: 'system',
+        bgCustom: '#ffffff',
+
+        tapColor: '#46ff78',
+        swipeColor: '#6ea5ff',
+        loopColor: '#ff4e4e',
+
+        gridEnabled: false,
+        gridMode: 'system',
+        gridCustom: '#e8e8e8',
+        gridSpacing: 36,
+
+        peerButtonVisible: false
       };
 
-      if (mode === 'off') {
-        el.peerChoiceLabel1.textContent = 'ローカルで\n通信';
-        el.peerChoiceLabel2.textContent = 'オンラインで\n通信';
-        el.peerChoiceLabel3.textContent = 'QRコードを\n表示';
+      const settings = { ...defaults };
 
-        el.peerChoice1.className = 'peer-choice local';
-        el.peerChoice2.className = 'peer-choice firebase';
-        el.peerChoice3.className = 'peer-choice qr';
-        el.peerChoice1.disabled = false;
-        el.peerChoice2.disabled = false;
-        el.peerChoice3.disabled = false;
+      let w = 0;
+      let h = 0;
+      let dpr = 1;
+      let darkMode = false;
 
-        el.peerChoice1.onclick = () => { closePeerMenu(); openRoomOverlay('local', false); };
-        el.peerChoice2.onclick = () => { closePeerMenu(); openRoomOverlay('firebase', false); };
-        el.peerChoice3.onclick = () => { closePeerMenu(); openRoomOverlay('local', true); };
+      const effects = [];
 
-        setFrom(el.peerChoice1, 0, -118);
-        setFrom(el.peerChoice2, -118, 108);
-        setFrom(el.peerChoice3, 118, 108);
-      } else {
-        el.peerChoiceLabel1.textContent = '接続を\n切断';
-        el.peerChoiceLabel2.textContent = '設定を\n送信';
-        el.peerChoiceLabel3.textContent = '設定を\n受信';
+      let activePointerId = null;
+      let pointerDownTime = 0;
+      let pointerDownPos = { x: 0, y: 0 };
+      let lastPos = { x: 0, y: 0 };
+      let strokePoints = [];
+      let pointerHadLoop = false;
+      let lastLoopAt = 0;
 
-        el.peerChoice1.className = 'peer-choice disconnect';
-        el.peerChoice2.className = 'peer-choice send';
-        el.peerChoice3.className = 'peer-choice receive';
+      const SWIPE_MIN_DISTANCE = 42;
+      const TAP_MAX_DISTANCE = 12;
+      const TAP_MAX_TIME = 320;
+      const LASSO_MIN_POINTS = 20;
+      const LASSO_HIT_RADIUS = 18;
+      const LASSO_IGNORE_RECENT_SEGMENTS = 10;
+      const LASSO_COOLDOWN = 140;
 
-        el.peerChoice1.disabled = false;
-        el.peerChoice2.disabled = isLockActive(appState.sendLock) && appState.sendLock.byId !== 'self';
-        el.peerChoice3.disabled = false;
+      const qrApiBase = 'https://api.qrserver.com/v1/create-qr-code/?size=420x420&margin=10&data=';
 
-        el.peerChoice1.onclick = () => { closePeerMenu(); disconnectCurrentRoom(true); showToast('切断した'); };
-        el.peerChoice2.onclick = () => { closePeerMenu(); sendCurrentSettings(); };
-        el.peerChoice3.onclick = () => { closePeerMenu(); appState.receiveWindowUntil = nowEpoch() + 10000; showToast('10秒以内の設定を待ってる'); };
+      let selfPeerId = makeId();
+      let peerState = 'off';
+      let peerConnectedVia = null; // wifi | rtc | null
+      let remotePeerId = null;
 
-        setFrom(el.peerChoice1, 0, -118);
-        setFrom(el.peerChoice2, -118, 108);
-        setFrom(el.peerChoice3, 118, 108);
+      let wifiChannel = null;
+      let wifiRoomId = null;
+
+      let rtcPc = null;
+      let rtcDc = null;
+      let rtcRole = null; // host | join
+      let rtcWaitingForAnswer = false;
+
+      let peerMenuOpen = false;
+      let peerMenuMode = 'closed'; // off | connected
+
+      let receiveWindowUntil = 0;
+      let peerPulseTimer = null;
+      let peerWatchTimer = null;
+      let peerLastSeenAt = 0;
+
+      let scanDetector = null;
+      let scanStream = null;
+      let scanLoopRunning = false;
+      let qrModeAfterScan = null; // hostAnswer | none
+
+      const seenPackets = new Set();
+      const seenPacketQueue = [];
+
+      let toastTimer = null;
+
+      function showToast(message, duration = 1700) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, duration);
       }
 
-      el.peerMenuOverlay.classList.add('open');
-      el.peerMenuOverlay.setAttribute('aria-hidden', 'false');
-    }
-    function closePeerMenu() {
-      el.peerMenuOverlay.classList.remove('open');
-      el.peerMenuOverlay.setAttribute('aria-hidden', 'true');
-    }
-
-    function updateRoomOverlayCodeLabel() {
-      updateRoomOverlayText();
-    }
-
-    function localBusKeyFor(code) { return LOCAL_PREFIX + code; }
-    function roomCodeValue(raw) {
-      return String(raw || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 16);
-    }
-    function generateRoomCode(len = 6) {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let out = '';
-      for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
-      return out;
-    }
-    function rememberPacket(id) {
-      if (!id || appState.seenPackets.has(id)) return false;
-      appState.seenPackets.add(id);
-      appState.seenQueue.push(id);
-      if (appState.seenQueue.length > 500) {
-        const old = appState.seenQueue.shift();
-        if (old) appState.seenPackets.delete(old);
-      }
-      return true;
-    }
-
-    function applySettingsObject(obj) {
-      if (!obj || typeof obj !== 'object') return;
-      if (isValidMode(obj.bgMode)) settings.bgMode = obj.bgMode;
-      if (typeof obj.bgCustom === 'string') settings.bgCustom = obj.bgCustom;
-      if (typeof obj.tapColor === 'string') settings.tapColor = obj.tapColor;
-      if (typeof obj.swipeColor === 'string') settings.swipeColor = obj.swipeColor;
-      if (typeof obj.loopColor === 'string') settings.loopColor = obj.loopColor;
-      if (typeof obj.gridEnabled === 'boolean') settings.gridEnabled = obj.gridEnabled;
-      if (isValidMode(obj.gridMode)) settings.gridMode = obj.gridMode;
-      if (typeof obj.gridCustom === 'string') settings.gridCustom = obj.gridCustom;
-      if (typeof obj.gridSpacing === 'number' && Number.isFinite(obj.gridSpacing)) settings.gridSpacing = clamp(Math.round(obj.gridSpacing), 18, 100);
-      if (typeof obj.displayName === 'string' && obj.displayName.trim()) settings.displayName = obj.displayName.trim().slice(0, 20);
-      syncUi();
-      saveSettings();
-      document.body.style.background = getBgColor();
-    }
-
-    function appSnapshot() {
-      return {
-        bgMode: settings.bgMode,
-        bgCustom: settings.bgCustom,
-        tapColor: settings.tapColor,
-        swipeColor: settings.swipeColor,
-        loopColor: settings.loopColor,
-        gridEnabled: settings.gridEnabled,
-        gridMode: settings.gridMode,
-        gridCustom: settings.gridCustom,
-        gridSpacing: settings.gridSpacing,
-        displayName: settings.displayName,
-      };
-    }
-
-    function isLockActive(lock) {
-      return !!lock && typeof lock.until === 'number' && lock.until > nowEpoch();
-    }
-
-    function refreshPeerMenuUi() {
-      if (appState.peerState === 'connected') {
-        el.peerMenuOverlay.classList.add('connected');
-        const lock = appState.sendLock;
-        const active = isLockActive(lock);
-        el.peerChoice1.className = 'peer-choice disconnect';
-        el.peerChoice2.className = 'peer-choice send';
-        el.peerChoice3.className = 'peer-choice receive';
-        el.peerChoice1.disabled = false;
-        el.peerChoice2.disabled = active && lock.byId !== 'self';
-        el.peerChoice3.disabled = false;
-        el.peerChoiceLabel1.textContent = '接続を\n切断';
-        el.peerChoiceLabel2.textContent = active ? (lock.byId === 'self' ? '送信中…' : `${lock.byName || '誰か'}が\n送信中…`) : '設定を\n送信';
-        el.peerChoiceLabel3.textContent = '設定を\n受信';
-      } else {
-        el.peerMenuOverlay.classList.remove('connected');
-      }
-      renderPeerNamesBar();
-    }
-
-    function updatePeerButtonForState() {
-      updatePeerButtonUi();
-      refreshPeerMenuUi();
-    }
-
-    function openPeerButtonHandler() {
-      if (appState.peerState === 'searching') {
-        disconnectCurrentRoom(true);
-        showToast('キャンセルした');
-        return;
-      }
-      if (appState.peerState === 'connected') {
-        openPeerMenu('connected');
-        return;
-      }
-      openPeerMenu('off');
-    }
-
-    function sendEffectToRoom(kind, payload) {
-      if (appState.transport === 'none') return;
-      const packet = {
-        id: makeId(),
-        sender: 'self',
-        senderName: currentDisplayName(),
-        type: 'effect',
-        kind,
-        payload,
-        ts: nowEpoch(),
-      };
-      if (appState.transport === 'local') {
-        localBusPost(packet);
-      } else if (appState.transport === 'firebase' && appState.firebase.eventsRef) {
-        addDoc(appState.firebase.eventsRef, {
-          ...packet,
-          createdAt: nowEpoch(),
-        }).catch(() => {});
-      }
-    }
-
-    function addTapEffect(x, y, broadcast = true) {
-      effects.push({ type: 'tap', x, y, start: nowMs(), duration: 650 });
-      if (broadcast) sendEffectToRoom('tap', { x, y });
-    }
-    function createSwipeEffect(startX, startY, dirX, dirY, broadcast = true, forced = null) {
-      const len = Math.hypot(dirX, dirY) || 1;
-      dirX /= len;
-      dirY /= len;
-
-      const pad = 90;
-      const minX = -pad, minY = -pad, maxX = w + pad, maxY = h + pad;
-      const hits = [];
-      const pushCandidate = (t, x, y) => {
-        if (x >= minX - .5 && x <= maxX + .5 && y >= minY - .5 && y <= maxY + .5) hits.push({ t, x, y });
-      };
-
-      if (forced && forced.forceFrom && forced.forceTo) {
-        hits.push({ t: 0, x: forced.forceFrom.x, y: forced.forceFrom.y }, { t: 1, x: forced.forceTo.x, y: forced.forceTo.y });
-      } else {
-        if (Math.abs(dirX) > 1e-6) {
-          let t = (minX - startX) / dirX; pushCandidate(t, minX, startY + dirY * t);
-          t = (maxX - startX) / dirX; pushCandidate(t, maxX, startY + dirY * t);
+      function makeId() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+          return window.crypto.randomUUID();
         }
-        if (Math.abs(dirY) > 1e-6) {
-          let t = (minY - startY) / dirY; pushCandidate(t, startX + dirX * t, minY);
-          t = (maxY - startY) / dirY; pushCandidate(t, startX + dirX * t, maxY);
-        }
-        if (hits.length < 2) {
-          hits.push({ t: -400, x: startX - dirX * 400, y: startY - dirY * 400 }, { t: 400, x: startX + dirX * 400, y: startY + dirY * 400 });
-        } else {
-          hits.sort((a, b) => a.t - b.t);
-        }
+        const bytes = new Uint8Array(16);
+        (window.crypto || window.msCrypto).getRandomValues(bytes);
+        return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
       }
 
-      const first = forced && forced.forceFrom ? forced.forceFrom : hits[0];
-      const last = forced && forced.forceTo ? forced.forceTo : hits[hits.length - 1];
-      const travel = distance(first.x, first.y, last.x, last.y);
-      const duration = clamp(460 + travel * 0.12, 520, 900);
-      const radius = typeof (forced && forced.forceRadius) === 'number' ? forced.forceRadius : clamp(Math.min(w, h) * .045, 18, 38);
+      function clamp(v, min, max) {
+        return Math.min(max, Math.max(min, v));
+      }
 
-      effects.push({
-        type: 'swipe',
-        start: nowMs(),
-        duration,
-        from: { x: first.x, y: first.y },
-        to: { x: last.x, y: last.y },
-        dir: { x: dirX, y: dirY },
-        radius
-      });
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
 
-      if (broadcast) sendEffectToRoom('swipe', {
-        from: { x: first.x, y: first.y },
-        to: { x: last.x, y: last.y },
-        dir: { x: dirX, y: dirY },
-        radius
-      });
-    }
-    function createLoopEffect(points, broadcast = true) {
-      if (points.length < 3) return;
-      const copy = points.map(p => ({ x: p.x, y: p.y }));
-      effects.push({ type: 'loop', start: nowMs(), duration: 420, points: copy });
-      if (broadcast) sendEffectToRoom('loop', { points: copy });
-    }
+      function nowMs() {
+        return performance.now();
+      }
 
-    function pointToSegmentDistance(px, py, ax, ay, bx, by) {
-      const abx = bx - ax, aby = by - ay, apx = px - ax, apy = py - ay;
-      const abLen2 = abx * abx + aby * aby;
-      if (abLen2 === 0) return Math.hypot(px - ax, py - ay);
-      let t = (apx * abx + apy * aby) / abLen2;
-      t = clamp(t, 0, 1);
-      const cx = ax + abx * t, cy = ay + aby * t;
-      return Math.hypot(px - cx, py - cy);
-    }
-    function detectLoop(points, currentX, currentY) {
-      if (points.length < LASSO_MIN_POINTS) return false;
-      const n = points.length;
-      const safeEnd = Math.max(0, n - 1 - LASSO_IGNORE_RECENT_SEGMENTS);
-      for (let i = 0; i < safeEnd - 1; i++) {
-        const a = points[i], b = points[i + 1];
-        const d = pointToSegmentDistance(currentX, currentY, a.x, a.y, b.x, b.y);
-        if (d <= LASSO_HIT_RADIUS) {
-          let traveled = 0;
-          for (let k = i; k < n - 1; k++) {
-            traveled += distance(points[k].x, points[k].y, points[k + 1].x, points[k + 1].y);
-            if (traveled > 40) break;
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
+
+      function distance(ax, ay, bx, by) {
+        return Math.hypot(ax - bx, ay - by);
+      }
+
+      function pointToSegmentDistance(px, py, ax, ay, bx, by) {
+        const abx = bx - ax;
+        const aby = by - ay;
+        const apx = px - ax;
+        const apy = py - ay;
+        const abLen2 = abx * abx + aby * aby;
+
+        if (abLen2 === 0) return Math.hypot(px - ax, py - ay);
+
+        let t = (apx * abx + apy * aby) / abLen2;
+        t = clamp(t, 0, 1);
+
+        const cx = ax + abx * t;
+        const cy = ay + aby * t;
+        return Math.hypot(px - cx, py - cy);
+      }
+
+      function isValidMode(value) {
+        return value === 'system' || value === 'white' || value === 'black' || value === 'custom';
+      }
+
+      function normalizeHexColor(raw) {
+        if (typeof raw !== 'string') return null;
+        let s = raw.trim();
+        if (!s) return null;
+        if (s[0] === '#') s = s.slice(1);
+        if (!/^[0-9a-fA-F]+$/.test(s)) return null;
+
+        if (s.length === 3 || s.length === 4) {
+          s = s.split('').map(ch => ch + ch).join('');
+        }
+
+        if (s.length !== 6 && s.length !== 8) return null;
+        return '#' + s.toLowerCase();
+      }
+
+      function hexToRgba(rawHex, alphaOverride = 1) {
+        const hex = normalizeHexColor(rawHex);
+        if (!hex) return null;
+
+        const s = hex.slice(1);
+        const r = parseInt(s.slice(0, 2), 16);
+        const g = parseInt(s.slice(2, 4), 16);
+        const b = parseInt(s.slice(4, 6), 16);
+        const a = s.length === 8 ? parseInt(s.slice(6, 8), 16) / 255 : 1;
+        return `rgba(${r}, ${g}, ${b}, ${clamp(a * alphaOverride, 0, 1)})`;
+      }
+
+      function resolveModeColor(mode, customRaw, lightHex, darkHex) {
+        const fallback = darkMode ? darkHex : lightHex;
+        if (mode === 'system') return fallback;
+        if (mode === 'white') return '#ffffff';
+        if (mode === 'black') return '#000000';
+        if (mode === 'custom') return normalizeHexColor(customRaw) || fallback;
+        return fallback;
+      }
+
+      function saveSettings() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+        } catch (_) {}
+      }
+
+      function loadSettings() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const data = JSON.parse(raw);
+
+          if (isValidMode(data.bgMode)) settings.bgMode = data.bgMode;
+          if (typeof data.bgCustom === 'string') settings.bgCustom = data.bgCustom;
+
+          if (typeof data.tapColor === 'string') settings.tapColor = data.tapColor;
+          if (typeof data.swipeColor === 'string') settings.swipeColor = data.swipeColor;
+          if (typeof data.loopColor === 'string') settings.loopColor = data.loopColor;
+
+          if (typeof data.gridEnabled === 'boolean') settings.gridEnabled = data.gridEnabled;
+          if (isValidMode(data.gridMode)) settings.gridMode = data.gridMode;
+          if (typeof data.gridCustom === 'string') settings.gridCustom = data.gridCustom;
+          if (typeof data.gridSpacing === 'number' && isFinite(data.gridSpacing)) {
+            settings.gridSpacing = clamp(Math.round(data.gridSpacing), 18, 100);
           }
-          if (traveled > 40) return true;
-        }
-      }
-      return false;
-    }
 
-    function drawGrid() {
-      if (!settings.gridEnabled) return;
-      const baseColor = getGridBaseColor();
-      const lineLow = hexToRgba(baseColor, .40) || (darkMode ? 'rgba(34,34,34,.40)' : 'rgba(232,232,232,.40)');
-      const lineHigh = hexToRgba(baseColor, .56) || (darkMode ? 'rgba(58,58,58,.56)' : 'rgba(210,210,210,.56)');
-
-      ctx.save();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.lineWidth = 1;
-      for (let x = 0; x <= w + settings.gridSpacing; x += settings.gridSpacing) {
-        const accent = Math.round(x / settings.gridSpacing) % 4 === 0;
-        ctx.strokeStyle = accent ? lineHigh : lineLow;
-        ctx.beginPath();
-        ctx.moveTo(Math.floor(x) + 0.5, 0);
-        ctx.lineTo(Math.floor(x) + 0.5, h);
-        ctx.stroke();
-      }
-      for (let y = 0; y <= h + settings.gridSpacing; y += settings.gridSpacing) {
-        const accent = Math.round(y / settings.gridSpacing) % 4 === 0;
-        ctx.strokeStyle = accent ? lineHigh : lineLow;
-        ctx.beginPath();
-        ctx.moveTo(0, Math.floor(y) + 0.5);
-        ctx.lineTo(w, Math.floor(y) + 0.5);
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-
-    function drawTap(effect, t) {
-      const p = clamp((t - effect.start) / effect.duration, 0, 1);
-      if (p >= 1) return;
-      const e = easeOutCubic(p);
-      const radius = lerp(10, Math.max(w, h) * .22, e);
-      const alpha = .34 * Math.pow(1 - p, 1.7);
-      const baseColor = getTapBaseColor();
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.shadowBlur = radius * .22;
-      ctx.shadowColor = hexToRgba(baseColor, .55) || 'rgba(70,255,120,.55)';
-      const g = ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, radius);
-      g.addColorStop(0, hexToRgba(baseColor, .92) || 'rgba(70,255,120,.92)');
-      g.addColorStop(.28, hexToRgba(baseColor, .60) || 'rgba(60,235,110,.60)');
-      g.addColorStop(.68, hexToRgba(baseColor, .25) || 'rgba(50,220,100,.25)');
-      g.addColorStop(1, hexToRgba(baseColor, 0) || 'rgba(50,220,100,0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(effect.x, effect.y, radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-    function drawSwipe(effect, t) {
-      const p = clamp((t - effect.start) / effect.duration, 0, 1);
-      if (p >= 1) return;
-      const e = easeOutCubic(p);
-      const x = lerp(effect.from.x, effect.to.x, e);
-      const y = lerp(effect.from.y, effect.to.y, e);
-      const trailSteps = 16;
-      const trailSpacing = effect.radius * .82;
-      const baseColor = getSwipeBaseColor();
-      ctx.save();
-      ctx.globalCompositeOperation = 'source-over';
-      for (let i = trailSteps; i >= 0; i--) {
-        const back = i * trailSpacing;
-        const px = x - effect.dir.x * back;
-        const py = y - effect.dir.y * back;
-        const a = .24 * Math.pow(1 - i / (trailSteps + 1), 2.2) * Math.pow(1 - p, .35);
-        if (a <= .001) continue;
-        const r = effect.radius * (1 + (trailSteps - i) * .02);
-        ctx.globalAlpha = a;
-        ctx.shadowBlur = r * .35;
-        ctx.shadowColor = hexToRgba(baseColor, .55) || 'rgba(90,150,255,.55)';
-        ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(110,165,255,1)';
-        ctx.beginPath();
-        ctx.arc(px, py, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = .45 * Math.pow(1 - p, .7);
-      ctx.shadowBlur = effect.radius * .6;
-      ctx.shadowColor = hexToRgba(baseColor, .45) || 'rgba(110,165,255,.45)';
-      ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(110,165,255,1)';
-      ctx.beginPath();
-      ctx.arc(x, y, effect.radius * 1.02, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-    function drawLoop(effect, t) {
-      const p = clamp((t - effect.start) / effect.duration, 0, 1);
-      if (p >= 1 || effect.points.length < 3) return;
-      const alpha = .36 * Math.pow(1 - p, 2.0);
-      const blur = 8 * Math.pow(1 - p, .55);
-      const baseColor = getLoopBaseColor();
-      ctx.save();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = alpha;
-      ctx.shadowBlur = blur;
-      ctx.shadowColor = hexToRgba(baseColor, .40) || 'rgba(255,60,60,.40)';
-      ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(255,78,78,1)';
-      ctx.beginPath();
-      ctx.moveTo(effect.points[0].x, effect.points[0].y);
-      for (let i = 1; i < effect.points.length; i++) ctx.lineTo(effect.points[i].x, effect.points[i].y);
-      ctx.closePath();
-      ctx.fill('evenodd');
-      ctx.restore();
-    }
-    function render() {
-      const t = nowMs();
-      ctx.fillStyle = getBgColor();
-      ctx.fillRect(0, 0, w, h);
-      drawGrid();
-      for (const effect of effects) {
-        if (effect.type === 'tap') drawTap(effect, t);
-        else if (effect.type === 'swipe') drawSwipe(effect, t);
-        else if (effect.type === 'loop') drawLoop(effect, t);
-      }
-      for (let i = effects.length - 1; i >= 0; i--) {
-        if (t - effects[i].start >= effects[i].duration) effects.splice(i, 1);
-      }
-      requestAnimationFrame(render);
-    }
-
-    function localBusPost(packet) {
-      if (!appState.localChannel) return;
-      try { appState.localChannel.postMessage(packet); } catch {}
-      try { localStorage.setItem(appState.localBusKey, JSON.stringify(packet)); } catch {}
-    }
-
-    function handleIncomingMessage(packet) {
-      if (!packet || typeof packet !== 'object') return;
-      if (packet.sender === 'self') return;
-      if (!rememberPacket(packet.id)) return;
-
-      if (packet.type === 'presence') {
-        if (packet.id && packet.id !== 'self') {
-          appState.participants.set(packet.id, {
-            id: packet.id,
-            name: (packet.name || '名無し').toString().slice(0, 20),
-            lastSeen: typeof packet.lastSeen === 'number' ? packet.lastSeen : nowEpoch(),
-            self: false,
-          });
-          updateConnectionStateFromParticipants();
-        }
-        return;
-      }
-      if (packet.type === 'leave') {
-        if (packet.id) appState.participants.delete(packet.id);
-        updateConnectionStateFromParticipants();
-        return;
-      }
-      if (packet.type === 'lock') {
-        appState.sendLock = {
-          byId: packet.byId || '',
-          byName: packet.byName || '',
-          until: typeof packet.until === 'number' ? packet.until : 0,
-          token: packet.token || '',
-        };
-        refreshPeerMenuUi();
-        return;
-      }
-      if (packet.type === 'settings') {
-        if (Date.now() <= appState.receiveWindowUntil) {
-          appState.receiveWindowUntil = 0;
-          applySettingsObject(packet.payload);
-          showToast('設定を受信した');
-        }
-        return;
-      }
-      if (packet.type === 'effect') {
-        applyEffectPacket(packet);
-      }
-    }
-    function applyEffectPacket(packet) {
-      const p = packet.payload || {};
-      if (packet.kind === 'tap' && typeof p.x === 'number' && typeof p.y === 'number') {
-        addTapEffect(p.x, p.y, false);
-      } else if (packet.kind === 'swipe' && p.from && p.to && p.dir) {
-        createSwipeEffect(p.from.x, p.from.y, p.dir.x * 100, p.dir.y * 100, false, {
-          forceFrom: p.from,
-          forceTo: p.to,
-          forceRadius: p.radius
-        });
-      } else if (packet.kind === 'loop' && Array.isArray(p.points)) {
-        const pts = p.points.filter(pt => pt && typeof pt.x === 'number' && typeof pt.y === 'number');
-        if (pts.length >= 3) createLoopEffect(pts, false);
-      }
-    }
-
-    function sendEffectToRoom(kind, payload) {
-      if (appState.transport === 'none') return;
-      const packet = {
-        id: makeId(),
-        sender: 'self',
-        senderName: currentDisplayName(),
-        type: 'effect',
-        kind,
-        payload,
-        ts: nowEpoch(),
-      };
-      if (appState.transport === 'local') {
-        localBusPost(packet);
-      } else if (appState.transport === 'firebase' && appState.firebase.eventsRef) {
-        addDoc(appState.firebase.eventsRef, { ...packet, createdAt: nowEpoch() }).catch(() => {});
-      }
-    }
-
-    function sendPresence() {
-      if (appState.transport === 'local') {
-        localBusPost({
-          id: makeId(),
-          sender: 'self',
-          senderName: currentDisplayName(),
-          type: 'presence',
-          name: currentDisplayName(),
-          lastSeen: nowEpoch(),
-          self: true,
-          ts: nowEpoch(),
-        });
-      } else if (appState.transport === 'firebase') {
-        setDoc(appState.firebase.selfPresenceRef, {
-          id: 'self',
-          name: currentDisplayName(),
-          lastSeen: nowEpoch(),
-          mode: appState.roomMode,
-          self: true,
-        }, { merge: true }).catch(() => {});
-      }
-    }
-
-    function joinLocalRoom(code) {
-      disconnectCurrentRoom(false);
-      appState.roomCode = code;
-      appState.roomMode = 'local';
-      appState.transport = 'local';
-      appState.participants.clear();
-      appState.participants.set('self', { id:'self', name:currentDisplayName(), lastSeen:nowEpoch(), self:true });
-      appState.peerState = 'searching';
-      updatePeerButtonUi();
-      refreshPeerMenuUi();
-
-      const key = localBusKeyFor(code);
-      appState.localBusKey = key;
-      try {
-        appState.localChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('touch_effect_local_' + code) : null;
-        if (appState.localChannel) appState.localChannel.onmessage = ev => handleIncomingMessage(ev.data);
-      } catch {
-        appState.localChannel = null;
+          if (typeof data.peerButtonVisible === 'boolean') settings.peerButtonVisible = data.peerButtonVisible;
+        } catch (_) {}
       }
 
-      appState.localStorageHandler = ev => {
-        if (ev.key !== key || !ev.newValue) return;
-        try { handleIncomingMessage(JSON.parse(ev.newValue)); } catch {}
-      };
-      window.addEventListener('storage', appState.localStorageHandler);
-      appState.localHeartbeat = setInterval(() => { sendPresence(); cleanupParticipants(); }, 2000);
-      sendPresence();
-      updateConnectionStateFromParticipants();
-      startRoomSyncTimer();
-      showToast('ローカルで待機中');
-      if (appState.showQrAfterJoin) openQrOverlay('QRコードを表示', 'このコードを相手に見せるか、同じ文字を入力してください。', `local:${code}`);
-    }
+      function updateTheme() {
+        darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    function joinFirebaseRoom(code) {
-      disconnectCurrentRoom(false);
-      appState.roomCode = code;
-      appState.roomMode = 'firebase';
-      appState.transport = 'firebase';
-      appState.participants.clear();
-      appState.participants.set('self', { id:'self', name:currentDisplayName(), lastSeen:nowEpoch(), self:true });
-      appState.peerState = 'searching';
-      updatePeerButtonUi();
-      refreshPeerMenuUi();
+        document.documentElement.style.setProperty('--bg', darkMode ? '#000' : '#fff');
+        document.documentElement.style.setProperty('--edge', darkMode ? '#fafafa' : '#111');
+        document.documentElement.style.setProperty('--panel-bg', darkMode ? 'rgba(0, 0, 0, 0.82)' : 'rgba(255, 255, 255, 0.84)');
+        document.documentElement.style.setProperty('--panel-border', darkMode ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.14)');
+        document.documentElement.style.setProperty('--text', darkMode ? '#f5f5f5' : '#101010');
+        document.documentElement.style.setProperty('--muted', darkMode ? 'rgba(245, 245, 245, 0.45)' : 'rgba(16, 16, 16, 0.45)');
+        document.documentElement.style.setProperty('--track', darkMode ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.12)');
+        document.documentElement.style.setProperty('--track-disabled', darkMode ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)');
+        document.documentElement.style.setProperty('--thumb', darkMode ? 'rgba(255, 255, 255, 0.78)' : 'rgba(0, 0, 0, 0.72)');
 
-      const roomRef = doc(db, 'rooms', code);
-      const settingsRef = doc(db, 'rooms', code, 'meta', 'settings');
-      const participantsRef = collection(db, 'rooms', code, 'participants');
-      const eventsRef = collection(db, 'rooms', code, 'events');
-      const selfPresenceRef = doc(db, 'rooms', code, 'participants', 'self');
+        document.body.style.background = getBgColor();
+      }
 
-      appState.firebase.roomRef = roomRef;
-      appState.firebase.settingsRef = settingsRef;
-      appState.firebase.participantsRef = participantsRef;
-      appState.firebase.eventsRef = eventsRef;
-      appState.firebase.selfPresenceRef = selfPresenceRef;
+      function resize() {
+        dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+        w = window.innerWidth;
+        h = window.innerHeight;
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
 
-      appState.firebase.unsubRoom = onSnapshot(roomRef, snap => {
-        const data = snap.data() || {};
-        const lock = data.sendLock || null;
-        if (lock && typeof lock === 'object') {
-          appState.sendLock = {
-            byId: lock.byId || '',
-            byName: lock.byName || '',
-            until: typeof lock.until === 'number' ? lock.until : 0,
-            token: lock.token || '',
-          };
+      function syncSettingsUi() {
+        bgMode.value = settings.bgMode;
+        bgCustomInput.value = settings.bgCustom;
+        bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
+
+        tapColorInput.value = settings.tapColor;
+        swipeColorInput.value = settings.swipeColor;
+        loopColorInput.value = settings.loopColor;
+
+        gridToggle.checked = settings.gridEnabled;
+        gridDetails.classList.toggle('disabled', !settings.gridEnabled);
+
+        gridMode.value = settings.gridMode;
+        gridCustomInput.value = settings.gridCustom;
+        gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
+
+        spacingRange.value = String(settings.gridSpacing);
+        spacingValue.textContent = String(settings.gridSpacing);
+
+        peerButtonToggle.checked = settings.peerButtonVisible;
+      }
+
+      function updatePeerButtonUi() {
+        peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
+        peerButton.classList.toggle('searching', peerState === 'searching');
+        peerButton.classList.toggle('connected', peerState === 'connected');
+        if (peerState === 'searching') {
+          peerButton.setAttribute('aria-label', 'ローカル通信をキャンセル');
+        } else if (peerState === 'connected') {
+          peerButton.setAttribute('aria-label', '接続メニューを開く');
         } else {
-          appState.sendLock = { byId: '', byName: '', until: 0, token: '' };
+          peerButton.setAttribute('aria-label', 'ローカル通信');
         }
-        refreshPeerMenuUi();
-        updateConnectionStateFromParticipants();
-      });
-
-      appState.firebase.unsubSettings = onSnapshot(settingsRef, snap => {
-        if (!snap.exists()) return;
-        const data = snap.data() || {};
-        if (data.sender === 'self') return;
-        if (Date.now() <= appState.receiveWindowUntil) {
-          appState.receiveWindowUntil = 0;
-          if (data.payload) applySettingsObject(data.payload);
-          showToast('設定を受信した');
-        }
-      });
-
-      appState.firebase.unsubParticipants = onSnapshot(participantsRef, snap => {
-        const list = [];
-        snap.forEach(d => {
-          const data = d.data() || {};
-          list.push({
-            id: d.id,
-            name: String(data.name || '名無し').slice(0, 20),
-            lastSeen: typeof data.lastSeen === 'number' ? data.lastSeen : 0,
-            self: d.id === 'self',
-          });
-        });
-        updateParticipantMapFromList(list);
-        updateConnectionStateFromParticipants();
-      });
-
-      appState.firebase.unsubEvents = onSnapshot(query(eventsRef, orderBy('createdAt', 'asc'), limit(200)), snap => {
-        snap.docChanges().forEach(ch => {
-          if (ch.type !== 'added') return;
-          const data = ch.doc.data() || {};
-          if (data.sender === 'self') return;
-          if (!rememberPacket(ch.doc.id)) return;
-          applyEffectPacket({ id: ch.doc.id, sender: data.sender, kind: data.kind, payload: data.payload || {} });
-        });
-      });
-
-      appState.firebase.heartbeat = setInterval(() => { sendPresence(); cleanupParticipants(); }, 2000);
-      sendPresence();
-      updateConnectionStateFromParticipants();
-      startRoomSyncTimer();
-      showToast('オンラインで待機中');
-    }
-
-    function disconnectLocalTransport(sendLeave = true) {
-      if (sendLeave) {
-        localBusPost({
-          id: makeId(),
-          sender: 'self',
-          senderName: currentDisplayName(),
-          type: 'leave',
-          ts: nowEpoch(),
-        });
       }
-      if (appState.localHeartbeat) { clearInterval(appState.localHeartbeat); appState.localHeartbeat = null; }
-      if (appState.localChannel) { try { appState.localChannel.close(); } catch {} appState.localChannel = null; }
-      if (appState.localStorageHandler) { window.removeEventListener('storage', appState.localStorageHandler); appState.localStorageHandler = null; }
-      appState.localBusKey = '';
-    }
-    function disconnectFirebaseTransport(sendLeave = true) {
-      if (sendLeave && appState.firebase.selfPresenceRef) deleteDoc(appState.firebase.selfPresenceRef).catch(() => {});
-      if (appState.firebase.unsubRoom) appState.firebase.unsubRoom();
-      if (appState.firebase.unsubSettings) appState.firebase.unsubSettings();
-      if (appState.firebase.unsubParticipants) appState.firebase.unsubParticipants();
-      if (appState.firebase.unsubEvents) appState.firebase.unsubEvents();
-      if (appState.firebase.heartbeat) { clearInterval(appState.firebase.heartbeat); appState.firebase.heartbeat = null; }
-      appState.firebase.roomRef = null;
-      appState.firebase.settingsRef = null;
-      appState.firebase.participantsRef = null;
-      appState.firebase.eventsRef = null;
-      appState.firebase.selfPresenceRef = null;
-      appState.firebase.unsubRoom = null;
-      appState.firebase.unsubSettings = null;
-      appState.firebase.unsubParticipants = null;
-      appState.firebase.unsubEvents = null;
-    }
-    function disconnectCurrentRoom(sendLeave = true) {
-      stopRoomSyncTimer();
-      if (appState.transport === 'local') disconnectLocalTransport(sendLeave);
-      if (appState.transport === 'firebase') disconnectFirebaseTransport(sendLeave);
-      appState.transport = 'none';
-      appState.roomCode = '';
-      appState.participants.clear();
-      appState.sendLock = { byId:'', byName:'', until:0, token:'' };
-      appState.receiveWindowUntil = 0;
-      appState.currentSettingsToken = '';
-      appState.peerState = 'off';
-      refreshPeerMenuUi();
-      updatePeerButtonUi();
-      closePeerMenu();
-      closeRoomOverlay();
-      closeQrOverlay();
-    }
 
-    function stopRoomSyncTimer() {
-      if (appState.roomSyncTimer) { clearInterval(appState.roomSyncTimer); appState.roomSyncTimer = null; }
-    }
-    function startRoomSyncTimer() {
-      stopRoomSyncTimer();
-      appState.roomSyncTimer = setInterval(() => {
-        if (appState.transport === 'none') return;
-        cleanupParticipants();
-        if (isLockActive(appState.sendLock) && appState.sendLock.until < nowEpoch()) {
-          appState.sendLock = { byId:'', byName:'', until:0, token:'' };
-          refreshPeerMenuUi();
-        }
-        maybeShowConnectedToast();
-      }, 1000);
-    }
-
-    function handleIncomingMessage(packet) {
-      if (!packet || typeof packet !== 'object') return;
-      if (packet.sender === 'self') return;
-      if (!rememberPacket(packet.id)) return;
-
-      if (packet.type === 'presence') {
-        if (packet.id && packet.id !== 'self') {
-          appState.participants.set(packet.id, {
-            id: packet.id,
-            name: (packet.name || '名無し').toString().slice(0, 20),
-            lastSeen: typeof packet.lastSeen === 'number' ? packet.lastSeen : nowEpoch(),
-            self: false,
-          });
-          updateConnectionStateFromParticipants();
-        }
-        return;
+      function openOverlay() {
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
       }
-      if (packet.type === 'leave') {
-        if (packet.id) appState.participants.delete(packet.id);
-        updateConnectionStateFromParticipants();
-        return;
+
+      function closeOverlay() {
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
       }
-      if (packet.type === 'lock') {
-        appState.sendLock = {
-          byId: packet.byId || '',
-          byName: packet.byName || '',
-          until: typeof packet.until === 'number' ? packet.until : 0,
-          token: packet.token || '',
+
+      function getBgColor() {
+        return resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000');
+      }
+
+      function getGridBaseColor() {
+        return resolveModeColor(
+          settings.gridMode,
+          settings.gridCustom,
+          darkMode ? '#262626' : '#e8e8e8',
+          darkMode ? '#262626' : '#e8e8e8'
+        );
+      }
+
+      function getTapBaseColor() {
+        return normalizeHexColor(settings.tapColor) || defaults.tapColor;
+      }
+
+      function getSwipeBaseColor() {
+        return normalizeHexColor(settings.swipeColor) || defaults.swipeColor;
+      }
+
+      function getLoopBaseColor() {
+        return normalizeHexColor(settings.loopColor) || defaults.loopColor;
+      }
+
+      function captureSettingsSnapshot() {
+        return {
+          bgMode: settings.bgMode,
+          bgCustom: settings.bgCustom,
+          tapColor: settings.tapColor,
+          swipeColor: settings.swipeColor,
+          loopColor: settings.loopColor,
+          gridEnabled: settings.gridEnabled,
+          gridMode: settings.gridMode,
+          gridCustom: settings.gridCustom,
+          gridSpacing: settings.gridSpacing
         };
-        refreshPeerMenuUi();
-        return;
       }
-      if (packet.type === 'settings') {
-        if (Date.now() <= appState.receiveWindowUntil) {
-          appState.receiveWindowUntil = 0;
-          applySettingsObject(packet.payload);
-          showToast('設定を受信した');
+
+      function applySettingsSnapshot(snapshot) {
+        if (!snapshot || typeof snapshot !== 'object') return;
+
+        if (isValidMode(snapshot.bgMode)) settings.bgMode = snapshot.bgMode;
+        if (typeof snapshot.bgCustom === 'string') settings.bgCustom = snapshot.bgCustom;
+
+        if (typeof snapshot.tapColor === 'string') settings.tapColor = snapshot.tapColor;
+        if (typeof snapshot.swipeColor === 'string') settings.swipeColor = snapshot.swipeColor;
+        if (typeof snapshot.loopColor === 'string') settings.loopColor = snapshot.loopColor;
+
+        if (typeof snapshot.gridEnabled === 'boolean') settings.gridEnabled = snapshot.gridEnabled;
+        if (isValidMode(snapshot.gridMode)) settings.gridMode = snapshot.gridMode;
+        if (typeof snapshot.gridCustom === 'string') settings.gridCustom = snapshot.gridCustom;
+        if (typeof snapshot.gridSpacing === 'number' && isFinite(snapshot.gridSpacing)) {
+          settings.gridSpacing = clamp(Math.round(snapshot.gridSpacing), 18, 100);
         }
-        return;
+
+        bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
+        gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
+        gridDetails.classList.toggle('disabled', !settings.gridEnabled);
+
+        saveSettings();
+        syncSettingsUi();
+        document.body.style.background = getBgColor();
       }
-      if (packet.type === 'effect') {
-        applyEffectPacket(packet);
-      }
-    }
 
-    function applyEffectPacket(packet) {
-      const p = packet.payload || {};
-      if (packet.kind === 'tap' && typeof p.x === 'number' && typeof p.y === 'number') {
-        addTapEffect(p.x, p.y, false);
-      } else if (packet.kind === 'swipe' && p.from && p.to && p.dir) {
-        createSwipeEffect(p.from.x, p.from.y, p.dir.x * 100, p.dir.y * 100, false, {
-          forceFrom: p.from,
-          forceTo: p.to,
-          forceRadius: p.radius
-        });
-      } else if (packet.kind === 'loop' && Array.isArray(p.points)) {
-        const pts = p.points.filter(pt => pt && typeof pt.x === 'number' && typeof pt.y === 'number');
-        if (pts.length >= 3) createLoopEffect(pts, false);
-      }
-    }
-
-    async function acquireSendLock() {
-      const now = nowEpoch();
-      if (isLockActive(appState.sendLock) && appState.sendLock.byId !== 'self') return false;
-
-      const nextLock = {
-        byId: 'self',
-        byName: currentDisplayName(),
-        until: now + 10000,
-        token: makeId(),
-      };
-
-      if (appState.transport === 'local') {
-        appState.sendLock = nextLock;
-        refreshPeerMenuUi();
-        localBusPost({
-          id: makeId(),
-          sender: 'self',
-          senderName: currentDisplayName(),
-          type: 'lock',
-          ...nextLock,
-          ts: nowEpoch(),
-        });
+      function rememberPacket(id) {
+        if (!id || seenPackets.has(id)) return false;
+        seenPackets.add(id);
+        seenPacketQueue.push(id);
+        if (seenPacketQueue.length > 300) {
+          const old = seenPacketQueue.shift();
+          if (old) seenPackets.delete(old);
+        }
         return true;
       }
 
-      if (appState.transport === 'firebase' && appState.firebase.roomRef) {
+      function makePacket(base) {
+        return {
+          ...base,
+          id: makeId(),
+          sender: selfPeerId,
+          ts: Date.now()
+        };
+      }
+
+      function postWifiPacket(packet) {
+        if (!wifiChannel) return;
         try {
-          await runTransaction(db, async tx => {
-            const snap = await tx.get(appState.firebase.roomRef);
-            const data = snap.data() || {};
-            const existing = data.sendLock || null;
-            if (existing && typeof existing.until === 'number' && existing.until > now && existing.byId !== 'self') {
-              throw new Error('locked');
-            }
-            tx.set(appState.firebase.roomRef, { sendLock: nextLock, updatedAt: nowEpoch() }, { merge: true });
-          });
-          appState.sendLock = nextLock;
-          refreshPeerMenuUi();
-          return true;
-        } catch {
-          return false;
+          wifiChannel.postMessage(packet);
+        } catch (_) {}
+        try {
+          localStorage.setItem(WIFI_BUS_KEY, JSON.stringify(packet));
+        } catch (_) {}
+      }
+
+      function sendPeerPacket(basePacket) {
+        const packet = makePacket(basePacket);
+
+        if (peerConnectedVia === 'rtc' && rtcDc && rtcDc.readyState === 'open') {
+          try {
+            rtcDc.send(JSON.stringify(packet));
+          } catch (_) {}
+          return;
+        }
+
+        if (peerConnectedVia === 'wifi') {
+          postWifiPacket(packet);
         }
       }
-      return false;
-    }
 
-    async function sendCurrentSettings() {
-      if (appState.peerState !== 'connected') {
-        showToast('まだ接続されてない');
-        return;
+      function setPeerState(nextState) {
+        peerState = nextState;
+        updatePeerButtonUi();
       }
 
-      const ok = await acquireSendLock();
-      if (!ok && appState.sendLock.byId !== 'self') {
-        showToast(`${appState.sendLock.byName || '誰か'}が送信中…`);
-        return;
+      function setPeerConnected(via) {
+        peerConnectedVia = via;
+        setPeerState('connected');
+        peerLastSeenAt = Date.now();
+        stopPeerTimers();
+        startPeerTimers();
       }
 
-      const payload = appSnapshot();
-      const token = makeId();
-      appState.currentSettingsToken = token;
+      function setPeerSearching() {
+        peerConnectedVia = null;
+        setPeerState('searching');
+        peerLastSeenAt = Date.now();
+        stopPeerTimers();
+        startPeerTimers();
+      }
 
-      if (appState.transport === 'local') {
-        localBusPost({
-          id: makeId(),
-          sender: 'self',
-          senderName: currentDisplayName(),
-          type: 'settings',
-          token,
-          payload,
-          ts: nowEpoch(),
-        });
-      } else if (appState.transport === 'firebase' && appState.firebase.settingsRef) {
+      function setPeerOff() {
+        peerConnectedVia = null;
+        remotePeerId = null;
+        peerLastSeenAt = 0;
+        stopPeerTimers();
+        setPeerState('off');
+      }
+
+      function stopPeerTimers() {
+        if (peerPulseTimer) {
+          clearInterval(peerPulseTimer);
+          peerPulseTimer = null;
+        }
+        if (peerWatchTimer) {
+          clearInterval(peerWatchTimer);
+          peerWatchTimer = null;
+        }
+      }
+
+      function startPeerTimers() {
+        stopPeerTimers();
+
+        peerPulseTimer = setInterval(() => {
+          if (peerState === 'searching') {
+            if (peerConnectedVia === 'wifi') {
+              postWifiPacket(makePacket({ type: 'wifi-search' }));
+            }
+          } else if (peerState === 'connected' && peerConnectedVia === 'wifi') {
+            postWifiPacket(makePacket({ type: 'wifi-keepalive' }));
+          }
+        }, 1100);
+
+        peerWatchTimer = setInterval(() => {
+          if (peerState !== 'connected') return;
+          if (peerConnectedVia !== 'wifi') return;
+          if (Date.now() - peerLastSeenAt > 6500) {
+            showToast('接続が途切れた');
+            stopWifiTransport(false);
+            setPeerOff();
+          }
+        }, 1000);
+      }
+
+      function ensureWifiRoom() {
+        if (wifiRoomId) return wifiRoomId;
         try {
-          await setDoc(appState.firebase.settingsRef, {
-            id: makeId(),
-            sender: 'self',
-            senderName: currentDisplayName(),
-            type: 'settings',
-            token,
-            payload,
-            updatedAt: nowEpoch(),
-          });
-        } catch {
-          showToast('Firebaseに送れなかった');
+          const stored = localStorage.getItem(WIFI_ROOM_KEY);
+          if (stored && stored.length > 4) {
+            wifiRoomId = stored;
+            return wifiRoomId;
+          }
+        } catch (_) {}
+        wifiRoomId = `room_${makeId().slice(0, 8)}`;
+        try {
+          localStorage.setItem(WIFI_ROOM_KEY, wifiRoomId);
+        } catch (_) {}
+        return wifiRoomId;
+      }
+
+      function openWifiTransport() {
+        ensureWifiRoom();
+        closeWifiTransport();
+
+        const name = `touch_effect_wifi_${wifiRoomId}`;
+
+        if ('BroadcastChannel' in window) {
+          try {
+            wifiChannel = new BroadcastChannel(name);
+            wifiChannel.onmessage = (ev) => handleIncomingPacket(ev.data, 'wifi');
+          } catch (_) {
+            wifiChannel = null;
+          }
+        }
+
+        window.addEventListener('storage', onWifiStorage);
+      }
+
+      function closeWifiTransport(sendLeave = false) {
+        if (sendLeave && peerConnectedVia === 'wifi') {
+          postWifiPacket(makePacket({ type: 'wifi-leave' }));
+        }
+
+        if (wifiChannel) {
+          try {
+            wifiChannel.close();
+          } catch (_) {}
+          wifiChannel = null;
+        }
+
+        window.removeEventListener('storage', onWifiStorage);
+      }
+
+      function onWifiStorage(ev) {
+        if (ev.key !== WIFI_BUS_KEY || !ev.newValue) return;
+        try {
+          handleIncomingPacket(JSON.parse(ev.newValue), 'wifi');
+        } catch (_) {}
+      }
+
+      function stopRtcTransport() {
+        rtcWaitingForAnswer = false;
+        if (rtcDc) {
+          try {
+            rtcDc.onopen = null;
+            rtcDc.onclose = null;
+            rtcDc.onmessage = null;
+            rtcDc.close();
+          } catch (_) {}
+          rtcDc = null;
+        }
+        if (rtcPc) {
+          try {
+            rtcPc.onicecandidate = null;
+            rtcPc.onconnectionstatechange = null;
+            rtcPc.ondatachannel = null;
+            rtcPc.close();
+          } catch (_) {}
+          rtcPc = null;
+        }
+        rtcRole = null;
+      }
+
+      function stopAllPeerFlows() {
+        stopRtcTransport();
+        closeWifiTransport(true);
+        receiveWindowUntil = 0;
+        setPeerOff();
+        closePeerMenu();
+        closeQrOverlay();
+        closeScanOverlay();
+      }
+
+      function cancelSearching() {
+        stopAllPeerFlows();
+        showToast('キャンセルした');
+      }
+
+      function handleIncomingPacket(packet, via) {
+        if (!packet || typeof packet !== 'object') return;
+        if (packet.sender === selfPeerId) return;
+        if (!rememberPacket(packet.id)) return;
+
+        const now = Date.now();
+
+        if (via === 'wifi') {
+          if (packet.type === 'wifi-search') {
+            if (peerState === 'searching' && peerConnectedVia === 'wifi') {
+              peerLastSeenAt = now;
+              remotePeerId = packet.sender;
+              setPeerConnected('wifi');
+              postWifiPacket(makePacket({ type: 'wifi-found', target: packet.sender }));
+            }
+            return;
+          }
+
+          if (packet.type === 'wifi-found') {
+            if (peerState === 'searching' && peerConnectedVia === 'wifi' && packet.target === selfPeerId) {
+              remotePeerId = packet.sender;
+              setPeerConnected('wifi');
+            }
+            return;
+          }
+
+          if (packet.type === 'wifi-keepalive') {
+            if (peerState === 'connected' && peerConnectedVia === 'wifi') {
+              peerLastSeenAt = now;
+            }
+            return;
+          }
+
+          if (packet.type === 'wifi-leave') {
+            if (peerState === 'connected' && peerConnectedVia === 'wifi' && packet.sender === remotePeerId) {
+              showToast('相手が切断した');
+              stopWifiTransport(false);
+              setPeerOff();
+            }
+            return;
+          }
+        }
+
+        if (packet.type === 'effect') {
+          if (peerState === 'off') return;
+          if (packet.target && packet.target !== selfPeerId) return;
+          peerLastSeenAt = now;
+          applyRemoteEffect(packet.kind, packet.payload);
+          return;
+        }
+
+        if (packet.type === 'settings') {
+          if (peerState === 'off') return;
+          if (packet.target && packet.target !== selfPeerId) return;
+          peerLastSeenAt = now;
+          if (Date.now() <= receiveWindowUntil) {
+            receiveWindowUntil = 0;
+            applySettingsSnapshot(packet.payload);
+            showToast('設定を受信した');
+          }
+          return;
+        }
+
+        if (packet.type === 'hello') {
+          if (peerState === 'searching') {
+            remotePeerId = packet.sender;
+            setPeerConnected(via);
+          }
+          return;
+        }
+
+        if (packet.type === 'bye') {
+          if (peerState === 'connected') {
+            stopAllPeerFlows();
+          }
           return;
         }
       }
-      showToast('設定を送った');
-    }
 
-    function joinRoomFromOverlay() {
-      const code = roomCodeValue(el.roomCodeInput.value) || generateRoomCode();
-      el.roomCodeInput.value = code;
-      if (appState.roomMode === 'firebase') joinFirebaseRoom(code);
-      else joinLocalRoom(code);
-      closeRoomOverlay();
-      if (appState.showQrAfterJoin) {
-        openQrOverlay('QRコードを表示', 'このコードを相手に見せるか、同じ文字を入力してください。', `${appState.roomMode}:${code}`);
+      function handleRtcPacket(raw) {
+        let packet = raw;
+        if (typeof raw === 'string') {
+          try {
+            packet = JSON.parse(raw);
+          } catch (_) {
+            return;
+          }
+        }
+        handleIncomingPacket(packet, 'rtc');
       }
-    }
 
-    function handlePeerButtonClick() {
-      if (appState.peerState === 'searching') {
-        disconnectCurrentRoom(true);
-        showToast('キャンセルした');
-        return;
+      function startWifiSearch() {
+        closePeerMenu();
+        stopRtcTransport();
+        openWifiTransport();
+        peerConnectedVia = 'wifi';
+        setPeerSearching();
+        postWifiPacket(makePacket({ type: 'wifi-search' }));
+        showToast('Wi-Fi通信を探してる');
       }
-      if (appState.peerState === 'connected') {
-        openPeerMenu('connected');
-        return;
+
+      function startRtcHost() {
+        closePeerMenu();
+        stopAllPeerFlows();
+        peerConnectedVia = 'rtc';
+        setPeerSearching();
+        rtcRole = 'host';
+        rtcWaitingForAnswer = true;
+        createRtcHostOffer().catch(() => {
+          showToast('QRの作成に失敗');
+          stopAllPeerFlows();
+        });
       }
-      openPeerMenu('off');
-    }
 
-    function handleSettingsChange() {
-      settings.bgMode = el.bgMode.value;
-      settings.bgCustom = el.bgCustomInput.value.trim();
-      settings.tapColor = el.tapColorInput.value.trim();
-      settings.swipeColor = el.swipeColorInput.value.trim();
-      settings.loopColor = el.loopColorInput.value.trim();
-      settings.gridEnabled = el.gridToggle.checked;
-      settings.gridMode = el.gridMode.value;
-      settings.gridCustom = el.gridCustomInput.value.trim();
-      settings.gridSpacing = clamp(Number(el.spacingRange.value) || 36, 18, 100);
-      settings.peerButtonVisible = el.peerButtonToggle.checked;
-      settings.displayName = el.displayNameInput.value.trim().slice(0, 20) || '自分';
+      function startRtcJoinScan() {
+        closePeerMenu();
+        stopAllPeerFlows();
+        peerConnectedVia = 'rtc';
+        setPeerSearching();
+        qrModeAfterScan = 'hostAnswer';
+        openScanOverlay();
+        startScanLoop();
+      }
 
-      saveSettings();
-      syncUi();
-    }
+      async function createRtcHostOffer() {
+        stopRtcTransport();
 
-    function handlePeerToggleChange() {
-      settings.peerButtonVisible = el.peerButtonToggle.checked;
-      el.peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
-      el.displayNameInput.disabled = !settings.peerButtonVisible;
-      el.displayNameWrap.classList.toggle('disabled', !settings.peerButtonVisible);
-      saveSettings();
-    }
+        rtcPc = new RTCPeerConnection({ iceServers: [] });
+        rtcDc = rtcPc.createDataChannel('touch');
 
-    function handleDisplayNameChange() {
-      settings.displayName = el.displayNameInput.value.trim().slice(0, 20) || '自分';
-      saveSettings();
-      if (appState.transport !== 'none') sendPresence();
-      refreshPeerMenuUi();
-    }
+        setupRtcCommonHandlers();
 
-    function resetAllSettings() {
-      const ok = window.confirm('設定を初期状態に戻します。よろしいですか？');
-      if (!ok) return;
-      Object.assign(settings, defaults);
-      try { localStorage.removeItem(STORAGE_KEY); } catch {}
-      if (appState.transport !== 'none') disconnectCurrentRoom(false);
-      syncUi();
-      document.body.style.background = getBgColor();
-    }
+        rtcDc.onopen = () => {
+          setPeerConnected('rtc');
+          showToast('接続した');
+        };
 
-    function canvasPointerBindings() {
-      el.canvas.addEventListener('pointerdown', e => {
-        if (el.overlay.classList.contains('open') || el.peerMenuOverlay.classList.contains('open') || el.qrOverlay.classList.contains('open') || el.roomOverlay.classList.contains('open')) return;
-        if (pointerIdActive !== null) return;
-        pointerIdActive = e.pointerId;
-        el.canvas.setPointerCapture(pointerIdActive);
-        const p = { x: e.clientX, y: e.clientY };
+        rtcDc.onmessage = (ev) => handleRtcPacket(ev.data);
+
+        const offer = await rtcPc.createOffer();
+        await rtcPc.setLocalDescription(offer);
+        await waitForIceComplete(rtcPc);
+
+        const payload = JSON.stringify({
+          kind: 'offer',
+          sdp: rtcPc.localDescription ? rtcPc.localDescription.sdp : ''
+        });
+
+        openQrOverlay('QRコードを表示', '相手にこのQRを見せて、相手側で読み取ってもらってください。', payload, 'QRを読み取る', () => {
+          qrModeAfterScan = 'hostAnswer';
+          openScanOverlay();
+          startScanLoop();
+        });
+      }
+
+      function setupRtcCommonHandlers() {
+        if (!rtcPc) return;
+
+        rtcPc.onicecandidate = (ev) => {
+          if (ev.candidate) return;
+        };
+
+        rtcPc.onconnectionstatechange = () => {
+          if (!rtcPc) return;
+          if (rtcPc.connectionState === 'connected') {
+            setPeerConnected('rtc');
+          } else if (rtcPc.connectionState === 'failed' || rtcPc.connectionState === 'disconnected' || rtcPc.connectionState === 'closed') {
+            if (peerState !== 'off') {
+              showToast('接続が切れた');
+              stopAllPeerFlows();
+            }
+          }
+        };
+
+        rtcPc.ondatachannel = (ev) => {
+          rtcDc = ev.channel;
+          rtcDc.onopen = () => {
+            setPeerConnected('rtc');
+            showToast('接続した');
+          };
+          rtcDc.onmessage = (msg) => handleRtcPacket(msg.data);
+          rtcDc.onclose = () => {
+            if (peerState !== 'off') {
+              showToast('切断した');
+              stopAllPeerFlows();
+            }
+          };
+        };
+      }
+
+      async function createRtcAnswerFromOffer(offerText) {
+        let offerData;
+        try {
+          offerData = JSON.parse(offerText);
+        } catch (_) {
+          throw new Error('QRが読めない');
+        }
+
+        if (!offerData || offerData.kind !== 'offer' || typeof offerData.sdp !== 'string') {
+          throw new Error('offerではない');
+        }
+
+        stopRtcTransport();
+
+        rtcPc = new RTCPeerConnection({ iceServers: [] });
+        setupRtcCommonHandlers();
+
+        rtcPc.ondatachannel = (ev) => {
+          rtcDc = ev.channel;
+          rtcDc.onopen = () => {
+            setPeerConnected('rtc');
+            showToast('接続した');
+          };
+          rtcDc.onmessage = (msg) => handleRtcPacket(msg.data);
+          rtcDc.onclose = () => {
+            if (peerState !== 'off') {
+              showToast('切断した');
+              stopAllPeerFlows();
+            }
+          };
+        };
+
+        const offerDesc = new RTCSessionDescription({ type: 'offer', sdp: offerData.sdp });
+        await rtcPc.setRemoteDescription(offerDesc);
+
+        const answer = await rtcPc.createAnswer();
+        await rtcPc.setLocalDescription(answer);
+        await waitForIceComplete(rtcPc);
+
+        const answerPayload = JSON.stringify({
+          kind: 'answer',
+          sdp: rtcPc.localDescription ? rtcPc.localDescription.sdp : ''
+        });
+
+        openQrOverlay('返答用QRを表示', '今度はこのQRを相手に見せて、相手側で読み取ってもらってください。', answerPayload, '閉じる', () => {
+          qrModeAfterScan = null;
+          closeQrOverlay();
+        });
+      }
+
+      async function finishRtcHostWithAnswer(answerText) {
+        if (!rtcPc) throw new Error('未接続');
+
+        let answerData;
+        try {
+          answerData = JSON.parse(answerText);
+        } catch (_) {
+          throw new Error('QRが読めない');
+        }
+
+        if (!answerData || answerData.kind !== 'answer' || typeof answerData.sdp !== 'string') {
+          throw new Error('answerではない');
+        }
+
+        await rtcPc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answerData.sdp }));
+        if (rtcDc && rtcDc.readyState === 'open') {
+          setPeerConnected('rtc');
+        } else {
+          setPeerSearching();
+        }
+        showToast('接続した');
+        closeQrOverlay();
+        closeScanOverlay();
+      }
+
+      function waitForIceComplete(pc) {
+        return new Promise((resolve) => {
+          if (!pc) {
+            resolve();
+            return;
+          }
+          if (pc.iceGatheringState === 'complete') {
+            resolve();
+            return;
+          }
+          const timer = setTimeout(() => {
+            cleanup();
+            resolve();
+          }, 1800);
+
+          const onState = () => {
+            if (!pc) return;
+            if (pc.iceGatheringState === 'complete') {
+              cleanup();
+              resolve();
+            }
+          };
+
+          function cleanup() {
+            clearTimeout(timer);
+            pc.removeEventListener('icegatheringstatechange', onState);
+          }
+
+          pc.addEventListener('icegatheringstatechange', onState);
+        });
+      }
+
+      function encodeQrUrl(text) {
+        return qrApiBase + encodeURIComponent(text);
+      }
+
+      function openQrOverlay(title, text, payload, modeButtonLabel, modeButtonAction) {
+        qrTitle.textContent = title;
+        qrText.textContent = text;
+        qrImage.src = encodeQrUrl(payload);
+        qrImage.alt = title;
+        qrModeButton.textContent = modeButtonLabel;
+        qrModeButton.onclick = modeButtonAction;
+        qrCloseButton.onclick = () => {
+          if (peerState === 'searching' && peerConnectedVia === 'rtc' && rtcRole === 'host' && rtcWaitingForAnswer) {
+            showToast('キャンセルした');
+            stopAllPeerFlows();
+            return;
+          }
+          closeQrOverlay();
+        };
+        qrOverlay.classList.add('open');
+        qrOverlay.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeQrOverlay() {
+        qrOverlay.classList.remove('open');
+        qrOverlay.setAttribute('aria-hidden', 'true');
+        qrImage.removeAttribute('src');
+      }
+
+      function openScanOverlay() {
+        scanOverlay.classList.add('open');
+        scanOverlay.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeScanOverlay() {
+        scanOverlay.classList.remove('open');
+        scanOverlay.setAttribute('aria-hidden', 'true');
+        stopScanLoop();
+      }
+
+      function openPeerMenu(mode) {
+        peerMenuMode = mode;
+        peerMenuOpen = true;
+
+        const rect = peerButton.getBoundingClientRect();
+        const stageRect = peerMenuOverlay.getBoundingClientRect();
+        const stageW = stageRect.width || window.innerWidth;
+        const stageH = stageRect.height || window.innerHeight;
+
+        const anchorX = rect.left + rect.width / 2 - stageW / 2;
+        const anchorY = rect.top + rect.height / 2 - stageH / 2;
+
+        const finalTop = { x: 0, y: -118 };
+        const finalLeft = { x: -118, y: 108 };
+        const finalRight = { x: 118, y: 108 };
+
+        const setVars = (el, fx, fy, tx, ty) => {
+          el.style.setProperty('--from-x', `${anchorX}px`);
+          el.style.setProperty('--from-y', `${anchorY}px`);
+          el.style.setProperty('--to-x', `${tx}px`);
+          el.style.setProperty('--to-y', `${ty}px`);
+        };
+
+        if (mode === 'off') {
+          peerChoiceLabel1.textContent = 'Wi-Fiで通信';
+          peerChoiceLabel2.textContent = 'QRコードを表示';
+          peerChoiceLabel3.textContent = 'QRコードを読み取り';
+
+          peerChoice1.className = 'peer-choice wifi';
+          peerChoice2.className = 'peer-choice qr-show';
+          peerChoice3.className = 'peer-choice qr-read';
+
+          peerChoice1.onclick = () => {
+            closePeerMenu();
+            startWifiSearch();
+          };
+          peerChoice2.onclick = () => {
+            closePeerMenu();
+            startRtcHost();
+          };
+          peerChoice3.onclick = () => {
+            closePeerMenu();
+            startRtcJoinScan();
+          };
+
+          setVars(peerChoice1, anchorX, anchorY, finalTop.x, finalTop.y);
+          setVars(peerChoice2, anchorX, anchorY, finalLeft.x, finalLeft.y);
+          setVars(peerChoice3, anchorX, anchorY, finalRight.x, finalRight.y);
+        } else {
+          peerChoiceLabel1.textContent = '接続を切断';
+          peerChoiceLabel2.textContent = '設定を送信';
+          peerChoiceLabel3.textContent = '設定を受信';
+
+          peerChoice1.className = 'peer-choice disconnect';
+          peerChoice2.className = 'peer-choice send';
+          peerChoice3.className = 'peer-choice receive';
+
+          peerChoice1.onclick = () => {
+            closePeerMenu();
+            stopAllPeerFlows();
+            showToast('切断した');
+          };
+          peerChoice2.onclick = () => {
+            closePeerMenu();
+            sendCurrentSettings();
+          };
+          peerChoice3.onclick = () => {
+            closePeerMenu();
+            receiveWindowUntil = Date.now() + 10000;
+            showToast('10秒以内の設定を待ってる');
+          };
+
+          setVars(peerChoice1, anchorX, anchorY, finalTop.x, finalTop.y);
+          setVars(peerChoice2, anchorX, anchorY, finalLeft.x, finalLeft.y);
+          setVars(peerChoice3, anchorX, anchorY, finalRight.x, finalRight.y);
+        }
+
+        peerMenuOverlay.classList.add('open');
+        peerMenuOverlay.setAttribute('aria-hidden', 'false');
+        requestAnimationFrame(() => {
+          peerMenuOverlay.classList.add('open');
+        });
+      }
+
+      function closePeerMenu() {
+        peerMenuOpen = false;
+        peerMenuOverlay.classList.remove('open');
+        peerMenuOverlay.setAttribute('aria-hidden', 'true');
+      }
+
+      function sendCurrentSettings() {
+        if (peerState !== 'connected') return;
+        const payload = captureSettingsSnapshot();
+        sendPeerPacket({ type: 'settings', payload });
+        showToast('設定を送った');
+      }
+
+      function startScanLoop() {
+        if (scanLoopRunning) return;
+        scanLoopRunning = true;
+        scanAcceptButton.textContent = '読み込む';
+
+        if ('BarcodeDetector' in window) {
+          try {
+            scanDetector = new BarcodeDetector({ formats: ['qr_code'] });
+          } catch (_) {
+            scanDetector = null;
+          }
+        } else {
+          scanDetector = null;
+        }
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && scanDetector) {
+          scanFallback.textContent = 'カメラで読み取り中。うまくいかないときは文字列を貼り付けてください。';
+          navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: 'environment',
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            },
+            audio: false
+          }).then((stream) => {
+            scanStream = stream;
+            scanVideo.srcObject = stream;
+            scanVideo.play().catch(() => {});
+            requestAnimationFrame(scanFrame);
+          }).catch(() => {
+            scanFallback.textContent = 'カメラが使えないので、文字列貼り付けで進めてください。';
+            scanStream = null;
+          });
+        } else {
+          scanFallback.textContent = 'この環境ではカメラ読み取りが使えないので、文字列貼り付けで進めてください。';
+        }
+      }
+
+      function stopScanLoop() {
+        scanLoopRunning = false;
+        scanInput.value = '';
+        if (scanStream) {
+          for (const track of scanStream.getTracks()) track.stop();
+          scanStream = null;
+        }
+        scanVideo.srcObject = null;
+      }
+
+      async function scanFrame() {
+        if (!scanLoopRunning) return;
+        if (!scanDetector || !scanVideo.videoWidth) {
+          requestAnimationFrame(scanFrame);
+          return;
+        }
+
+        try {
+          const results = await scanDetector.detect(scanVideo);
+          if (results && results.length > 0) {
+            const raw = results[0].rawValue || '';
+            if (raw.trim()) {
+              await handleScannedText(raw.trim());
+              return;
+            }
+          }
+        } catch (_) {}
+
+        requestAnimationFrame(scanFrame);
+      }
+
+      async function handleScannedText(text) {
+        scanInput.value = text;
+        if (qrModeAfterScan === 'hostAnswer') {
+          try {
+            await finishRtcHostWithAnswer(text);
+            qrModeAfterScan = null;
+          } catch (err) {
+            showToast('読み取りに失敗');
+          }
+          return;
+        }
+
+        try {
+          const data = JSON.parse(text);
+          if (data && data.kind === 'offer') {
+            await createRtcAnswerFromOffer(text);
+            qrModeAfterScan = null;
+            closeScanOverlay();
+            return;
+          }
+          if (data && data.kind === 'answer') {
+            await finishRtcHostWithAnswer(text);
+            qrModeAfterScan = null;
+            return;
+          }
+        } catch (_) {}
+
+        showToast('QRを読み込んだ');
+      }
+
+      function sendEffectToRemote(kind, payload) {
+        if (peerState !== 'connected') return;
+        sendPeerPacket({ type: 'effect', kind, payload });
+      }
+
+      function addTapEffect(x, y, broadcast = true) {
+        effects.push({
+          type: 'tap',
+          x,
+          y,
+          start: nowMs(),
+          duration: 650
+        });
+
+        if (broadcast) {
+          sendEffectToRemote('tap', { x, y });
+        }
+      }
+
+      function createSwipeEffect(startX, startY, dirX, dirY, broadcast = true, forced = null) {
+        const len = Math.hypot(dirX, dirY) || 1;
+        dirX /= len;
+        dirY /= len;
+
+        const pad = 90;
+        const minX = -pad;
+        const minY = -pad;
+        const maxX = w + pad;
+        const maxY = h + pad;
+
+        const hits = [];
+
+        function pushCandidate(t, x, y) {
+          if (x >= minX - 0.5 && x <= maxX + 0.5 && y >= minY - 0.5 && y <= maxY + 0.5) {
+            hits.push({ t, x, y });
+          }
+        }
+
+        if (forced && forced.forceFrom && forced.forceTo) {
+          hits.push(
+            { t: 0, x: forced.forceFrom.x, y: forced.forceFrom.y },
+            { t: 1, x: forced.forceTo.x, y: forced.forceTo.y }
+          );
+        } else {
+          if (Math.abs(dirX) > 1e-6) {
+            let t = (minX - startX) / dirX;
+            pushCandidate(t, minX, startY + dirY * t);
+            t = (maxX - startX) / dirX;
+            pushCandidate(t, maxX, startY + dirY * t);
+          }
+
+          if (Math.abs(dirY) > 1e-6) {
+            let t = (minY - startY) / dirY;
+            pushCandidate(t, startX + dirX * t, minY);
+            t = (maxY - startY) / dirY;
+            pushCandidate(t, startX + dirX * t, maxY);
+          }
+
+          if (hits.length < 2) {
+            hits.push(
+              { t: -400, x: startX - dirX * 400, y: startY - dirY * 400 },
+              { t: 400, x: startX + dirX * 400, y: startY + dirY * 400 }
+            );
+          } else {
+            hits.sort((a, b) => a.t - b.t);
+          }
+        }
+
+        const first = forced && forced.forceFrom ? forced.forceFrom : hits[0];
+        const last = forced && forced.forceTo ? forced.forceTo : hits[hits.length - 1];
+        const travel = distance(first.x, first.y, last.x, last.y);
+        const duration = clamp(460 + travel * 0.12, 520, 900);
+
+        const radius = typeof (forced && forced.forceRadius) === 'number'
+          ? forced.forceRadius
+          : clamp(Math.min(w, h) * 0.045, 18, 38);
+
+        effects.push({
+          type: 'swipe',
+          start: nowMs(),
+          duration,
+          from: { x: first.x, y: first.y },
+          to: { x: last.x, y: last.y },
+          dir: { x: dirX, y: dirY },
+          radius
+        });
+
+        if (broadcast) {
+          sendEffectToRemote('swipe', {
+            from: { x: first.x, y: first.y },
+            to: { x: last.x, y: last.y },
+            dir: { x: dirX, y: dirY },
+            radius
+          });
+        }
+      }
+
+      function createLoopEffect(points, broadcast = true) {
+        if (points.length < 3) return;
+
+        const copy = points.map(p => ({ x: p.x, y: p.y }));
+        effects.push({
+          type: 'loop',
+          start: nowMs(),
+          duration: 420,
+          points: copy
+        });
+
+        if (broadcast) {
+          sendEffectToRemote('loop', { points: copy });
+        }
+      }
+
+      function detectLoop(points, currentX, currentY) {
+        if (points.length < LASSO_MIN_POINTS) return false;
+
+        const n = points.length;
+        const safeEnd = Math.max(0, n - 1 - LASSO_IGNORE_RECENT_SEGMENTS);
+
+        for (let i = 0; i < safeEnd - 1; i++) {
+          const a = points[i];
+          const b = points[i + 1];
+          const d = pointToSegmentDistance(currentX, currentY, a.x, a.y, b.x, b.y);
+          if (d <= LASSO_HIT_RADIUS) {
+            let traveled = 0;
+            for (let k = i; k < n - 1; k++) {
+              traveled += distance(points[k].x, points[k].y, points[k + 1].x, points[k + 1].y);
+              if (traveled > 40) break;
+            }
+            if (traveled > 40) return true;
+          }
+        }
+
+        return false;
+      }
+
+      function drawGrid() {
+        if (!settings.gridEnabled) return;
+
+        const baseColor = getGridBaseColor();
+        const lineLow = hexToRgba(baseColor, 0.40) || (darkMode ? 'rgba(34,34,34,0.40)' : 'rgba(232,232,232,0.40)');
+        const lineHigh = hexToRgba(baseColor, 0.56) || (darkMode ? 'rgba(58,58,58,0.56)' : 'rgba(210,210,210,0.56)');
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.lineWidth = 1;
+
+        for (let x = 0; x <= w + settings.gridSpacing; x += settings.gridSpacing) {
+          const isAccent = Math.round(x / settings.gridSpacing) % 4 === 0;
+          ctx.strokeStyle = isAccent ? lineHigh : lineLow;
+          ctx.beginPath();
+          ctx.moveTo(Math.floor(x) + 0.5, 0);
+          ctx.lineTo(Math.floor(x) + 0.5, h);
+          ctx.stroke();
+        }
+
+        for (let y = 0; y <= h + settings.gridSpacing; y += settings.gridSpacing) {
+          const isAccent = Math.round(y / settings.gridSpacing) % 4 === 0;
+          ctx.strokeStyle = isAccent ? lineHigh : lineLow;
+          ctx.beginPath();
+          ctx.moveTo(0, Math.floor(y) + 0.5);
+          ctx.lineTo(w, Math.floor(y) + 0.5);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      function drawTap(effect, t) {
+        const p = clamp((t - effect.start) / effect.duration, 0, 1);
+        if (p >= 1) return;
+
+        const e = easeOutCubic(p);
+        const radius = lerp(10, Math.max(w, h) * 0.22, e);
+        const alpha = 0.34 * Math.pow(1 - p, 1.7);
+        const baseColor = getTapBaseColor();
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.shadowBlur = radius * 0.22;
+        ctx.shadowColor = hexToRgba(baseColor, 0.55) || 'rgba(70, 255, 120, 0.55)';
+
+        const g = ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, radius);
+        g.addColorStop(0.00, hexToRgba(baseColor, 0.92) || 'rgba(70, 255, 120, 0.92)');
+        g.addColorStop(0.28, hexToRgba(baseColor, 0.60) || 'rgba(60, 235, 110, 0.60)');
+        g.addColorStop(0.68, hexToRgba(baseColor, 0.25) || 'rgba(50, 220, 100, 0.25)');
+        g.addColorStop(1.00, hexToRgba(baseColor, 0.00) || 'rgba(50, 220, 100, 0)');
+
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(effect.x, effect.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      function drawSwipe(effect, t) {
+        const p = clamp((t - effect.start) / effect.duration, 0, 1);
+        if (p >= 1) return;
+
+        const e = easeOutCubic(p);
+        const x = lerp(effect.from.x, effect.to.x, e);
+        const y = lerp(effect.from.y, effect.to.y, e);
+
+        const trailSteps = 16;
+        const trailSpacing = effect.radius * 0.82;
+        const baseColor = getSwipeBaseColor();
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+
+        for (let i = trailSteps; i >= 0; i--) {
+          const back = i * trailSpacing;
+          const px = x - effect.dir.x * back;
+          const py = y - effect.dir.y * back;
+          const a = 0.24 * Math.pow(1 - i / (trailSteps + 1), 2.2) * Math.pow(1 - p, 0.35);
+          if (a <= 0.001) continue;
+
+          const r = effect.radius * (1 + (trailSteps - i) * 0.02);
+
+          ctx.globalAlpha = a;
+          ctx.shadowBlur = r * 0.35;
+          ctx.shadowColor = hexToRgba(baseColor, 0.55) || 'rgba(90, 150, 255, 0.55)';
+          ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(110, 165, 255, 1)';
+          ctx.beginPath();
+          ctx.arc(px, py, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.globalAlpha = 0.45 * Math.pow(1 - p, 0.7);
+        ctx.shadowBlur = effect.radius * 0.6;
+        ctx.shadowColor = hexToRgba(baseColor, 0.45) || 'rgba(110, 165, 255, 0.45)';
+        ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(110, 165, 255, 1)';
+        ctx.beginPath();
+        ctx.arc(x, y, effect.radius * 1.02, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      function drawLoop(effect, t) {
+        const p = clamp((t - effect.start) / effect.duration, 0, 1);
+        if (p >= 1) return;
+        if (effect.points.length < 3) return;
+
+        const alpha = 0.36 * Math.pow(1 - p, 2.0);
+        const blur = 8 * Math.pow(1 - p, 0.55);
+        const baseColor = getLoopBaseColor();
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = alpha;
+        ctx.shadowBlur = blur;
+        ctx.shadowColor = hexToRgba(baseColor, 0.40) || 'rgba(255, 60, 60, 0.40)';
+        ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(255, 78, 78, 1)';
+
+        ctx.beginPath();
+        ctx.moveTo(effect.points[0].x, effect.points[0].y);
+        for (let i = 1; i < effect.points.length; i++) {
+          ctx.lineTo(effect.points[i].x, effect.points[i].y);
+        }
+        ctx.closePath();
+        ctx.fill('evenodd');
+
+        ctx.restore();
+      }
+
+      function render() {
+        const t = nowMs();
+
+        ctx.fillStyle = getBgColor();
+        ctx.fillRect(0, 0, w, h);
+
+        drawGrid();
+
+        for (let i = 0; i < effects.length; i++) {
+          const effect = effects[i];
+          if (effect.type === 'tap') drawTap(effect, t);
+          else if (effect.type === 'swipe') drawSwipe(effect, t);
+          else if (effect.type === 'loop') drawLoop(effect, t);
+        }
+
+        for (let i = effects.length - 1; i >= 0; i--) {
+          if (t - effects[i].start >= effects[i].duration) effects.splice(i, 1);
+        }
+
+        requestAnimationFrame(render);
+      }
+
+      function getPoint(e) {
+        return { x: e.clientX, y: e.clientY };
+      }
+
+      function applyAndSave() {
+        document.body.style.background = getBgColor();
+        syncSettingsUi();
+        updatePeerButtonUi();
+        saveSettings();
+      }
+
+      function resetAllSettings() {
+        const ok = window.confirm('設定を初期状態に戻します。よろしいですか？');
+        if (!ok) return;
+
+        Object.assign(settings, defaults);
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch (_) {}
+        if (peerState !== 'off') stopAllPeerFlows();
+        applyAndSave();
+      }
+
+      function startWifiSearch() {
+        stopRtcTransport();
+        openWifiTransport();
+        peerConnectedVia = 'wifi';
+        remotePeerId = null;
+        setPeerSearching();
+        postWifiPacket(makePacket({ type: 'wifi-search' }));
+        showToast('Wi-Fiで通信を探してる');
+      }
+
+      function startRtcHostFlow() {
+        stopAllPeerFlows();
+        peerConnectedVia = 'rtc';
+        remotePeerId = null;
+        setPeerSearching();
+        createRtcHostOffer().catch(() => {
+          showToast('QRの作成に失敗した');
+          stopAllPeerFlows();
+        });
+      }
+
+      function startRtcJoinFlow() {
+        stopAllPeerFlows();
+        peerConnectedVia = 'rtc';
+        remotePeerId = null;
+        setPeerSearching();
+        qrModeAfterScan = 'hostAnswer';
+        openScanOverlay();
+        startScanLoop();
+      }
+
+      function cancelPeerFlowFromButton() {
+        if (peerState === 'searching') {
+          stopAllPeerFlows();
+          showToast('キャンセルした');
+          return;
+        }
+        if (peerState === 'connected') {
+          openPeerMenu('connected');
+          return;
+        }
+        openPeerMenu('off');
+      }
+
+      bgMode.addEventListener('change', () => {
+        settings.bgMode = bgMode.value;
+        bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
+        applyAndSave();
+      });
+
+      bgCustomInput.addEventListener('input', () => {
+        settings.bgCustom = bgCustomInput.value.trim();
+        applyAndSave();
+      });
+
+      tapColorInput.addEventListener('input', () => {
+        settings.tapColor = tapColorInput.value.trim();
+        saveSettings();
+      });
+
+      swipeColorInput.addEventListener('input', () => {
+        settings.swipeColor = swipeColorInput.value.trim();
+        saveSettings();
+      });
+
+      loopColorInput.addEventListener('input', () => {
+        settings.loopColor = loopColorInput.value.trim();
+        saveSettings();
+      });
+
+      gridToggle.addEventListener('change', () => {
+        settings.gridEnabled = gridToggle.checked;
+        gridDetails.classList.toggle('disabled', !settings.gridEnabled);
+        saveSettings();
+      });
+
+      gridMode.addEventListener('change', () => {
+        settings.gridMode = gridMode.value;
+        gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
+        saveSettings();
+      });
+
+      gridCustomInput.addEventListener('input', () => {
+        settings.gridCustom = gridCustomInput.value.trim();
+        saveSettings();
+      });
+
+      spacingRange.addEventListener('input', () => {
+        settings.gridSpacing = clamp(Number(spacingRange.value) || 36, 18, 100);
+        spacingValue.textContent = String(settings.gridSpacing);
+        saveSettings();
+      });
+
+      peerButtonToggle.addEventListener('change', () => {
+        settings.peerButtonVisible = peerButtonToggle.checked;
+        if (!settings.peerButtonVisible) {
+          stopAllPeerFlows();
+        }
+        updatePeerButtonUi();
+        saveSettings();
+      });
+
+      resetSettings.addEventListener('click', () => {
+        resetAllSettings();
+      });
+
+      openSettings.addEventListener('click', () => {
+        openOverlay();
+      });
+
+      closeSettings.addEventListener('click', () => {
+        closeOverlay();
+      });
+
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeOverlay();
+      });
+
+      peerButton.addEventListener('click', () => {
+        cancelPeerFlowFromButton();
+      });
+
+      peerMenuOverlay.addEventListener('click', (e) => {
+        if (e.target === peerMenuOverlay) closePeerMenu();
+      });
+
+      qrOverlay.addEventListener('click', (e) => {
+        if (e.target === qrOverlay) closeQrOverlay();
+      });
+
+      scanOverlay.addEventListener('click', (e) => {
+        if (e.target === scanOverlay) closeScanOverlay();
+      });
+
+      qrCloseButton.addEventListener('click', () => {
+        if (peerState === 'searching' && peerConnectedVia === 'rtc' && rtcRole === 'host' && rtcWaitingForAnswer) {
+          stopAllPeerFlows();
+          showToast('キャンセルした');
+          return;
+        }
+        closeQrOverlay();
+      });
+
+      scanCloseButton.addEventListener('click', () => {
+        closeScanOverlay();
+      });
+
+      scanAcceptButton.addEventListener('click', async () => {
+        const text = scanInput.value.trim();
+        if (!text) {
+          showToast('文字列がない');
+          return;
+        }
+        try {
+          await handleScannedText(text);
+        } catch (_) {
+          showToast('読み取りに失敗');
+        }
+      });
+
+      qrModeButton.addEventListener('click', () => {
+        if (typeof qrModeButton.onclick === 'function') {
+          qrModeButton.onclick();
+        }
+      });
+
+      peerChoice1.addEventListener('click', () => {});
+      peerChoice2.addEventListener('click', () => {});
+      peerChoice3.addEventListener('click', () => {});
+
+      canvas.addEventListener('pointerdown', (e) => {
+        if (overlay.classList.contains('open')) return;
+        if (peerMenuOverlay.classList.contains('open')) return;
+        if (qrOverlay.classList.contains('open')) return;
+        if (scanOverlay.classList.contains('open')) return;
+        if (activePointerId !== null) return;
+
+        activePointerId = e.pointerId;
+        canvas.setPointerCapture(activePointerId);
+
+        const p = getPoint(e);
         pointerDownTime = nowMs();
-        pointerDownPos = { ...p };
-        lastPos = { ...p };
+        pointerDownPos = { x: p.x, y: p.y };
+        lastPos = { x: p.x, y: p.y };
         strokePoints = [p];
         pointerHadLoop = false;
+
         e.preventDefault();
       }, { passive: false });
 
-      el.canvas.addEventListener('pointermove', e => {
-        if (pointerIdActive !== e.pointerId) return;
-        const p = { x: e.clientX, y: e.clientY };
+      canvas.addEventListener('pointermove', (e) => {
+        if (activePointerId !== e.pointerId) return;
+
+        const p = getPoint(e);
         const t = nowMs();
+
         if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
           strokePoints.push(p);
           lastPos = p;
         }
+
         if (t - lastLoopAt >= LASSO_COOLDOWN) {
           if (detectLoop(strokePoints, p.x, p.y)) {
             createLoopEffect(strokePoints);
@@ -1737,124 +2609,825 @@
             strokePoints = [p];
           }
         }
+
         e.preventDefault();
       }, { passive: false });
 
-      const endPointer = e => {
-        if (pointerIdActive !== e.pointerId) return;
-        const p = { x: e.clientX, y: e.clientY };
+      function finishPointer(e) {
+        if (activePointerId !== e.pointerId) return;
+
+        const p = getPoint(e);
         const elapsed = nowMs() - pointerDownTime;
-        const move = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
+        const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
+
         if (!pointerHadLoop) {
-          if (move <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) addTapEffect(p.x, p.y);
-          else if (move >= SWIPE_MIN_DISTANCE) createSwipeEffect(p.x, p.y, p.x - pointerDownPos.x, p.y - pointerDownPos.y);
+          if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
+            addTapEffect(p.x, p.y);
+          } else if (totalMove >= SWIPE_MIN_DISTANCE) {
+            const dx = p.x - pointerDownPos.x;
+            const dy = p.y - pointerDownPos.y;
+            createSwipeEffect(p.x, p.y, dx, dy);
+          }
         }
-        pointerIdActive = null;
+
+        activePointerId = null;
         strokePoints = [];
         pointerHadLoop = false;
+
         e.preventDefault();
-      };
+      }
 
-      el.canvas.addEventListener('pointerup', endPointer, { passive: false });
-      el.canvas.addEventListener('pointercancel', endPointer, { passive: false });
-      el.canvas.addEventListener('lostpointercapture', () => { pointerIdActive = null; strokePoints = []; pointerHadLoop = false; });
-    }
+      canvas.addEventListener('pointerup', finishPointer, { passive: false });
+      canvas.addEventListener('pointercancel', finishPointer, { passive: false });
+      canvas.addEventListener('lostpointercapture', () => {
+        activePointerId = null;
+        strokePoints = [];
+        pointerHadLoop = false;
+      });
 
-    function setEventHandlers() {
-      el.openSettings.addEventListener('click', openOverlay);
-      el.closeSettings.addEventListener('click', closeOverlay);
-      el.overlay.addEventListener('click', e => { if (e.target === el.overlay) closeOverlay(); });
+      function openPeerMenu(mode) {
+        peerMenuMode = mode;
+        peerMenuOpen = true;
+        peerMenuOverlay.classList.add('open');
+        peerMenuOverlay.setAttribute('aria-hidden', 'false');
 
-      el.peerButton.addEventListener('click', handlePeerButtonClick);
-      el.peerMenuOverlay.addEventListener('click', e => { if (e.target === el.peerMenuOverlay) closePeerMenu(); });
-      el.qrOverlay.addEventListener('click', e => { if (e.target === el.qrOverlay) closeQrOverlay(); });
-      el.roomOverlay.addEventListener('click', e => { if (e.target === el.roomOverlay) closeRoomOverlay(); });
+        const rect = peerButton.getBoundingClientRect();
+        const stageRect = peerMenuStage.getBoundingClientRect();
+        const stageW = stageRect.width || window.innerWidth;
+        const stageH = stageRect.height || window.innerHeight;
 
-      el.peerChoice1.addEventListener('click', () => { if (appState.peerState === 'connected') { closePeerMenu(); disconnectCurrentRoom(true); showToast('切断した'); } });
-      el.peerChoice2.addEventListener('click', () => { if (appState.peerState === 'connected') { closePeerMenu(); sendCurrentSettings(); } });
-      el.peerChoice3.addEventListener('click', () => { if (appState.peerState === 'connected') { closePeerMenu(); appState.receiveWindowUntil = nowEpoch() + 10000; showToast('10秒以内の設定を待ってる'); } });
+        const anchorX = rect.left + rect.width / 2 - stageW / 2;
+        const anchorY = rect.top + rect.height / 2 - stageH / 2;
 
-      el.roomJoinButton.addEventListener('click', joinRoomFromOverlay);
-      el.roomCancelButton.addEventListener('click', closeRoomOverlay);
-      el.roomQrToggleButton.addEventListener('click', () => { appState.showQrAfterJoin = !appState.showQrAfterJoin; updateRoomOverlayText(); });
-      el.qrCloseButton.addEventListener('click', closeQrOverlay);
+        const setFrom = (el, tx, ty) => {
+          el.style.setProperty('--from-x', `${anchorX}px`);
+          el.style.setProperty('--from-y', `${anchorY}px`);
+          el.style.setProperty('--to-x', `${tx}px`);
+          el.style.setProperty('--to-y', `${ty}px`);
+        };
 
-      el.bgMode.addEventListener('change', () => { handleSettingsChange(); syncUi(); });
-      el.bgCustomInput.addEventListener('input', () => { handleSettingsChange(); syncUi(); });
-      el.tapColorInput.addEventListener('input', handleSettingsChange);
-      el.swipeColorInput.addEventListener('input', handleSettingsChange);
-      el.loopColorInput.addEventListener('input', handleSettingsChange);
-      el.gridToggle.addEventListener('change', () => { handleSettingsChange(); syncUi(); });
-      el.gridMode.addEventListener('change', () => { handleSettingsChange(); syncUi(); });
-      el.gridCustomInput.addEventListener('input', handleSettingsChange);
-      el.spacingRange.addEventListener('input', handleSettingsChange);
-      el.peerButtonToggle.addEventListener('change', () => { handlePeerToggleChange(); syncUi(); });
-      el.displayNameInput.addEventListener('input', () => { handleDisplayNameChange(); syncUi(); });
-      el.resetSettings.addEventListener('click', resetAllSettings);
+        if (mode === 'off') {
+          peerChoiceLabel1.textContent = 'Wi-Fiで通信';
+          peerChoiceLabel2.textContent = 'QRコードを表示';
+          peerChoiceLabel3.textContent = 'QRコードを読み取り';
 
-      el.roomCodeInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          joinRoomFromOverlay();
+          peerChoice1.className = 'peer-choice wifi';
+          peerChoice2.className = 'peer-choice qr-show';
+          peerChoice3.className = 'peer-choice qr-read';
+
+          peerChoice1.onclick = () => {
+            closePeerMenu();
+            startWifiSearch();
+          };
+          peerChoice2.onclick = () => {
+            closePeerMenu();
+            startRtcHostFlow();
+          };
+          peerChoice3.onclick = () => {
+            closePeerMenu();
+            startRtcJoinFlow();
+          };
+
+          setFrom(peerChoice1, 0, -118);
+          setFrom(peerChoice2, -118, 108);
+          setFrom(peerChoice3, 118, 108);
+        } else {
+          peerChoiceLabel1.textContent = '接続を切断';
+          peerChoiceLabel2.textContent = '設定を送信';
+          peerChoiceLabel3.textContent = '設定を受信';
+
+          peerChoice1.className = 'peer-choice disconnect';
+          peerChoice2.className = 'peer-choice send';
+          peerChoice3.className = 'peer-choice receive';
+
+          peerChoice1.onclick = () => {
+            closePeerMenu();
+            stopAllPeerFlows();
+            showToast('切断した');
+          };
+          peerChoice2.onclick = () => {
+            closePeerMenu();
+            sendCurrentSettings();
+          };
+          peerChoice3.onclick = () => {
+            closePeerMenu();
+            receiveWindowUntil = Date.now() + 10000;
+            showToast('10秒以内の設定を待ってる');
+          };
+
+          setFrom(peerChoice1, 0, -118);
+          setFrom(peerChoice2, -118, 108);
+          setFrom(peerChoice3, 118, 108);
+        }
+      }
+
+      function closePeerMenu() {
+        peerMenuOpen = false;
+        peerMenuOverlay.classList.remove('open');
+        peerMenuOverlay.setAttribute('aria-hidden', 'true');
+      }
+
+      function stopAllPeerFlows() {
+        stopRtcTransport();
+        closeWifiTransport(true);
+        receiveWindowUntil = 0;
+        setPeerOff();
+        closePeerMenu();
+        closeQrOverlay();
+        closeScanOverlay();
+      }
+
+      function startPeerButtonsState() {
+        updatePeerButtonUi();
+      }
+
+      function openWifiTransport() {
+        ensureWifiRoom();
+        closeWifiTransport(false);
+
+        const name = `touch_effect_wifi_${wifiRoomId}`;
+
+        if ('BroadcastChannel' in window) {
+          try {
+            wifiChannel = new BroadcastChannel(name);
+            wifiChannel.onmessage = (ev) => handleIncomingPacket(ev.data, 'wifi');
+          } catch (_) {
+            wifiChannel = null;
+          }
+        }
+
+        window.addEventListener('storage', onWifiStorage);
+      }
+
+      function closeWifiTransport(sendLeave = false) {
+        if (sendLeave && peerState !== 'off' && peerConnectedVia === 'wifi') {
+          postWifiPacket(makePacket({ type: 'wifi-leave' }));
+        }
+
+        if (wifiChannel) {
+          try {
+            wifiChannel.close();
+          } catch (_) {}
+          wifiChannel = null;
+        }
+
+        window.removeEventListener('storage', onWifiStorage);
+      }
+
+      function onWifiStorage(ev) {
+        if (ev.key !== WIFI_BUS_KEY || !ev.newValue) return;
+        try {
+          handleIncomingPacket(JSON.parse(ev.newValue), 'wifi');
+        } catch (_) {}
+      }
+
+      function ensureWifiRoom() {
+        if (wifiRoomId) return wifiRoomId;
+        try {
+          const stored = localStorage.getItem(WIFI_ROOM_KEY);
+          if (stored && stored.length > 4) {
+            wifiRoomId = stored;
+            return wifiRoomId;
+          }
+        } catch (_) {}
+        wifiRoomId = `room_${makeId().slice(0, 8)}`;
+        try {
+          localStorage.setItem(WIFI_ROOM_KEY, wifiRoomId);
+        } catch (_) {}
+        return wifiRoomId;
+      }
+
+      function postWifiPacket(packet) {
+        if (!wifiChannel) return;
+        try {
+          wifiChannel.postMessage(packet);
+        } catch (_) {}
+        try {
+          localStorage.setItem(WIFI_BUS_KEY, JSON.stringify(packet));
+        } catch (_) {}
+      }
+
+      function handleIncomingPacket(packet, via) {
+        if (!packet || typeof packet !== 'object') return;
+        if (packet.sender === selfPeerId) return;
+        if (!rememberPacket(packet.id)) return;
+
+        const now = Date.now();
+
+        if (via === 'wifi') {
+          if (packet.type === 'wifi-search') {
+            if (peerState === 'searching' && peerConnectedVia === 'wifi') {
+              peerLastSeenAt = now;
+              remotePeerId = packet.sender;
+              setPeerConnected('wifi');
+              postWifiPacket(makePacket({ type: 'wifi-found', target: packet.sender }));
+            }
+            return;
+          }
+
+          if (packet.type === 'wifi-found') {
+            if (peerState === 'searching' && peerConnectedVia === 'wifi' && packet.target === selfPeerId) {
+              remotePeerId = packet.sender;
+              setPeerConnected('wifi');
+              showToast('つながった');
+            }
+            return;
+          }
+
+          if (packet.type === 'wifi-keepalive') {
+            if (peerState === 'connected' && peerConnectedVia === 'wifi') {
+              peerLastSeenAt = now;
+            }
+            return;
+          }
+
+          if (packet.type === 'wifi-leave') {
+            if (peerState === 'connected' && peerConnectedVia === 'wifi' && packet.sender === remotePeerId) {
+              showToast('相手が切断した');
+              stopAllPeerFlows();
+            }
+            return;
+          }
+        }
+
+        if (packet.type === 'effect') {
+          if (peerState === 'off') return;
+          if (packet.target && packet.target !== selfPeerId) return;
+          peerLastSeenAt = now;
+          applyRemoteEffect(packet.kind, packet.payload);
+          return;
+        }
+
+        if (packet.type === 'settings') {
+          if (peerState === 'off') return;
+          if (packet.target && packet.target !== selfPeerId) return;
+          peerLastSeenAt = now;
+          if (Date.now() <= receiveWindowUntil) {
+            receiveWindowUntil = 0;
+            applySettingsSnapshot(packet.payload);
+            showToast('設定を受信した');
+          }
+          return;
+        }
+
+        if (packet.type === 'hello') {
+          if (peerState === 'searching') {
+            remotePeerId = packet.sender;
+            setPeerConnected(via);
+          }
+          return;
+        }
+
+        if (packet.type === 'bye') {
+          if (peerState === 'connected') {
+            stopAllPeerFlows();
+          }
+          return;
+        }
+      }
+
+      function handleRtcPacket(raw) {
+        let packet = raw;
+        if (typeof raw === 'string') {
+          try {
+            packet = JSON.parse(raw);
+          } catch (_) {
+            return;
+          }
+        }
+        handleIncomingPacket(packet, 'rtc');
+      }
+
+      function openQrOverlay(title, text, payload, modeButtonLabel, modeButtonAction) {
+        qrTitle.textContent = title;
+        qrText.textContent = text;
+        qrImage.src = encodeQrUrl(payload);
+        qrImage.alt = title;
+        qrModeButton.textContent = modeButtonLabel;
+        qrModeButton.onclick = modeButtonAction;
+        qrOverlay.classList.add('open');
+        qrOverlay.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeQrOverlay() {
+        qrOverlay.classList.remove('open');
+        qrOverlay.setAttribute('aria-hidden', 'true');
+        qrImage.removeAttribute('src');
+      }
+
+      function openScanOverlay() {
+        scanOverlay.classList.add('open');
+        scanOverlay.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeScanOverlay() {
+        scanOverlay.classList.remove('open');
+        scanOverlay.setAttribute('aria-hidden', 'true');
+        stopScanLoop();
+      }
+
+      function encodeQrUrl(text) {
+        return qrApiBase + encodeURIComponent(text);
+      }
+
+      function setupRtcCommonHandlers() {
+        if (!rtcPc) return;
+
+        rtcPc.onicecandidate = () => {};
+
+        rtcPc.onconnectionstatechange = () => {
+          if (!rtcPc) return;
+          if (rtcPc.connectionState === 'connected') {
+            setPeerConnected('rtc');
+            showToast('接続した');
+          } else if (rtcPc.connectionState === 'failed' || rtcPc.connectionState === 'disconnected' || rtcPc.connectionState === 'closed') {
+            if (peerState !== 'off') {
+              showToast('接続が切れた');
+              stopAllPeerFlows();
+            }
+          }
+        };
+
+        rtcPc.ondatachannel = (ev) => {
+          rtcDc = ev.channel;
+          rtcDc.onopen = () => {
+            setPeerConnected('rtc');
+            showToast('接続した');
+          };
+          rtcDc.onmessage = (msg) => handleRtcPacket(msg.data);
+          rtcDc.onclose = () => {
+            if (peerState !== 'off') {
+              showToast('切断した');
+              stopAllPeerFlows();
+            }
+          };
+        };
+      }
+
+      async function createRtcHostOffer() {
+        stopRtcTransport();
+
+        rtcPc = new RTCPeerConnection({ iceServers: [] });
+        rtcDc = rtcPc.createDataChannel('touch');
+
+        setupRtcCommonHandlers();
+
+        rtcDc.onopen = () => {
+          setPeerConnected('rtc');
+          showToast('接続した');
+        };
+
+        rtcDc.onmessage = (ev) => handleRtcPacket(ev.data);
+
+        const offer = await rtcPc.createOffer();
+        await rtcPc.setLocalDescription(offer);
+        await waitForIceComplete(rtcPc);
+
+        const payload = JSON.stringify({
+          kind: 'offer',
+          sdp: rtcPc.localDescription ? rtcPc.localDescription.sdp : ''
+        });
+
+        openQrOverlay(
+          'QRコードを表示',
+          '相手にこのQRを見せて、相手側で読み取ってもらってください。',
+          payload,
+          'QRを読み取る',
+          () => {
+            qrModeAfterScan = 'hostAnswer';
+            openScanOverlay();
+            startScanLoop();
+          }
+        );
+      }
+
+      async function createRtcAnswerFromOffer(offerText) {
+        let offerData;
+        try {
+          offerData = JSON.parse(offerText);
+        } catch (_) {
+          throw new Error('QRが読めない');
+        }
+
+        if (!offerData || offerData.kind !== 'offer' || typeof offerData.sdp !== 'string') {
+          throw new Error('offerではない');
+        }
+
+        stopRtcTransport();
+
+        rtcPc = new RTCPeerConnection({ iceServers: [] });
+        setupRtcCommonHandlers();
+
+        rtcPc.ondatachannel = (ev) => {
+          rtcDc = ev.channel;
+          rtcDc.onopen = () => {
+            setPeerConnected('rtc');
+            showToast('接続した');
+          };
+          rtcDc.onmessage = (msg) => handleRtcPacket(msg.data);
+          rtcDc.onclose = () => {
+            if (peerState !== 'off') {
+              showToast('切断した');
+              stopAllPeerFlows();
+            }
+          };
+        };
+
+        const offerDesc = new RTCSessionDescription({ type: 'offer', sdp: offerData.sdp });
+        await rtcPc.setRemoteDescription(offerDesc);
+
+        const answer = await rtcPc.createAnswer();
+        await rtcPc.setLocalDescription(answer);
+        await waitForIceComplete(rtcPc);
+
+        const answerPayload = JSON.stringify({
+          kind: 'answer',
+          sdp: rtcPc.localDescription ? rtcPc.localDescription.sdp : ''
+        });
+
+        openQrOverlay(
+          '返答用QRを表示',
+          '今度はこのQRを相手に見せて、相手側で読み取ってもらってください。',
+          answerPayload,
+          '閉じる',
+          () => {
+            qrModeAfterScan = null;
+            closeQrOverlay();
+          }
+        );
+      }
+
+      async function finishRtcHostWithAnswer(answerText) {
+        if (!rtcPc) throw new Error('未接続');
+
+        let answerData;
+        try {
+          answerData = JSON.parse(answerText);
+        } catch (_) {
+          throw new Error('QRが読めない');
+        }
+
+        if (!answerData || answerData.kind !== 'answer' || typeof answerData.sdp !== 'string') {
+          throw new Error('answerではない');
+        }
+
+        await rtcPc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: answerData.sdp }));
+        if (rtcDc && rtcDc.readyState === 'open') {
+          setPeerConnected('rtc');
+        } else {
+          setPeerSearching();
+        }
+        showToast('接続した');
+        closeQrOverlay();
+        closeScanOverlay();
+      }
+
+      function waitForIceComplete(pc) {
+        return new Promise((resolve) => {
+          if (!pc) {
+            resolve();
+            return;
+          }
+          if (pc.iceGatheringState === 'complete') {
+            resolve();
+            return;
+          }
+          const timer = setTimeout(() => {
+            cleanup();
+            resolve();
+          }, 1800);
+
+          const onState = () => {
+            if (!pc) return;
+            if (pc.iceGatheringState === 'complete') {
+              cleanup();
+              resolve();
+            }
+          };
+
+          function cleanup() {
+            clearTimeout(timer);
+            pc.removeEventListener('icegatheringstatechange', onState);
+          }
+
+          pc.addEventListener('icegatheringstatechange', onState);
+        });
+      }
+
+      async function handleScannedText(text) {
+        scanInput.value = text;
+        if (qrModeAfterScan === 'hostAnswer') {
+          try {
+            await finishRtcHostWithAnswer(text);
+            qrModeAfterScan = null;
+          } catch (_) {
+            showToast('読み取りに失敗');
+          }
+          return;
+        }
+
+        try {
+          const data = JSON.parse(text);
+          if (data && data.kind === 'offer') {
+            await createRtcAnswerFromOffer(text);
+            qrModeAfterScan = null;
+            closeScanOverlay();
+            return;
+          }
+          if (data && data.kind === 'answer') {
+            await finishRtcHostWithAnswer(text);
+            qrModeAfterScan = null;
+            return;
+          }
+        } catch (_) {}
+
+        showToast('QRを読み込んだ');
+      }
+
+      function startScanLoop() {
+        if (scanLoopRunning) return;
+        scanLoopRunning = true;
+        scanAcceptButton.textContent = '読み込む';
+
+        if ('BarcodeDetector' in window) {
+          try {
+            scanDetector = new BarcodeDetector({ formats: ['qr_code'] });
+          } catch (_) {
+            scanDetector = null;
+          }
+        } else {
+          scanDetector = null;
+        }
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && scanDetector) {
+          scanFallback.textContent = 'カメラで読み取り中。うまくいかないときは文字列を貼り付けてください。';
+          navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: 'environment',
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            },
+            audio: false
+          }).then((stream) => {
+            scanStream = stream;
+            scanVideo.srcObject = stream;
+            scanVideo.play().catch(() => {});
+            requestAnimationFrame(scanFrame);
+          }).catch(() => {
+            scanFallback.textContent = 'カメラが使えないので、文字列貼り付けで進めてください。';
+            scanStream = null;
+          });
+        } else {
+          scanFallback.textContent = 'この環境ではカメラ読み取りが使えないので、文字列貼り付けで進めてください。';
+        }
+      }
+
+      function stopScanLoop() {
+        scanLoopRunning = false;
+        qrModeAfterScan = null;
+        scanInput.value = '';
+        if (scanStream) {
+          for (const track of scanStream.getTracks()) track.stop();
+          scanStream = null;
+        }
+        scanVideo.srcObject = null;
+      }
+
+      async function scanFrame() {
+        if (!scanLoopRunning) return;
+        if (!scanDetector || !scanVideo.videoWidth) {
+          requestAnimationFrame(scanFrame);
+          return;
+        }
+
+        try {
+          const results = await scanDetector.detect(scanVideo);
+          if (results && results.length > 0) {
+            const raw = results[0].rawValue || '';
+            if (raw.trim()) {
+              await handleScannedText(raw.trim());
+              return;
+            }
+          }
+        } catch (_) {}
+
+        requestAnimationFrame(scanFrame);
+      }
+
+      function sendCurrentSettings() {
+        if (peerState !== 'connected') return;
+        const payload = captureSettingsSnapshot();
+        sendPeerPacket({ type: 'settings', payload });
+        showToast('設定を送った');
+      }
+
+      openSettings.addEventListener('click', openOverlay);
+      closeSettings.addEventListener('click', closeOverlay);
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeOverlay();
+      });
+
+      peerButton.addEventListener('click', () => {
+        if (peerState === 'searching') {
+          stopAllPeerFlows();
+          showToast('キャンセルした');
+          return;
+        }
+        if (peerState === 'connected') {
+          openPeerMenu('connected');
+          return;
+        }
+        openPeerMenu('off');
+      });
+
+      peerMenuOverlay.addEventListener('click', (e) => {
+        if (e.target === peerMenuOverlay) closePeerMenu();
+      });
+
+      qrOverlay.addEventListener('click', (e) => {
+        if (e.target === qrOverlay) closeQrOverlay();
+      });
+
+      scanOverlay.addEventListener('click', (e) => {
+        if (e.target === scanOverlay) closeScanOverlay();
+      });
+
+      bgMode.addEventListener('change', () => {
+        settings.bgMode = bgMode.value;
+        bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
+        applyAndSave();
+      });
+
+      bgCustomInput.addEventListener('input', () => {
+        settings.bgCustom = bgCustomInput.value.trim();
+        applyAndSave();
+      });
+
+      tapColorInput.addEventListener('input', () => {
+        settings.tapColor = tapColorInput.value.trim();
+        saveSettings();
+      });
+
+      swipeColorInput.addEventListener('input', () => {
+        settings.swipeColor = swipeColorInput.value.trim();
+        saveSettings();
+      });
+
+      loopColorInput.addEventListener('input', () => {
+        settings.loopColor = loopColorInput.value.trim();
+        saveSettings();
+      });
+
+      gridToggle.addEventListener('change', () => {
+        settings.gridEnabled = gridToggle.checked;
+        gridDetails.classList.toggle('disabled', !settings.gridEnabled);
+        saveSettings();
+      });
+
+      gridMode.addEventListener('change', () => {
+        settings.gridMode = gridMode.value;
+        gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
+        saveSettings();
+      });
+
+      gridCustomInput.addEventListener('input', () => {
+        settings.gridCustom = gridCustomInput.value.trim();
+        saveSettings();
+      });
+
+      spacingRange.addEventListener('input', () => {
+        settings.gridSpacing = clamp(Number(spacingRange.value) || 36, 18, 100);
+        spacingValue.textContent = String(settings.gridSpacing);
+        saveSettings();
+      });
+
+      peerButtonToggle.addEventListener('change', () => {
+        settings.peerButtonVisible = peerButtonToggle.checked;
+        if (!settings.peerButtonVisible) {
+          stopAllPeerFlows();
+        }
+        updatePeerButtonUi();
+        saveSettings();
+      });
+
+      resetSettings.addEventListener('click', resetAllSettings);
+
+      scanAcceptButton.addEventListener('click', async () => {
+        const text = scanInput.value.trim();
+        if (!text) {
+          showToast('文字列がない');
+          return;
+        }
+        try {
+          await handleScannedText(text);
+        } catch (_) {
+          showToast('読み取りに失敗');
         }
       });
 
-      window.addEventListener('beforeunload', () => {
-        try { disconnectCurrentRoom(false); } catch {}
+      qrModeButton.onclick = null;
+
+      canvas.addEventListener('pointerdown', (e) => {
+        if (overlay.classList.contains('open')) return;
+        if (peerMenuOverlay.classList.contains('open')) return;
+        if (qrOverlay.classList.contains('open')) return;
+        if (scanOverlay.classList.contains('open')) return;
+        if (activePointerId !== null) return;
+
+        activePointerId = e.pointerId;
+        canvas.setPointerCapture(activePointerId);
+
+        const p = getPoint(e);
+        pointerDownTime = nowMs();
+        pointerDownPos = { x: p.x, y: p.y };
+        lastPos = { x: p.x, y: p.y };
+        strokePoints = [p];
+        pointerHadLoop = false;
+
+        e.preventDefault();
+      }, { passive: false });
+
+      canvas.addEventListener('pointermove', (e) => {
+        if (activePointerId !== e.pointerId) return;
+
+        const p = getPoint(e);
+        const t = nowMs();
+
+        if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
+          strokePoints.push(p);
+          lastPos = p;
+        }
+
+        if (t - lastLoopAt >= LASSO_COOLDOWN) {
+          if (detectLoop(strokePoints, p.x, p.y)) {
+            createLoopEffect(strokePoints);
+            lastLoopAt = t;
+            pointerHadLoop = true;
+            strokePoints = [p];
+          }
+        }
+
+        e.preventDefault();
+      }, { passive: false });
+
+      function finishPointer(e) {
+        if (activePointerId !== e.pointerId) return;
+
+        const p = getPoint(e);
+        const elapsed = nowMs() - pointerDownTime;
+        const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
+
+        if (!pointerHadLoop) {
+          if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
+            addTapEffect(p.x, p.y);
+          } else if (totalMove >= SWIPE_MIN_DISTANCE) {
+            const dx = p.x - pointerDownPos.x;
+            const dy = p.y - pointerDownPos.y;
+            createSwipeEffect(p.x, p.y, dx, dy);
+          }
+        }
+
+        activePointerId = null;
+        strokePoints = [];
+        pointerHadLoop = false;
+
+        e.preventDefault();
+      }
+
+      canvas.addEventListener('pointerup', finishPointer, { passive: false });
+      canvas.addEventListener('pointercancel', finishPointer, { passive: false });
+      canvas.addEventListener('lostpointercapture', () => {
+        activePointerId = null;
+        strokePoints = [];
+        pointerHadLoop = false;
       });
 
-      canvasPointerBindings();
-    }
+      const darkMql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
-    function openPeerButtonMenu() { handlePeerButtonClick(); }
-    function updatePeerButtonForState() { updatePeerButtonUi(); refreshPeerMenuUi(); }
-
-    function init() {
-      loadSettings();
-      updateTheme();
-      resize();
-      syncUi();
-      setEventHandlers();
-      startRoomSyncTimer();
-      requestAnimationFrame(render);
-    }
-    init();
-
-    function onWindowResize() { resize(); }
-    window.addEventListener('resize', onWindowResize);
-
-    const darkMql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-    if (darkMql) {
-      if (typeof darkMql.addEventListener === 'function') darkMql.addEventListener('change', updateTheme);
-      else if (typeof darkMql.addListener === 'function') darkMql.addListener(updateTheme);
-    }
-
-    function openPeerMenuFromButton() { handlePeerButtonClick(); }
-    el.peerButton.addEventListener('click', openPeerMenuFromButton);
-
-    function refreshAll() {
-      syncUi();
-      updateTheme();
-      updatePeerButtonUi();
-      refreshPeerMenuUi();
-    }
-
-    function updateConnectionAndUi() {
-      updateConnectionStateFromParticipants();
-      refreshAll();
-    }
-
-    function cleanupLoop() {
-      if (appState.transport === 'none') return;
-      cleanupParticipants();
-      if (isLockActive(appState.sendLock) && appState.sendLock.until < nowEpoch()) {
-        appState.sendLock = { byId:'', byName:'', until:0, token:'' };
-        refreshPeerMenuUi();
+      function connectRendersAndState() {
+        loadSettings();
+        updateTheme();
+        resize();
+        syncSettingsUi();
+        document.body.style.background = getBgColor();
+        updatePeerButtonUi();
+        startPeerButtonsState();
       }
-      maybeShowConnectedToast();
-    }
 
-    setInterval(cleanupLoop, 1000);
+      connectRendersAndState();
+
+      if (darkMql) {
+        if (typeof darkMql.addEventListener === 'function') {
+          darkMql.addEventListener('change', updateTheme);
+        } else if (typeof darkMql.addListener === 'function') {
+          darkMql.addListener(updateTheme);
+        }
+      }
+
+      window.addEventListener('resize', resize);
+
+      requestAnimationFrame(render);
+    })();
   </script>
 </body>
 </html>
