@@ -6,601 +6,816 @@
   <meta name="color-scheme" content="light dark" />
   <title>Touch Effects</title>
   <style>
-    :root{
-      --bg:#fff;
-      --edge:#111;
-      --text:#101010;
-      --muted:rgba(16,16,16,.45);
-      --panel-bg:rgba(255,255,255,.84);
-      --panel-border:rgba(0,0,0,.14);
-      --track:rgba(0,0,0,.12);
-      --track-disabled:rgba(0,0,0,.06);
-      --thumb:rgba(0,0,0,.72);
-      --peer-blue:#2f78ff;
-      --chip:rgba(47,120,255,.10);
-      --chip-border:rgba(47,120,255,.28);
+    :root {
+      --bg: #fff;
+      --edge: #111;
+      --panel-bg: rgba(255, 255, 255, 0.84);
+      --panel-border: rgba(0, 0, 0, 0.14);
+      --text: #101010;
+      --muted: rgba(16, 16, 16, 0.45);
+      --track: rgba(0, 0, 0, 0.12);
+      --track-disabled: rgba(0, 0, 0, 0.06);
+      --thumb: rgba(0, 0, 0, 0.72);
+      --peer-blue: #2f78ff;
     }
-    @media (prefers-color-scheme: dark){
-      :root{
-        --bg:#000;
-        --edge:#fafafa;
-        --text:#f5f5f5;
-        --muted:rgba(245,245,245,.45);
-        --panel-bg:rgba(0,0,0,.82);
-        --panel-border:rgba(255,255,255,.16);
-        --track:rgba(255,255,255,.14);
-        --track-disabled:rgba(255,255,255,.07);
-        --thumb:rgba(255,255,255,.78);
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #000;
+        --edge: #fafafa;
+        --panel-bg: rgba(0, 0, 0, 0.82);
+        --panel-border: rgba(255, 255, 255, 0.16);
+        --text: #f5f5f5;
+        --muted: rgba(245, 245, 245, 0.45);
+        --track: rgba(255, 255, 255, 0.14);
+        --track-disabled: rgba(255, 255, 255, 0.07);
+        --thumb: rgba(255, 255, 255, 0.78);
       }
     }
-    html,body{
-      margin:0;
-      width:100%;
-      height:100%;
-      overflow:hidden;
-      background:var(--bg);
-      color-scheme:light dark;
-      touch-action:none;
-      user-select:none;
-      -webkit-user-select:none;
-      overscroll-behavior:none;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    }
-    body{ position:relative; background:var(--bg); }
-    canvas{ display:block; width:100vw; height:100vh; touch-action:none; }
 
-    .gear-btn,.peer-btn{
-      position:fixed;
-      width:46px;height:46px;
-      border-radius:50%;
-      border:1.7px solid var(--edge);
-      background:transparent;
-      color:transparent;
-      padding:0;
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      z-index:20;
-      -webkit-tap-highlight-color:transparent;
-      -webkit-appearance:none;
-      appearance:none;
-      box-sizing:border-box;
-      text-shadow:none;
-    }
-    .gear-btn{ top:calc(env(safe-area-inset-top,0px) + 10px); right:calc(env(safe-area-inset-right,0px) + 10px); }
-    .peer-btn{ top:calc(env(safe-area-inset-top,0px) + 10px); left:calc(env(safe-area-inset-left,0px) + 10px); }
-    .gear-btn span,.peer-btn .peer-icon{
-      font-size:20px;font-weight:400;line-height:1;
-      transform:translateY(-.5px);
-      color:var(--edge);
-      -webkit-text-stroke:0;
-      text-shadow:none;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI Symbol",sans-serif;
-    }
-    .gear-btn:active,.peer-btn:active{ transform:scale(.97); }
-    .peer-btn.hidden{ display:none; }
-    .peer-btn.searching{ border-color:var(--peer-blue); color:var(--peer-blue); }
-    .peer-btn.connected{ border-color:var(--peer-blue); color:var(--peer-blue); }
-    .peer-btn.connected .peer-icon{ color:var(--peer-blue); }
-    .peer-icon{ display:block; width:20px; text-align:center; }
-    .peer-spinner{ display:none; position:relative; width:20px; height:20px; color:var(--peer-blue); }
-    .peer-btn.searching .peer-icon{ display:none; }
-    .peer-btn.searching .peer-spinner{ display:block; animation:peer-spin .9s linear infinite; }
-    .peer-spinner span{
-      position:absolute; left:50%; top:50%;
-      width:4px; height:4px; margin:-2px 0 0 -2px;
-      border-radius:50%; background:currentColor; transform-origin:0 0;
-    }
-    .peer-spinner span:nth-child(1){ transform:translate(0,-8px); opacity:1; }
-    .peer-spinner span:nth-child(2){ transform:translate(5.5px,-5.5px); opacity:.82; }
-    .peer-spinner span:nth-child(3){ transform:translate(8px,0); opacity:.64; }
-    .peer-spinner span:nth-child(4){ transform:translate(5.5px,5.5px); opacity:.46; }
-    .peer-spinner span:nth-child(5){ transform:translate(0,8px); opacity:.34; }
-    .peer-spinner span:nth-child(6){ transform:translate(-5.5px,5.5px); opacity:.46; }
-    .peer-spinner span:nth-child(7){ transform:translate(-8px,0); opacity:.64; }
-    .peer-spinner span:nth-child(8){ transform:translate(-5.5px,-5.5px); opacity:.82; }
-    @keyframes peer-spin{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
-
-    .overlay,.peer-menu-overlay,.qr-overlay,.scan-overlay,.connect-overlay{
-      position:fixed; inset:0; z-index:30;
-      display:none; align-items:center; justify-content:center;
-      background:rgba(0,0,0,.26);
-      backdrop-filter:blur(8px);
-      -webkit-backdrop-filter:blur(8px);
-      padding:18px; box-sizing:border-box;
-    }
-    .overlay.open,.peer-menu-overlay.open,.qr-overlay.open,.scan-overlay.open,.connect-overlay.open{ display:flex; }
-
-    .panel,.dialog{
-      width:min(92vw, 520px);
-      max-height:min(86vh, 720px);
-      overflow:auto;
-      border-radius:26px;
-      background:var(--panel-bg);
-      border:1px solid var(--panel-border);
-      box-shadow:0 14px 40px rgba(0,0,0,.22);
-      color:var(--text);
-      padding:18px;
-      box-sizing:border-box;
-      scrollbar-width:thin;
-    }
-    .panel-header{
-      position:sticky; top:0; z-index:2;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      margin:-18px -18px 18px;
-      padding:18px 18px 14px;
-      background:linear-gradient(to bottom, var(--panel-bg) 80%, rgba(0,0,0,0));
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
-      border-bottom:1px solid rgba(127,127,127,.12);
-    }
-    .panel-title,.dialog-title{ font-size:18px; font-weight:700; letter-spacing:.02em; }
-    .close-btn,.ghost-btn,.danger-btn{
-      appearance:none; -webkit-appearance:none;
-      border-radius:14px; height:40px; padding:0 14px;
-      font-size:14px; font-weight:650;
-      cursor:pointer; -webkit-tap-highlight-color:transparent;
-    }
-    .close-btn{
-      border:1.5px solid var(--edge);
-      background:transparent; color:var(--text);
-      min-width:42px; height:36px;
-    }
-    .ghost-btn{
-      border:1.5px solid var(--panel-border);
-      background:transparent; color:var(--text);
-    }
-    .danger-btn{
-      border:1.5px solid rgba(220,40,40,.55);
-      background:transparent; color:#d23636;
-      flex:1 1 auto;
-    }
-    .close-btn:active,.ghost-btn:active,.danger-btn:active{ transform:scale(.98); }
-
-    .setting-block{ padding:14px 0 4px; border-top:1px solid rgba(127,127,127,.16); }
-    .setting-block:first-of-type{ border-top:0; padding-top:0; }
-    .setting-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .setting-label{ display:flex; flex-direction:column; gap:4px; min-width:0; }
-    .setting-label .main{ font-size:15px; font-weight:650; line-height:1.2; }
-    .setting-label .sub{ font-size:12px; color:var(--muted); line-height:1.3; }
-    .switch{ position:relative; width:56px; height:34px; flex:0 0 auto; }
-    .switch input{ opacity:0; width:0; height:0; position:absolute; }
-    .slider{
-      position:absolute; inset:0; background:rgba(127,127,127,.18);
-      border:1px solid var(--panel-border); border-radius:999px;
-      transition:.2s ease; cursor:pointer;
-    }
-    .slider::before{
-      content:""; position:absolute; left:4px; top:4px;
-      width:24px; height:24px; border-radius:50%;
-      background:var(--thumb); transition:.2s ease;
-    }
-    .switch input:checked + .slider{ background:rgba(55,180,90,.22); }
-    .switch input:checked + .slider::before{ transform:translateX(22px); }
-
-    .control-row{ display:flex; align-items:center; gap:10px; justify-content:space-between; margin-top:10px; }
-    .mode-select{
-      width:128px; height:36px; border-radius:12px;
-      border:1px solid var(--panel-border); background:transparent; color:var(--text);
-      padding:0 10px; font-size:14px; outline:none; appearance:none; -webkit-appearance:none;
-    }
-    .hex-input,.name-input{
-      width:100%; box-sizing:border-box; height:38px; border-radius:12px;
-      border:1px solid var(--panel-border); background:transparent; color:var(--text);
-      padding:0 12px; font-size:14px; outline:none;
-    }
-    .hex-input::placeholder,.name-input::placeholder{ color:var(--muted); }
-    .sub-input-wrap{ margin-top:10px; }
-    .disabled{ opacity:.34; pointer-events:none; }
-    .range-wrap{ margin-top:12px; padding-left:2px; }
-    .range-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:8px; }
-    .range-title{ font-size:13px; font-weight:650; }
-    .range-value{ font-size:12px; color:var(--muted); }
-    input[type="range"]{
-      width:100%; margin:0; appearance:none; -webkit-appearance:none; background:transparent; height:28px; outline:none;
-    }
-    input[type="range"]::-webkit-slider-runnable-track{ height:7px; border-radius:999px; background:var(--track); }
-    .disabled input[type="range"]::-webkit-slider-runnable-track{ background:var(--track-disabled); }
-    input[type="range"]::-webkit-slider-thumb{
-      -webkit-appearance:none; appearance:none; width:22px; height:22px; border-radius:50%;
-      margin-top:-7.5px; background:var(--thumb); border:0; box-shadow:0 0 0 3px rgba(127,127,127,.15);
-    }
-    input[type="range"]::-moz-range-track{ height:7px; border-radius:999px; background:var(--track); }
-    .disabled input[type="range"]::-moz-range-track{ background:var(--track-disabled); }
-    input[type="range"]::-moz-range-thumb{
-      width:22px; height:22px; border-radius:50%; background:var(--thumb); border:0;
-      box-shadow:0 0 0 3px rgba(127,127,127,.15);
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color-scheme: light dark;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      overscroll-behavior: none;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    .effect-grid{ display:grid; grid-template-columns:1fr; gap:10px; margin-top:12px; }
-    .effect-item{ display:flex; flex-direction:column; gap:6px; padding:10px 0 0; }
-    .effect-item + .effect-item{ border-top:1px solid rgba(127,127,127,.12); padding-top:12px; }
-    .effect-name{ font-size:13px; font-weight:650; }
-    .effect-desc{ font-size:12px; color:var(--muted); line-height:1.35; }
-
-    .footer-actions{ display:flex; gap:10px; margin-top:14px; }
-
-    .peer-menu-stage{
-      position:relative; width:min(92vw, 420px); height:min(84vh, 420px);
-      pointer-events:none;
-    }
-    .peer-burst-ring{
-      position:absolute; left:50%; top:50%; width:88px; height:88px;
-      border-radius:50%; border:1.8px solid rgba(47,120,255,.35);
-      transform:translate(-50%, -50%) scale(.25); opacity:0;
-      transition:transform 1s ease, opacity .5s ease; pointer-events:none;
-    }
-    .peer-menu-overlay.open .peer-burst-ring{
-      transform:translate(-50%, -50%) scale(2.45); opacity:1;
-    }
-    .peer-name-bar{
-      position:absolute;
-      left:50%;
-      top:0;
-      transform:translateX(-50%) translateY(-8px);
-      width:min(92vw, 360px);
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-      justify-content:center;
-      pointer-events:none;
-      opacity:0;
-      transition:opacity .35s ease;
-    }
-    .peer-menu-overlay.connected .peer-name-bar,
-    .peer-menu-overlay.searching .peer-name-bar{ opacity:1; }
-    .peer-name-chip{
-      padding:5px 10px;
-      border-radius:999px;
-      border:1px solid var(--chip-border);
-      background:var(--chip);
-      color:var(--peer-blue);
-      font-size:12px;
-      line-height:1;
-      max-width:100%;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
+    body {
+      position: relative;
+      background: var(--bg);
     }
 
-    .peer-choice{
-      position:absolute; left:50%; top:50%;
-      width:122px; height:122px;
-      border:1.7px solid rgba(47,120,255,.82);
-      background:rgba(255,255,255,.08);
-      border-radius:50%;
-      padding:0;
-      cursor:pointer;
-      pointer-events:auto;
-      -webkit-tap-highlight-color:transparent;
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+    }
+
+    .gear-btn,
+    .peer-btn {
+      position: fixed;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1.7px solid var(--edge);
+      background: transparent;
+      color: transparent;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      z-index: 20;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-appearance: none;
+      appearance: none;
+      box-sizing: border-box;
+      text-shadow: none;
+    }
+
+    .gear-btn {
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+      right: calc(env(safe-area-inset-right, 0px) + 10px);
+    }
+
+    .peer-btn {
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+      left: calc(env(safe-area-inset-left, 0px) + 10px);
+    }
+
+    .gear-btn span,
+    .peer-btn .peer-icon {
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1;
+      transform: translateY(-0.5px);
+      color: var(--edge);
+      -webkit-text-stroke: 0;
+      text-shadow: none;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Symbol", sans-serif;
+    }
+
+    .gear-btn:active,
+    .peer-btn:active {
+      transform: scale(0.97);
+    }
+
+    .peer-btn.hidden {
+      display: none;
+    }
+
+    .peer-btn.searching {
+      border-color: var(--peer-blue);
+      color: var(--peer-blue);
+    }
+
+    .peer-btn.connected {
+      border-color: var(--peer-blue);
+      color: var(--peer-blue);
+    }
+
+    .peer-btn.connected .peer-icon {
+      color: var(--peer-blue);
+    }
+
+    .peer-icon {
+      display: block;
+      width: 20px;
+      text-align: center;
+    }
+
+    .peer-spinner {
+      display: none;
+      position: relative;
+      width: 20px;
+      height: 20px;
+      color: var(--peer-blue);
+    }
+
+    .peer-btn.searching .peer-icon {
+      display: none;
+    }
+
+    .peer-btn.searching .peer-spinner {
+      display: block;
+      animation: peer-spin 0.9s linear infinite;
+    }
+
+    .peer-spinner span {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 4px;
+      height: 4px;
+      margin: -2px 0 0 -2px;
+      border-radius: 50%;
+      background: currentColor;
+      transform-origin: 0 0;
+    }
+
+    .peer-spinner span:nth-child(1) { transform: translate(0, -8px); opacity: 1; }
+    .peer-spinner span:nth-child(2) { transform: translate(5.5px, -5.5px); opacity: 0.82; }
+    .peer-spinner span:nth-child(3) { transform: translate(8px, 0); opacity: 0.64; }
+    .peer-spinner span:nth-child(4) { transform: translate(5.5px, 5.5px); opacity: 0.46; }
+    .peer-spinner span:nth-child(5) { transform: translate(0, 8px); opacity: 0.34; }
+    .peer-spinner span:nth-child(6) { transform: translate(-5.5px, 5.5px); opacity: 0.46; }
+    .peer-spinner span:nth-child(7) { transform: translate(-8px, 0); opacity: 0.64; }
+    .peer-spinner span:nth-child(8) { transform: translate(-5.5px, -5.5px); opacity: 0.82; }
+
+    @keyframes peer-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .overlay,
+    .peer-menu-overlay,
+    .qr-overlay,
+    .room-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 18px;
+      box-sizing: border-box;
+    }
+
+    .overlay.open,
+    .peer-menu-overlay.open,
+    .qr-overlay.open,
+    .room-overlay.open {
+      display: flex;
+    }
+
+    .panel {
+      width: min(92vw, 460px);
+      max-height: min(84vh, 680px);
+      overflow: auto;
+      border-radius: 26px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+      color: var(--text);
+      padding: 18px 18px 16px;
+      box-sizing: border-box;
+      scrollbar-width: thin;
+    }
+
+    .panel-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: -18px -18px 18px;
+      padding: 18px 18px 14px;
+      background: linear-gradient(to bottom, var(--panel-bg) 80%, rgba(0,0,0,0));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(127, 127, 127, 0.12);
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .close-btn,
+    .ghost-btn,
+    .danger-btn {
+      appearance: none;
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+      border-radius: 14px;
+      font-weight: 650;
+    }
+
+    .close-btn {
+      border: 1.5px solid var(--edge);
+      background: transparent;
+      color: var(--text);
+      min-width: 42px;
+      height: 36px;
+      padding: 0 14px;
+      font-size: 14px;
+    }
+
+    .close-btn:active,
+    .ghost-btn:active,
+    .danger-btn:active {
+      transform: scale(0.98);
+    }
+
+    .setting-block {
+      padding: 14px 0 4px;
+      border-top: 1px solid rgba(127, 127, 127, 0.16);
+    }
+
+    .setting-block:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .setting-label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .setting-label .main {
+      font-size: 15px;
+      font-weight: 650;
+      line-height: 1.2;
+    }
+
+    .setting-label .sub {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .switch {
+      position: relative;
+      width: 56px;
+      height: 34px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(127, 127, 127, 0.18);
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--thumb);
+      transition: 0.2s ease;
+    }
+
+    .switch input:checked + .slider {
+      background: rgba(55, 180, 90, 0.22);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(22px);
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .mode-select {
+      width: 128px;
+      height: 36px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      padding: 0 10px;
+      font-size: 14px;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .hex-input {
+      width: 100%;
+      box-sizing: border-box;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      padding: 0 12px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .hex-input::placeholder {
+      color: var(--muted);
+    }
+
+    .sub-input-wrap {
+      margin-top: 10px;
+    }
+
+    .disabled {
+      opacity: 0.34;
+      pointer-events: none;
+    }
+
+    .range-wrap {
+      margin-top: 12px;
+      padding-left: 2px;
+    }
+
+    .range-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .range-title {
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .range-value {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      height: 28px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 7px;
+      border-radius: 999px;
+      background: var(--track);
+    }
+
+    .disabled input[type="range"]::-webkit-slider-runnable-track {
+      background: var(--track-disabled);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      margin-top: -7.5px;
+      background: var(--thumb);
+      border: 0;
+      box-shadow: 0 0 0 3px rgba(127, 127, 127, 0.15);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 7px;
+      border-radius: 999px;
+      background: var(--track);
+    }
+
+    .disabled input[type="range"]::-moz-range-track {
+      background: var(--track-disabled);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--thumb);
+      border: 0;
+      box-shadow: 0 0 0 3px rgba(127, 127, 127, 0.15);
+    }
+
+    .effect-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .effect-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 0 0;
+    }
+
+    .effect-item + .effect-item {
+      border-top: 1px solid rgba(127, 127, 127, 0.12);
+      padding-top: 12px;
+    }
+
+    .effect-name {
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .effect-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .danger-btn {
+      border: 1.5px solid rgba(220, 40, 40, 0.55);
+      background: transparent;
+      color: #d23636;
+      min-width: 0;
+      height: 40px;
+      padding: 0 14px;
+      font-size: 14px;
+      flex: 1 1 auto;
+    }
+
+    .ghost-btn {
+      border: 1.5px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      height: 40px;
+      padding: 0 14px;
+      font-size: 14px;
+    }
+
+    .ghost-btn.small {
+      height: 36px;
+      padding: 0 12px;
+      font-size: 13px;
+      border-radius: 12px;
+    }
+
+    .dialog {
+      width: min(92vw, 520px);
+      border-radius: 26px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+      color: var(--text);
+      padding: 18px;
+      box-sizing: border-box;
+      max-height: min(86vh, 720px);
+      overflow: auto;
+    }
+
+    .dialog-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .dialog-text {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    .qr-box {
+      width: min(72vw, 320px);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto 12px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0,0,0,0.08);
+      display: grid;
+      place-items: center;
+    }
+
+    .qr-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .qr-actions,
+    .room-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .room-code-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-top: 12px;
+      margin-bottom: 8px;
+    }
+
+    .room-code-pill {
+      border: 1px solid rgba(47, 120, 255, 0.36);
+      color: var(--peer-blue);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      line-height: 1;
+      background: rgba(47, 120, 255, 0.06);
+      white-space: nowrap;
+    }
+
+    .scan-input {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 92px;
+      border-radius: 14px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 13px;
+      outline: none;
+      resize: vertical;
+      margin-bottom: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+      transform: translateX(-50%) translateY(12px);
+      background: rgba(0, 0, 0, 0.72);
+      color: #fff;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1;
+      z-index: 60;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      max-width: min(90vw, 420px);
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .peer-menu-stage {
+      position: relative;
+      width: min(92vw, 460px);
+      height: min(84vh, 460px);
+      pointer-events: none;
+    }
+
+    .peer-burst-ring {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 1.8px solid rgba(47, 120, 255, 0.35);
+      transform: translate(-50%, -50%) scale(0.25);
+      opacity: 0;
+      transition: transform 1s ease, opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    .peer-menu-overlay.open .peer-burst-ring {
+      transform: translate(-50%, -50%) scale(2.45);
+      opacity: 1;
+    }
+
+    .peer-names-bar {
+      position: absolute;
+      left: 50%;
+      top: 10px;
+      transform: translateX(-50%);
+      width: min(88vw, 420px);
+      display: none;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .peer-menu-overlay.connected .peer-names-bar {
+      display: flex;
+    }
+
+    .peer-name-chip {
+      border: 1px solid rgba(47, 120, 255, 0.32);
+      background: rgba(47, 120, 255, 0.08);
+      color: var(--peer-blue);
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      line-height: 1;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .peer-choice {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 122px;
+      height: 122px;
+      border: 1.7px solid rgba(47, 120, 255, 0.82);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+      padding: 0;
+      cursor: pointer;
+      pointer-events: auto;
+      -webkit-tap-highlight-color: transparent;
       transform:
         translate(-50%, -50%)
         translate(var(--from-x), var(--from-y))
-        scale(.12);
-      opacity:0;
+        scale(0.12);
+      opacity: 0;
       transition:
         transform 1s cubic-bezier(.2,.8,.2,1),
-        opacity .5s ease;
-      display:grid; place-items:center;
-      box-sizing:border-box;
-      color:var(--peer-blue);
-      overflow:hidden;
+        opacity 0.5s ease;
+      display: grid;
+      place-items: center;
+      box-sizing: border-box;
+      color: #2f78ff;
     }
-    .peer-menu-overlay.open .peer-choice{
+
+    .peer-menu-overlay.open .peer-choice {
       transform:
         translate(-50%, -50%)
         translate(var(--to-x), var(--to-y))
         scale(1);
-      opacity:1;
+      opacity: 1;
     }
-    .peer-choice:active{
+
+    .peer-choice:active {
       transform:
         translate(-50%, -50%)
         translate(var(--to-x), var(--to-y))
-        scale(.97);
-    }
-    .peer-choice .peer-choice-label{
-      display:block;
-      font-size:15px;
-      font-weight:700;
-      text-align:center;
-      line-height:1.22;
-      padding:0 12px;
-      color:var(--peer-blue);
-      opacity:0;
-      transition:opacity .5s ease;
-      transition-delay:1.0s;
-      word-break:keep-all;
-    }
-    .peer-menu-overlay.open .peer-choice .peer-choice-label{ opacity:1; }
-    .peer-choice::before{
-      content:""; position:absolute; inset:7px;
-      border-radius:50%; border:1px solid rgba(47,120,255,.2);
-      background:rgba(47,120,255,.03); pointer-events:none;
-    }
-    .peer-choice.wifi{ --to-x:0px; --to-y:-118px; }
-    .peer-choice.qr-show{ --to-x:-118px; --to-y:108px; }
-    .peer-choice.online{ --to-x:118px; --to-y:108px; }
-    .peer-choice.disconnect{ --to-x:0px; --to-y:-118px; }
-    .peer-choice.send{ --to-x:-118px; --to-y:108px; }
-    .peer-choice.receive{ --to-x:118px; --to-y:108px; }
-
-    .qr-box{
-      width:min(72vw, 320px); aspect-ratio:1/1;
-      margin:0 auto 12px;
-      border-radius:18px;
-      overflow:hidden;
-      background:rgba(255,255,255,.95);
-      border:1px solid rgba(0,0,0,.08);
-      display:grid; place-items:center;
-    }
-    .qr-box img{ width:100%; height:100%; object-fit:cover; display:block; }
-
-    .scan-preview{
-      width:100%; aspect-ratio:3/4; border-radius:18px;
-      background:rgba(0,0,0,.35); overflow:hidden; margin-bottom:12px; position:relative;
-    }
-    .scan-preview video{ width:100%; height:100%; object-fit:cover; display:block; }
-    .scan-fallback{
-      border:1px dashed rgba(127,127,127,.45);
-      border-radius:18px; padding:12px;
-      font-size:13px; color:var(--muted); margin-bottom:12px;
-    }
-    .scan-input,.connect-input{
-      width:100%; box-sizing:border-box; min-height:44px;
-      border-radius:14px; border:1px solid var(--panel-border);
-      background:transparent; color:var(--text); padding:10px 12px; font-size:13px; outline:none;
-      margin-bottom:12px;
-    }
-    .scan-input{ min-height:92px; resize:vertical; }
-    .qr-actions,.scan-actions,.connect-actions,.list-actions{ display:flex; gap:10px; flex-wrap:wrap; }
-
-    .name-list{
-      display:flex; flex-wrap:wrap; gap:6px;
-      margin:8px 0 0;
-    }
-    .name-chip{
-      padding:5px 10px;
-      border-radius:999px;
-      background:rgba(47,120,255,.12);
-      border:1px solid rgba(47,120,255,.25);
-      color:var(--peer-blue);
-      font-size:12px;
-      line-height:1;
+        scale(0.97);
     }
 
-    .toast{
-      position:fixed;
-      left:50%;
-      bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
-      transform:translateX(-50%) translateY(12px);
-      background:rgba(0,0,0,.72);
-      color:#fff;
-      border-radius:999px;
-      padding:10px 14px;
-      font-size:13px;
-      line-height:1;
-      z-index:60;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .2s ease, transform .2s ease;
-      max-width:min(90vw, 420px);
-      text-align:center;
-      box-sizing:border-box;
-    }
-    .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
-
-    .hidden{ display:none !important; }
-    .faint{ opacity:.34; pointer-events:none; }
-
-    .option-list{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:10px;
+    .peer-choice:disabled {
+      opacity: 0.42;
+      cursor: default;
+      filter: grayscale(0.15);
     }
 
-    .option-panel{
-      border:1px solid var(--panel-border);
-      border-radius:18px;
-      padding:12px;
-      background:rgba(127,127,127,.04);
+    .peer-choice .peer-choice-label {
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.25;
+      padding: 0 12px;
+      color: #2f78ff;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      transition-delay: 1.0s;
+      word-break: keep-all;
+      white-space: pre-line;
     }
-    .option-panel-title{
-      font-size:14px;
-      font-weight:700;
-      margin-bottom:8px;
+
+    .peer-menu-overlay.open .peer-choice .peer-choice-label {
+      opacity: 1;
+    }
+
+    .peer-choice::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border-radius: 50%;
+      border: 1px solid rgba(47, 120, 255, 0.2);
+      background: rgba(47, 120, 255, 0.03);
+      pointer-events: none;
+    }
+
+    .peer-choice.wifi { --to-x: 0px; --to-y: -118px; }
+    .peer-choice.qr-show { --to-x: -118px; --to-y: 108px; }
+    .peer-choice.online { --to-x: 118px; --to-y: 108px; }
+    .peer-choice.disconnect { --to-x: 0px; --to-y: -118px; }
+    .peer-choice.send { --to-x: -118px; --to-y: 108px; }
+    .peer-choice.receive { --to-x: 118px; --to-y: 108px; }
+
+    .name-input-wrap.disabled {
+      opacity: 0.34;
+      pointer-events: none;
+    }
+
+    .name-input-wrap {
+      margin-top: 10px;
+    }
+
+    .room-overlay .dialog {
+      max-width: 520px;
+    }
+
+    .room-overlay .dialog .ghost-btn {
+      flex: 1 1 140px;
     }
   </style>
-</head>
-<body>
-  <canvas id="c"></canvas>
-
-  <button class="gear-btn" id="openSettings" aria-label="設定を開く"><span>⛭</span></button>
-
-  <button class="peer-btn hidden" id="peerButton" aria-label="ローカル通信">
-    <span class="peer-icon">☋</span>
-    <span class="peer-spinner" aria-hidden="true">
-      <span></span><span></span><span></span><span></span>
-      <span></span><span></span><span></span><span></span>
-    </span>
-  </button>
-
-  <div class="overlay" id="overlay" aria-hidden="true">
-    <div class="panel" role="dialog" aria-modal="true" aria-label="設定">
-      <div class="panel-header">
-        <div class="panel-title">設定</div>
-        <button class="close-btn" id="closeSettings">戻る</button>
-      </div>
-
-      <div class="setting-block">
-        <div class="setting-row">
-          <div class="setting-label">
-            <div class="main">背景色</div>
-            <div class="sub">システム / 白 / 黒 / カスタム</div>
-          </div>
-          <select class="mode-select" id="bgMode">
-            <option value="system">システム</option>
-            <option value="white">白</option>
-            <option value="black">黒</option>
-            <option value="custom">カスタム</option>
-          </select>
-        </div>
-        <div class="sub-input-wrap hidden" id="bgCustomWrap">
-          <input class="hex-input" id="bgCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ffffff" />
-        </div>
-      </div>
-
-      <div class="setting-block">
-        <div class="setting-label">
-          <div class="main">色</div>
-          <div class="sub">タップ / スワイプ / 囲い の色をカラーコードで指定</div>
-        </div>
-        <div class="effect-grid">
-          <div class="effect-item">
-            <div class="effect-name">タップの色</div>
-            <input class="hex-input" id="tapColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#46ff78" />
-          </div>
-          <div class="effect-item">
-            <div class="effect-name">スワイプの色</div>
-            <input class="hex-input" id="swipeColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#6ea5ff" />
-          </div>
-          <div class="effect-item">
-            <div class="effect-name">囲いの色</div>
-            <input class="hex-input" id="loopColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ff4e4e" />
-          </div>
-        </div>
-      </div>
-
-      <div class="setting-block">
-        <div class="setting-row">
-          <div class="setting-label">
-            <div class="main">グリッドを表示</div>
-            <div class="sub">ONで背景に格子を出します</div>
-          </div>
-          <label class="switch" aria-label="グリッドを表示">
-            <input type="checkbox" id="gridToggle" />
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div id="gridDetails">
-          <div class="range-wrap">
-            <div class="range-head">
-              <div class="range-title">間隔</div>
-              <div class="range-value"><span id="spacingValue">36</span>px</div>
-            </div>
-            <input type="range" id="spacingRange" min="18" max="100" step="1" value="36" />
-          </div>
-          <div class="control-row">
-            <div class="setting-label">
-              <div class="main" style="font-size:13px;">グリッド色</div>
-              <div class="sub">システム / 白 / 黒 / カスタム</div>
-            </div>
-            <select class="mode-select" id="gridMode">
-              <option value="system">システム</option>
-              <option value="white">白</option>
-              <option value="black">黒</option>
-              <option value="custom">カスタム</option>
-            </select>
-          </div>
-          <div class="sub-input-wrap hidden" id="gridCustomWrap">
-            <input class="hex-input" id="gridCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#e8e8e8" />
-          </div>
-        </div>
-      </div>
-
-      <div class="setting-block">
-        <div class="setting-row">
-          <div class="setting-label">
-            <div class="main">ローカル通信ボタンを表示</div>
-            <div class="sub">左上に通信ボタンを出します</div>
-          </div>
-          <label class="switch" aria-label="ローカル通信ボタンを表示">
-            <input type="checkbox" id="peerButtonToggle" />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <div class="setting-block">
-        <div class="setting-row">
-          <div class="setting-label">
-            <div class="main">名前</div>
-            <div class="sub">ボタンがONの時だけ変更できます</div>
-          </div>
-        </div>
-        <div class="sub-input-wrap" id="nameWrap">
-          <input class="name-input" id="nameInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" maxlength="20" placeholder="りゅっちー" />
-        </div>
-      </div>
-
-      <div class="setting-block">
-        <div class="footer-actions">
-          <button class="danger-btn" id="resetSettings">設定をリセット</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="peer-menu-overlay" id="peerMenuOverlay" aria-hidden="true">
-    <div class="peer-menu-stage" id="peerMenuStage">
-      <div class="peer-burst-ring"></div>
-      <div class="peer-name-bar" id="peerNameBar"></div>
-      <button class="peer-choice" id="peerChoice1"><span class="peer-choice-label" id="peerChoiceLabel1"></span></button>
-      <button class="peer-choice" id="peerChoice2"><span class="peer-choice-label" id="peerChoiceLabel2"></span></button>
-      <button class="peer-choice" id="peerChoice3"><span class="peer-choice-label" id="peerChoiceLabel3"></span></button>
-    </div>
-  </div>
-
-  <div class="connect-overlay" id="connectOverlay" aria-hidden="true">
-    <div class="dialog">
-      <div class="dialog-title" id="connectTitle">接続</div>
-      <div class="dialog-text" id="connectText">文字を入力して同じところにマッチングします。</div>
-      <input class="connect-input" id="connectInput" type="text" placeholder="ルーム名 / コード" autocomplete="off" spellcheck="false" />
-      <div class="connect-actions">
-        <button class="ghost-btn" id="connectStartButton">開始</button>
-        <button class="ghost-btn" id="connectCloseButton">閉じる</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="qr-overlay" id="qrOverlay" aria-hidden="true">
-    <div class="dialog">
-      <div class="dialog-title" id="qrTitle">QRコード</div>
-      <div class="dialog-text" id="qrText">読み込み中…</div>
-      <div class="qr-box"><img id="qrImage" alt="QRコード" /></div>
-      <div class="qr-actions">
-        <button class="ghost-btn" id="qrModeButton">QRを読み取る</button>
-        <button class="ghost-btn" id="qrCloseButton">閉じる</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="scan-overlay" id="scanOverlay" aria-hidden="true">
-    <div class="dialog">
-      <div class="dialog-title">QRコードを読み取り</div>
-      <div class="dialog-text">カメラで読み取るか、下に文字列を貼り付けて読み込めます。</div>
-      <div class="scan-preview">
-        <video id="scanVideo" playsinline muted></video>
-      </div>
-      <div class="scan-fallback" id="scanFallback">カメラ読み取りが使えない場合でも、貼り付けで進められます。</div>
-      <textarea class="scan-input" id="scanInput" placeholder="QRの文字列を貼り付け"></textarea>
-      <div class="scan-actions">
-        <button class="ghost-btn" id="scanAcceptButton">読み込む</button>
-        <button class="ghost-btn" id="scanCloseButton">閉じる</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import {
-      getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc,
-      serverTimestamp, runTransaction, query, orderBy, limit, deleteDoc, updateDoc, where
+      getFirestore,
+      doc,
+      collection,
+      setDoc,
+      getDoc,
+      onSnapshot,
+      runTransaction,
+      deleteDoc,
+      serverTimestamp,
+      addDoc,
+      query,
+      orderBy,
+      limit,
+      getDocs
     } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -642,66 +857,65 @@
     const spacingValue = document.getElementById('spacingValue');
 
     const peerButtonToggle = document.getElementById('peerButtonToggle');
-    const nameInput = document.getElementById('nameInput');
-    const nameWrap = document.getElementById('nameWrap');
+    const displayNameInput = document.getElementById('displayNameInput');
+    const displayNameWrap = document.getElementById('displayNameWrap');
 
     const resetSettings = document.getElementById('resetSettings');
 
     const peerMenuOverlay = document.getElementById('peerMenuOverlay');
     const peerMenuStage = document.getElementById('peerMenuStage');
+    const peerNamesBar = document.getElementById('peerNamesBar');
     const peerChoice1 = document.getElementById('peerChoice1');
     const peerChoice2 = document.getElementById('peerChoice2');
     const peerChoice3 = document.getElementById('peerChoice3');
     const peerChoiceLabel1 = document.getElementById('peerChoiceLabel1');
     const peerChoiceLabel2 = document.getElementById('peerChoiceLabel2');
     const peerChoiceLabel3 = document.getElementById('peerChoiceLabel3');
-    const peerNameBar = document.getElementById('peerNameBar');
-
-    const connectOverlay = document.getElementById('connectOverlay');
-    const connectTitle = document.getElementById('connectTitle');
-    const connectText = document.getElementById('connectText');
-    const connectInput = document.getElementById('connectInput');
-    const connectStartButton = document.getElementById('connectStartButton');
-    const connectCloseButton = document.getElementById('connectCloseButton');
 
     const qrOverlay = document.getElementById('qrOverlay');
     const qrTitle = document.getElementById('qrTitle');
     const qrText = document.getElementById('qrText');
     const qrImage = document.getElementById('qrImage');
-    const qrModeButton = document.getElementById('qrModeButton');
     const qrCloseButton = document.getElementById('qrCloseButton');
 
-    const scanOverlay = document.getElementById('scanOverlay');
-    const scanVideo = document.getElementById('scanVideo');
-    const scanFallback = document.getElementById('scanFallback');
-    const scanInput = document.getElementById('scanInput');
-    const scanAcceptButton = document.getElementById('scanAcceptButton');
-    const scanCloseButton = document.getElementById('scanCloseButton');
+    const roomOverlay = document.getElementById('roomOverlay');
+    const roomTitle = document.getElementById('roomTitle');
+    const roomText = document.getElementById('roomText');
+    const roomCodeInput = document.getElementById('roomCodeInput');
+    const roomJoinButton = document.getElementById('roomJoinButton');
+    const roomCancelButton = document.getElementById('roomCancelButton');
+    const roomQrToggleButton = document.getElementById('roomQrToggleButton');
 
     const toast = document.getElementById('toast');
 
-    const STORAGE_KEY = 'touch_effect_settings_v7';
-    const FIRESTORE_ROOM_ROOT = 'rooms';
-    const LOCAL_ROOM_PREFIX = 'te_local_';
-    const QR_API = 'https://api.qrserver.com/v1/create-qr-code/?size=420x420&margin=10&data=';
+    const STORAGE_KEY = 'touch_effect_settings_v6';
+    const LOCAL_BUS_PREFIX = 'touch_effect_room_bus_';
+    const firebaseRoomBase = 'rooms';
 
     const defaults = {
       bgMode: 'system',
       bgCustom: '#ffffff',
+
       tapColor: '#46ff78',
       swipeColor: '#6ea5ff',
       loopColor: '#ff4e4e',
+
       gridEnabled: false,
       gridMode: 'system',
       gridCustom: '#e8e8e8',
       gridSpacing: 36,
+
       peerButtonVisible: false,
-      name: '名無し'
+      displayName: '自分'
     };
 
     const settings = { ...defaults };
 
-    let w = 0, h = 0, dpr = 1, darkMode = false;
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let darkMode = false;
+
     const effects = [];
 
     let activePointerId = null;
@@ -720,53 +934,86 @@
     const LASSO_IGNORE_RECENT_SEGMENTS = 10;
     const LASSO_COOLDOWN = 140;
 
-    const roomState = {
-      mode: 'off', // off | local | firebase
-      roomId: '',
+    const qrApiBase = 'https://api.qrserver.com/v1/create-qr-code/?size=420x420&margin=10&data=';
+
+    const state = {
+      roomCode: '',
+      transport: 'none', // none | local | firebase
+      peerState: 'off', // off | searching | connected
       localChannel: null,
-      localRoomId: '',
-      participants: [],
-      sendLock: null,
+      localBusKey: '',
+      localHeartbeat: null,
+      firebase: {
+        roomRef: null,
+        settingsRef: null,
+        participantsCol: null,
+        eventsCol: null,
+        selfPresenceRef: null,
+        unsubRoom: null,
+        unsubSettings: null,
+        unsubParticipants: null,
+        unsubEvents: null,
+        heartbeat: null
+      },
+      participants: new Map(),
+      sendLock: {
+        byId: '',
+        byName: '',
+        until: 0,
+        token: ''
+      },
       receiveWindowUntil: 0,
-      selfId: makeId(),
-      statusDocUnsub: null,
-      participantsUnsub: null,
-      eventsUnsub: null,
-      heartbeatTimer: null,
-      lockWatchTimer: null,
-      participantDocRef: null,
-      roomDocRef: null,
-      eventWriteBusy: false,
-      activeTransport: 'none', // none | local | firebase
-      pendingJoinMode: null, // local | firebase
-      pendingInviteMode: null, // local | firebase
-      lastShownMode: 'local',
-      qrModeAfterScan: null,
-      localSeenQueue: [],
-      localSeenIds: new Set()
+      lastSeenByPeer: 0,
+      seenPackets: new Set(),
+      seenQueue: [],
+      roomMenuMode: 'off', // off | connected
+      showQrAfterJoin: false,
+      roomMode: 'local', // local | firebase
+      currentSettingsToken: '',
+      currentEventCursor: '',
+      maybeConnectedToastShown: false
     };
 
-    function makeId() {
-      if (crypto?.randomUUID) return crypto.randomUUID();
-      const bytes = new Uint8Array(16);
-      crypto.getRandomValues(bytes);
-      return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    let toastTimer = null;
+    let roomBusy = false;
+    let roomSyncTimer = null;
+
+    function showToast(message, duration = 1600) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
     }
 
-    function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
-    function lerp(a, b, t) { return a + (b - a) * t; }
-    function nowMs() { return performance.now(); }
-    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-    function distance(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
+    function clamp(v, min, max) {
+      return Math.min(max, Math.max(min, v));
+    }
+
+    function nowMs() {
+      return performance.now();
+    }
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function distance(ax, ay, bx, by) {
+      return Math.hypot(ax - bx, ay - by);
+    }
 
     function pointToSegmentDistance(px, py, ax, ay, bx, by) {
-      const abx = bx - ax, aby = by - ay;
-      const apx = px - ax, apy = py - ay;
+      const abx = bx - ax;
+      const aby = by - ay;
+      const apx = px - ax;
+      const apy = py - ay;
       const abLen2 = abx * abx + aby * aby;
       if (abLen2 === 0) return Math.hypot(px - ax, py - ay);
       let t = (apx * abx + apy * aby) / abLen2;
       t = clamp(t, 0, 1);
-      const cx = ax + abx * t, cy = ay + aby * t;
+      const cx = ax + abx * t;
+      const cy = ay + aby * t;
       return Math.hypot(px - cx, py - cy);
     }
 
@@ -780,7 +1027,9 @@
       if (!s) return null;
       if (s[0] === '#') s = s.slice(1);
       if (!/^[0-9a-fA-F]+$/.test(s)) return null;
-      if (s.length === 3 || s.length === 4) s = s.split('').map(ch => ch + ch).join('');
+      if (s.length === 3 || s.length === 4) {
+        s = s.split('').map(ch => ch + ch).join('');
+      }
       if (s.length !== 6 && s.length !== 8) return null;
       return '#' + s.toLowerCase();
     }
@@ -805,18 +1054,10 @@
       return fallback;
     }
 
-    function getBgColor() {
-      return resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000');
-    }
-    function getGridBaseColor() {
-      return resolveModeColor(settings.gridMode, settings.gridCustom, darkMode ? '#262626' : '#e8e8e8', darkMode ? '#262626' : '#e8e8e8');
-    }
-    function getTapBaseColor() { return normalizeHexColor(settings.tapColor) || defaults.tapColor; }
-    function getSwipeBaseColor() { return normalizeHexColor(settings.swipeColor) || defaults.swipeColor; }
-    function getLoopBaseColor() { return normalizeHexColor(settings.loopColor) || defaults.loopColor; }
-
     function saveSettings() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch (_) {}
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+      } catch (_) {}
     }
 
     function loadSettings() {
@@ -824,6 +1065,7 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return;
         const data = JSON.parse(raw);
+
         if (isValidMode(data.bgMode)) settings.bgMode = data.bgMode;
         if (typeof data.bgCustom === 'string') settings.bgCustom = data.bgCustom;
         if (typeof data.tapColor === 'string') settings.tapColor = data.tapColor;
@@ -832,9 +1074,11 @@
         if (typeof data.gridEnabled === 'boolean') settings.gridEnabled = data.gridEnabled;
         if (isValidMode(data.gridMode)) settings.gridMode = data.gridMode;
         if (typeof data.gridCustom === 'string') settings.gridCustom = data.gridCustom;
-        if (typeof data.gridSpacing === 'number' && isFinite(data.gridSpacing)) settings.gridSpacing = clamp(Math.round(data.gridSpacing), 18, 100);
+        if (typeof data.gridSpacing === 'number' && isFinite(data.gridSpacing)) {
+          settings.gridSpacing = clamp(Math.round(data.gridSpacing), 18, 100);
+        }
         if (typeof data.peerButtonVisible === 'boolean') settings.peerButtonVisible = data.peerButtonVisible;
-        if (typeof data.name === 'string') settings.name = data.name.slice(0, 20) || defaults.name;
+        if (typeof data.displayName === 'string' && data.displayName.trim()) settings.displayName = data.displayName.trim();
       } catch (_) {}
     }
 
@@ -854,19 +1098,13 @@
 
     function resize() {
       dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
-      w = window.innerWidth; h = window.innerHeight;
+      w = window.innerWidth;
+      h = window.innerHeight;
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
       canvas.style.width = w + 'px';
       canvas.style.height = h + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    function setToast(message, duration = 1700) {
-      toast.textContent = message;
-      toast.classList.add('show');
-      clearTimeout(setToast._t);
-      setToast._t = setTimeout(() => toast.classList.remove('show'), duration);
     }
 
     function syncSettingsUi() {
@@ -887,69 +1125,254 @@
       spacingValue.textContent = String(settings.gridSpacing);
 
       peerButtonToggle.checked = settings.peerButtonVisible;
-      nameInput.value = settings.name;
-      nameWrap.classList.toggle('faint', !settings.peerButtonVisible);
+      displayNameInput.value = settings.displayName;
+      displayNameWrap.classList.toggle('disabled', !settings.peerButtonVisible);
+      displayNameInput.disabled = !settings.peerButtonVisible;
+      peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
     }
 
-    function setBodyBg() { document.body.style.background = getBgColor(); }
+    function getBgColor() {
+      return resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000');
+    }
 
-    function openOverlay() { overlay.classList.add('open'); overlay.setAttribute('aria-hidden', 'false'); }
-    function closeOverlay() { overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true'); }
+    function getGridBaseColor() {
+      return resolveModeColor(
+        settings.gridMode,
+        settings.gridCustom,
+        darkMode ? '#262626' : '#e8e8e8',
+        darkMode ? '#262626' : '#e8e8e8'
+      );
+    }
 
-    function showQrOverlay(title, text, payload, modeButtonLabel, modeButtonAction) {
+    function getTapBaseColor() {
+      return normalizeHexColor(settings.tapColor) || defaults.tapColor;
+    }
+
+    function getSwipeBaseColor() {
+      return normalizeHexColor(settings.swipeColor) || defaults.swipeColor;
+    }
+
+    function getLoopBaseColor() {
+      return normalizeHexColor(settings.loopColor) || defaults.loopColor;
+    }
+
+    function openOverlay() {
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeOverlay() {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function openRoomOverlay(mode, showQr = false) {
+      state.roomMode = mode;
+      state.showQrAfterJoin = showQr;
+      roomTitle.textContent = mode === 'firebase' ? 'オンラインで通信' : 'ローカルで通信';
+      roomText.textContent = mode === 'firebase'
+        ? '同じ文字を入力した人と同じ部屋になります。マッチング中も普通に遊べます。'
+        : '同じ文字を入力した人と同じローカル部屋になります。マッチング中も普通に遊べます。';
+      roomJoinButton.textContent = showQr ? '表示して参加' : '参加する';
+      roomCodeInput.value = '';
+      roomOverlay.classList.add('open');
+      roomOverlay.setAttribute('aria-hidden', 'false');
+      setTimeout(() => roomCodeInput.focus(), 50);
+    }
+
+    function closeRoomOverlay() {
+      roomOverlay.classList.remove('open');
+      roomOverlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function openQrOverlay(title, text, payload) {
       qrTitle.textContent = title;
       qrText.textContent = text;
-      qrImage.src = `${QR_API}${encodeURIComponent(payload)}`;
-      qrImage.alt = title;
-      qrModeButton.textContent = modeButtonLabel;
-      qrModeButton.onclick = modeButtonAction;
+      qrImage.src = qrApiBase + encodeURIComponent(payload);
       qrOverlay.classList.add('open');
       qrOverlay.setAttribute('aria-hidden', 'false');
     }
+
     function closeQrOverlay() {
       qrOverlay.classList.remove('open');
       qrOverlay.setAttribute('aria-hidden', 'true');
       qrImage.removeAttribute('src');
     }
 
-    function openScanOverlay() {
-      scanOverlay.classList.add('open');
-      scanOverlay.setAttribute('aria-hidden', 'false');
-    }
-    function closeScanOverlay() {
-      scanOverlay.classList.remove('open');
-      scanOverlay.setAttribute('aria-hidden', 'true');
-      stopScanLoop();
+    function currentDisplayName() {
+      const name = (settings.displayName || '自分').trim();
+      return name.slice(0, 20) || '自分';
     }
 
-    function openConnectOverlay(mode, transportLabel) {
-      roomState.pendingJoinMode = mode;
-      connectTitle.textContent = mode === 'firebase' ? 'オンラインで通信' : 'Wi-Fiで通信';
-      connectText.textContent = transportLabel;
-      connectInput.value = roomState.lastShownMode === mode ? connectInput.value : '';
-      connectOverlay.classList.add('open');
-      connectOverlay.setAttribute('aria-hidden', 'false');
-      connectInput.focus();
+    function normalizeRoomCode(raw) {
+      const code = String(raw || '')
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9_-]/g, '');
+      return code.slice(0, 16);
     }
-    function closeConnectOverlay() {
-      connectOverlay.classList.remove('open');
-      connectOverlay.setAttribute('aria-hidden', 'true');
-      roomState.pendingJoinMode = null;
+
+    function generateRoomCode(len = 6) {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let s = '';
+      for (let i = 0; i < len; i++) {
+        s += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return s;
+    }
+
+    function roomBusKey(code) {
+      return LOCAL_BUS_PREFIX + code;
+    }
+
+    function pushSeenPacket(id) {
+      if (!id || state.seenPackets.has(id)) return false;
+      state.seenPackets.add(id);
+      state.seenQueue.push(id);
+      if (state.seenQueue.length > 500) {
+        const old = state.seenQueue.shift();
+        if (old) state.seenPackets.delete(old);
+      }
+      return true;
+    }
+
+    function nowEpoch() {
+      return Date.now();
+    }
+
+    function isLockActive(lock) {
+      return !!lock && typeof lock.until === 'number' && lock.until > nowEpoch();
+    }
+
+    function activeParticipants() {
+      const now = nowEpoch();
+      return Array.from(state.participants.values())
+        .filter(p => p && typeof p.lastSeen === 'number' && now - p.lastSeen <= 7000)
+        .sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+    }
+
+    function updateConnectionStateFromParticipants() {
+      if (!state.roomCode || state.transport === 'none') {
+        state.peerState = 'off';
+        updatePeerButtonUi();
+        return;
+      }
+      const count = activeParticipants().length;
+      state.peerState = count >= 2 ? 'connected' : 'searching';
+      updatePeerButtonUi();
+      updatePeerMenuUi();
+    }
+
+    function updatePeerButtonUi() {
+      peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
+      peerButton.classList.toggle('searching', state.peerState === 'searching');
+      peerButton.classList.toggle('connected', state.peerState === 'connected');
+
+      if (state.peerState === 'searching') {
+        peerButton.setAttribute('aria-label', 'ローカル通信をキャンセル');
+      } else if (state.peerState === 'connected') {
+        peerButton.setAttribute('aria-label', '接続メニューを開く');
+      } else {
+        peerButton.setAttribute('aria-label', 'ローカル通信');
+      }
+    }
+
+    function setRoomParticipant(id, data) {
+      if (!id) return;
+      const prev = state.participants.get(id) || {};
+      state.participants.set(id, { ...prev, id, ...data });
+      updateConnectionStateFromParticipants();
+    }
+
+    function removeRoomParticipant(id) {
+      if (!id) return;
+      state.participants.delete(id);
+      updateConnectionStateFromParticipants();
+    }
+
+    function updateRoomParticipantsFromSnapshot(list) {
+      const now = nowEpoch();
+      state.participants.clear();
+      for (const item of list) {
+        if (!item || !item.id) continue;
+        if (typeof item.lastSeen === 'number' && now - item.lastSeen <= 7000) {
+          state.participants.set(item.id, item);
+        }
+      }
+      state.participants.set(selfId, {
+        id: selfId,
+        name: currentDisplayName(),
+        lastSeen: now,
+        self: true
+      });
+      updateConnectionStateFromParticipants();
+    }
+
+    function renderPeerNamesBar() {
+      const list = activeParticipants();
+      peerNamesBar.innerHTML = '';
+      if (!list.length) return;
+      for (const p of list) {
+        const chip = document.createElement('div');
+        chip.className = 'peer-name-chip';
+        chip.textContent = p.self ? `${p.name || '自分'}（自分）` : (p.name || '名無し');
+        peerNamesBar.appendChild(chip);
+      }
+    }
+
+    function updatePeerMenuUi() {
+      if (state.peerState !== 'connected') {
+        peerMenuOverlay.classList.remove('connected');
+      } else {
+        peerMenuOverlay.classList.add('connected');
+      }
+
+      renderPeerNamesBar();
+
+      if (state.peerState !== 'connected') {
+        peerChoiceLabel1.textContent = '接続を\n切断';
+        peerChoiceLabel2.textContent = '設定を\n送信';
+        peerChoiceLabel3.textContent = '設定を\n受信';
+        peerChoice1.className = 'peer-choice disconnect';
+        peerChoice2.className = 'peer-choice send';
+        peerChoice3.className = 'peer-choice receive';
+        peerChoice1.disabled = false;
+        peerChoice2.disabled = false;
+        peerChoice3.disabled = false;
+        return;
+      }
+
+      peerChoice1.textContent = '';
+      peerChoice2.textContent = '';
+      peerChoice3.textContent = '';
+
+      const lock = state.sendLock;
+      const lockActive = isLockActive(lock);
+
+      peerChoiceLabel1.textContent = '接続を\n切断';
+      peerChoiceLabel2.textContent = lockActive
+        ? (lock.byId === selfId ? '送信中…' : `${lock.byName || '誰か'}が\n送信中…`)
+        : '設定を\n送信';
+      peerChoiceLabel3.textContent = '設定を\n受信';
+
+      peerChoice1.className = 'peer-choice disconnect';
+      peerChoice2.className = 'peer-choice send';
+      peerChoice3.className = 'peer-choice receive';
+
+      peerChoice1.disabled = false;
+      peerChoice2.disabled = lockActive && lock.byId !== selfId;
+      peerChoice3.disabled = false;
     }
 
     function openPeerMenu(mode) {
-      showPeerMenu(mode);
-    } // keep one declaration only
-
-    function showPeerMenu(mode) {
-      peerMenuOverlay.classList.remove('searching', 'connected');
-      peerMenuOverlay.classList.add('open');
-      peerMenuOverlay.setAttribute('aria-hidden', 'false');
+      state.roomMenuMode = mode;
+      updatePeerMenuUi();
 
       const rect = peerButton.getBoundingClientRect();
       const stageRect = peerMenuStage.getBoundingClientRect();
       const stageW = stageRect.width || window.innerWidth;
       const stageH = stageRect.height || window.innerHeight;
+
       const anchorX = rect.left + rect.width / 2 - stageW / 2;
       const anchorY = rect.top + rect.height / 2 - stageH / 2;
 
@@ -960,481 +1383,210 @@
         el.style.setProperty('--to-y', `${ty}px`);
       };
 
-      const names = getConnectedNames();
-      peerNameBar.innerHTML = names.length
-        ? names.map(n => `<span class="peer-name-chip">${escapeHtml(n)}</span>`).join('')
-        : `<span class="peer-name-chip">${escapeHtml(settings.name || '自分')}</span>`;
-
       if (mode === 'off') {
-        peerMenuOverlay.classList.add('searching');
         peerChoiceLabel1.textContent = 'Wi-Fiで\n通信';
         peerChoiceLabel2.textContent = 'QRコードを\n表示';
         peerChoiceLabel3.textContent = 'オンラインで\n通信';
+
         peerChoice1.className = 'peer-choice wifi';
         peerChoice2.className = 'peer-choice qr-show';
         peerChoice3.className = 'peer-choice online';
 
-        peerChoice1.onclick = () => { hidePeerMenu(); openConnectOverlay('local', '文字を入力して同じところにマッチングします。'); };
-        peerChoice2.onclick = () => { hidePeerMenu(); openInviteQrChooser(); };
-        peerChoice3.onclick = () => { hidePeerMenu(); openConnectOverlay('firebase', '文字を入力して同じところにマッチングします。'); };
+        peerChoice1.onclick = () => {
+          closePeerMenu();
+          openRoomOverlay('local', false);
+        };
+        peerChoice2.onclick = () => {
+          closePeerMenu();
+          openRoomOverlay('local', true);
+        };
+        peerChoice3.onclick = () => {
+          closePeerMenu();
+          openRoomOverlay('firebase', false);
+        };
 
         setFrom(peerChoice1, 0, -118);
         setFrom(peerChoice2, -118, 108);
         setFrom(peerChoice3, 118, 108);
       } else {
-        peerMenuOverlay.classList.add('connected');
         peerChoiceLabel1.textContent = '接続を\n切断';
         peerChoiceLabel2.textContent = '設定を\n送信';
         peerChoiceLabel3.textContent = '設定を\n受信';
+
         peerChoice1.className = 'peer-choice disconnect';
         peerChoice2.className = 'peer-choice send';
         peerChoice3.className = 'peer-choice receive';
 
-        peerChoice1.onclick = () => { hidePeerMenu(); stopAllConnections(true); setToast('切断した'); };
-        peerChoice2.onclick = () => { hidePeerMenu(); sendCurrentSettings(); };
-        peerChoice3.onclick = () => { hidePeerMenu(); roomState.receiveWindowUntil = Date.now() + 10000; setToast('10秒以内の設定を待ってる'); };
+        peerChoice1.onclick = () => {
+          closePeerMenu();
+          disconnectRoom(true);
+          showToast('切断した');
+        };
+        peerChoice2.onclick = () => {
+          closePeerMenu();
+          sendCurrentSettings();
+        };
+        peerChoice3.onclick = () => {
+          closePeerMenu();
+          state.receiveWindowUntil = nowEpoch() + 10000;
+          showToast('10秒以内の設定を待ってる');
+        };
 
         setFrom(peerChoice1, 0, -118);
         setFrom(peerChoice2, -118, 108);
         setFrom(peerChoice3, 118, 108);
       }
+
+      peerMenuOverlay.classList.add('open');
+      peerMenuOverlay.setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(() => {
+        peerMenuOverlay.classList.add('open');
+      });
     }
 
-    function hidePeerMenu() {
-      peerMenuOverlay.classList.remove('open', 'searching', 'connected');
+    function closePeerMenu() {
+      peerMenuOverlay.classList.remove('open');
       peerMenuOverlay.setAttribute('aria-hidden', 'true');
     }
 
-    function getConnectedNames() {
-      const names = new Set();
-      names.add(settings.name || '自分');
-      for (const p of roomState.participants) {
-        if (p?.name) names.add(p.name);
-      }
-      if (roomState.mode === 'firebase' && roomState.sendLock?.name) names.add(roomState.sendLock.name);
-      return Array.from(names).slice(0, 8);
+    function getLocalBusKey() {
+      return roomBusKey(state.roomCode);
     }
 
-    function escapeHtml(str) {
-      return String(str).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+    function localPostMessage(packet) {
+      if (!state.localChannel) return;
+      try {
+        state.localChannel.postMessage(packet);
+      } catch (_) {}
+      try {
+        localStorage.setItem(state.localBusKey, JSON.stringify(packet));
+      } catch (_) {}
     }
 
-    function isLockedByOther() {
-      if (!roomState.sendLock) return false;
-      if (roomState.sendLock.until && Date.now() > roomState.sendLock.until) return false;
-      return roomState.sendLock.name && roomState.sendLock.name !== settings.name;
-    }
-
-    function updatePeerButtonUi() {
-      peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
-      peerButton.classList.toggle('searching', roomState.mode !== 'off' && roomState.activeTransport !== 'none' && roomState.mode !== 'off' && !isConnected());
-      peerButton.classList.toggle('connected', isConnected());
-      if (!settings.peerButtonVisible) {
-        peerButton.setAttribute('aria-label', 'ローカル通信');
-      } else if (roomState.activeTransport !== 'none' && !isConnected()) {
-        peerButton.setAttribute('aria-label', 'ローカル通信をキャンセル');
-      } else if (isConnected()) {
-        peerButton.setAttribute('aria-label', '接続メニューを開く');
-      } else {
-        peerButton.setAttribute('aria-label', 'ローカル通信');
-      }
-    }
-
-    function isConnected() {
-      return roomState.mode !== 'off' && (roomState.activeTransport === 'local' || roomState.activeTransport === 'firebase') && roomState.roomId;
-    }
-
-    function setActiveConnection(mode, roomId) {
-      roomState.mode = mode;
-      roomState.roomId = roomId;
-      roomState.activeTransport = mode;
-      updatePeerButtonUi();
-    }
-
-    function stopAllConnections(sendLeave = false) {
-      stopFirebase();
-      stopLocal(sendLeave);
-      roomState.mode = 'off';
-      roomState.roomId = '';
-      roomState.activeTransport = 'none';
-      roomState.sendLock = null;
-      roomState.participants = [];
-      roomState.receiveWindowUntil = 0;
-      updatePeerButtonUi();
-      hidePeerMenu();
-      closeQrOverlay();
-      closeScanOverlay();
-      closeConnectOverlay();
-    }
-
-    function startLocal(roomId) {
-      stopAllConnections(false);
-      roomState.mode = 'local';
-      roomState.roomId = roomId;
-      roomState.activeTransport = 'local';
-      roomState.localRoomId = roomId;
-      updatePeerButtonUi();
-      openLocalTransport(roomId);
-      setConnectedState('local');
-      setToast(`ローカル通信: ${roomId}`);
-    }
-
-    function setConnectedState(mode) {
-      roomState.activeTransport = mode;
-      updatePeerButtonUi();
-      syncConnectedData();
-    }
-
-    function startFirebase(roomId) {
-      stopAllConnections(false);
-      roomState.mode = 'firebase';
-      roomState.roomId = roomId;
-      roomState.activeTransport = 'firebase';
-      updatePeerButtonUi();
-      openFirebaseRoom(roomId).catch(() => {
-        setToast('接続に失敗した');
-        stopAllConnections(false);
-      });
-    }
-
-    function openInviteQrChooser() {
-      const defaultMode = roomState.lastShownMode || 'firebase';
-      const title = 'QRコードを表示';
-      const text = 'どの方式のQRを出すか選んでね。';
-      const payload = JSON.stringify({
-        type: 'invite-choice',
-        name: settings.name,
-        defaultMode,
-        roomId: roomState.roomId || '',
-        bg: getBgColor()
-      });
-      showQrOverlay(title, text, payload, 'QRを読み取る', () => {
-        openScanOverlay();
-        roomState.qrModeAfterScan = 'invite';
-        startScanLoop();
-      });
-    }
-
-    function openLocalTransport(roomId) {
-      stopLocal(false);
-      const channelName = `${LOCAL_ROOM_PREFIX}${roomId}`;
-      roomState.localChannel = new BroadcastChannel(channelName);
-      roomState.localChannel.onmessage = (ev) => handleLocalPacket(ev.data);
-      roomState.lastShownMode = 'local';
-      heartbeatLocal();
-      roomState.heartbeatTimer = setInterval(heartbeatLocal, 2500);
-      roomState.lockWatchTimer = setInterval(() => {
-        if (roomState.sendLock && roomState.sendLock.until && Date.now() > roomState.sendLock.until) roomState.sendLock = null;
-      }, 1000);
-      postLocalPacket({ type: 'hello', name: settings.name });
-    }
-
-    function stopLocal(sendLeave = false) {
-      if (sendLeave) postLocalPacket({ type: 'bye', name: settings.name });
-      if (roomState.localChannel) {
-        try { roomState.localChannel.close(); } catch (_) {}
-        roomState.localChannel = null;
-      }
-      clearInterval(roomState.heartbeatTimer);
-      clearInterval(roomState.lockWatchTimer);
-      roomState.heartbeatTimer = null;
-      roomState.lockWatchTimer = null;
-    }
-
-    function rememberSeen(id) {
-      if (!id || roomState.localSeenIds.has(id)) return false;
-      roomState.localSeenIds.add(id);
-      roomState.localSeenQueue.push(id);
-      if (roomState.localSeenQueue.length > 300) {
-        const old = roomState.localSeenQueue.shift();
-        if (old) roomState.localSeenIds.delete(old);
-      }
-      return true;
-    }
-
-    function postLocalPacket(base) {
-      if (!roomState.localChannel) return;
-      const packet = { ...base, id: makeId(), sender: roomState.selfId, name: settings.name, ts: Date.now() };
-      try { roomState.localChannel.postMessage(packet); } catch (_) {}
-      try { localStorage.setItem(`${LOCAL_ROOM_PREFIX}${roomState.roomId}_bus`, JSON.stringify(packet)); } catch (_) {}
-      return packet;
-    }
-
-    function handleLocalStorage(ev) {
-      if (roomState.mode !== 'local') return;
-      if (ev.key !== `${LOCAL_ROOM_PREFIX}${roomState.roomId}_bus` || !ev.newValue) return;
-      try { handleLocalPacket(JSON.parse(ev.newValue)); } catch (_) {}
-    }
-
-    function heartbeatLocal() {
-      if (roomState.mode !== 'local') return;
-      postLocalPacket({ type: 'presence', name: settings.name, participants: getConnectedNames() });
-    }
-
-    function handleLocalPacket(packet) {
-      if (!packet || typeof packet !== 'object') return;
-      if (packet.sender === roomState.selfId) return;
-      if (!rememberSeen(packet.id)) return;
-
-      if (packet.type === 'presence') {
-        mergeParticipant(packet.name);
-        return;
-      }
-      if (packet.type === 'send-lock') {
-        roomState.sendLock = packet.lock;
-        updatePeerButtonUi();
-        renderPeerMenuNames();
-        return;
-      }
-      if (packet.type === 'settings' && packet.roomId === roomState.roomId) {
-        if (Date.now() <= roomState.receiveWindowUntil) {
-          roomState.receiveWindowUntil = 0;
-          applySettingsSnapshot(packet.payload);
-          setToast('設定を受信した');
-        }
-        return;
-      }
-      if (packet.type === 'effect') {
-        applyRemoteEffect(packet.kind, packet.payload);
-      }
-      if (packet.type === 'bye') {
-        removeParticipant(packet.name);
-      }
-    }
-
-    function mergeParticipant(name) {
-      if (!name) return;
-      if (!roomState.participants.some(p => p.name === name)) {
-        roomState.participants.push({ name, lastSeen: Date.now() });
-      } else {
-        roomState.participants = roomState.participants.map(p => p.name === name ? { ...p, lastSeen: Date.now() } : p);
-      }
-      roomState.participants = roomState.participants.filter(p => Date.now() - p.lastSeen < 15000);
-      renderPeerMenuNames();
-    }
-    function removeParticipant(name) {
-      roomState.participants = roomState.participants.filter(p => p.name !== name);
-      renderPeerMenuNames();
-    }
-
-    function renderPeerMenuNames() {
-      if (!peerMenuOverlay.classList.contains('open')) return;
-      const names = getConnectedNames();
-      peerNameBar.innerHTML = names.length
-        ? names.map(n => `<span class="peer-name-chip">${escapeHtml(n)}</span>`).join('')
-        : `<span class="peer-name-chip">${escapeHtml(settings.name || '自分')}</span>`;
-    }
-
-    async function openFirebaseRoom(roomId) {
-      const roomRef = doc(db, FIRESTORE_ROOM_ROOT, roomId);
-      roomState.roomDocRef = roomRef;
-
-      await setDoc(roomRef, {
-        roomId,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        lastSender: null,
-        sendLock: null
-      }, { merge: true });
-
-      const meRef = doc(collection(roomRef, 'participants'), roomState.selfId);
-      roomState.participantDocRef = meRef;
-      await setDoc(meRef, {
-        name: settings.name,
-        joinedAt: serverTimestamp(),
-        lastSeen: serverTimestamp(),
-        selfId: roomState.selfId
-      }, { merge: true });
-
-      roomState.participantsUnsub = onSnapshot(collection(roomRef, 'participants'), (snap) => {
-        const arr = [];
-        snap.forEach(d => {
-          const data = d.data();
-          if (data?.name) arr.push({ id: d.id, name: String(data.name).slice(0, 20), lastSeen: data.lastSeen?.toMillis ? data.lastSeen.toMillis() : Date.now() });
-        });
-        roomState.participants = arr;
-        renderPeerMenuNames();
-      });
-
-      roomState.statusDocUnsub = onSnapshot(roomRef, (snap) => {
-        const data = snap.data() || {};
-        roomState.sendLock = data.sendLock || null;
-        updatePeerButtonUi();
-        renderPeerMenuNames();
-      });
-
-      roomState.eventsUnsub = onSnapshot(query(collection(roomRef, 'events'), orderBy('ts', 'desc'), limit(20)), (snap) => {
-        snap.docChanges().forEach(ch => {
-          if (ch.type !== 'added') return;
-          const data = ch.doc.data();
-          if (!data) return;
-          if (data.kind === 'settings' && data.payload) {
-            if (Date.now() <= roomState.receiveWindowUntil) {
-              roomState.receiveWindowUntil = 0;
-              applySettingsSnapshot(data.payload);
-              setToast('設定を受信した');
-            }
-          }
-          if (data.kind === 'effect') applyRemoteEffect(data.effectKind, data.payload);
-        });
-      });
-
-      roomState.heartbeatTimer = setInterval(async () => {
-        if (!roomState.participantDocRef) return;
-        try {
-          await updateDoc(roomState.participantDocRef, { name: settings.name, lastSeen: serverTimestamp() });
-        } catch (_) {}
-      }, 2500);
-
-      setConnectedState('firebase');
-      roomState.lastShownMode = 'firebase';
-      setToast(`オンライン接続: ${roomId}`);
-    }
-
-    function stopFirebase() {
-      clearInterval(roomState.heartbeatTimer);
-      roomState.heartbeatTimer = null;
-      if (roomState.statusDocUnsub) { roomState.statusDocUnsub(); roomState.statusDocUnsub = null; }
-      if (roomState.participantsUnsub) { roomState.participantsUnsub(); roomState.participantsUnsub = null; }
-      if (roomState.eventsUnsub) { roomState.eventsUnsub(); roomState.eventsUnsub = null; }
-      if (roomState.participantDocRef) {
-        deleteDoc(roomState.participantDocRef).catch(() => {});
-        roomState.participantDocRef = null;
-      }
-      roomState.roomDocRef = null;
-      roomState.sendLock = null;
-    }
-
-    function syncConnectedData() {
-      updatePeerButtonUi();
-      renderPeerMenuNames();
-    }
-
-    function applySettingsSnapshot(snapshot) {
-      if (!snapshot || typeof snapshot !== 'object') return;
-      if (isValidMode(snapshot.bgMode)) settings.bgMode = snapshot.bgMode;
-      if (typeof snapshot.bgCustom === 'string') settings.bgCustom = snapshot.bgCustom;
-      if (typeof snapshot.tapColor === 'string') settings.tapColor = snapshot.tapColor;
-      if (typeof snapshot.swipeColor === 'string') settings.swipeColor = snapshot.swipeColor;
-      if (typeof snapshot.loopColor === 'string') settings.loopColor = snapshot.loopColor;
-      if (typeof snapshot.gridEnabled === 'boolean') settings.gridEnabled = snapshot.gridEnabled;
-      if (isValidMode(snapshot.gridMode)) settings.gridMode = snapshot.gridMode;
-      if (typeof snapshot.gridCustom === 'string') settings.gridCustom = snapshot.gridCustom;
-      if (typeof snapshot.gridSpacing === 'number' && isFinite(snapshot.gridSpacing)) settings.gridSpacing = clamp(Math.round(snapshot.gridSpacing), 18, 100);
-      bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
-      gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
-      gridDetails.classList.toggle('disabled', !settings.gridEnabled);
-      syncSettingsUi();
-      setBodyBg();
-      saveSettings();
-    }
-
-    function captureSettingsSnapshot() {
-      return {
-        bgMode: settings.bgMode,
-        bgCustom: settings.bgCustom,
-        tapColor: settings.tapColor,
-        swipeColor: settings.swipeColor,
-        loopColor: settings.loopColor,
-        gridEnabled: settings.gridEnabled,
-        gridMode: settings.gridMode,
-        gridCustom: settings.gridCustom,
-        gridSpacing: settings.gridSpacing,
-        name: settings.name
+    function broadcastRoomMessage(packet) {
+      if (!state.roomCode) return;
+      const payload = {
+        ...packet,
+        id: packet.id || crypto.randomUUID?.() || Math.random().toString(36).slice(2),
+        sender: selfId,
+        senderName: currentDisplayName(),
+        ts: nowEpoch()
       };
-    }
-
-    function sendCurrentSettings() {
-      if (!isConnected()) return;
-      const payload = captureSettingsSnapshot();
-
-      if (roomState.sendLock && roomState.sendLock.name && roomState.sendLock.name !== settings.name && Date.now() < roomState.sendLock.until) {
-        setToast(`${roomState.sendLock.name}が送信中…`);
-        return;
-      }
-
-      const lock = {
-        name: settings.name,
-        until: Date.now() + 2500
-      };
-
-      if (roomState.mode === 'local') {
-        roomState.sendLock = lock;
-        postLocalPacket({ type: 'send-lock', lock });
-        postLocalPacket({ type: 'settings', roomId: roomState.roomId, payload });
-        setToast('設定を送った');
-        setTimeout(() => {
-          if (roomState.sendLock?.name === settings.name) {
-            roomState.sendLock = null;
-            postLocalPacket({ type: 'send-lock', lock: null });
-          }
-        }, 2600);
-        return;
-      }
-
-      if (roomState.mode === 'firebase') {
-        firebaseSendSettings(payload, lock).catch(() => setToast('送信に失敗した'));
-      }
-    }
-
-    async function firebaseSendSettings(payload, lock) {
-      if (!roomState.roomDocRef) return;
-      await runTransaction(db, async (tx) => {
-        const snap = await tx.get(roomState.roomDocRef);
-        const data = snap.data() || {};
-        const current = data.sendLock;
-        if (current && current.until && Date.now() < current.until && current.name !== settings.name) {
-          throw new Error('locked');
+      if (state.transport === 'local') {
+        localPostMessage(payload);
+      } else if (state.transport === 'firebase') {
+        if (payload.type === 'effect') {
+          try {
+            addDoc(state.firebase.eventsCol, {
+              ...payload,
+              createdAt: nowEpoch()
+            });
+          } catch (_) {}
+        } else if (payload.type === 'settings') {
+          try {
+            setDoc(state.firebase.settingsRef, {
+              ...payload,
+              updatedAt: nowEpoch()
+            }, { merge: false });
+          } catch (_) {}
+        } else if (payload.type === 'lock') {
+          try {
+            setDoc(state.firebase.roomRef, {
+              sendLock: {
+                byId: payload.byId,
+                byName: payload.byName,
+                until: payload.until,
+                token: payload.token
+              },
+              updatedAt: nowEpoch()
+            }, { merge: true });
+          } catch (_) {}
+        } else if (payload.type === 'presence') {
+          try {
+            setDoc(state.firebase.selfPresenceRef, {
+              id: selfId,
+              name: currentDisplayName(),
+              lastSeen: nowEpoch(),
+              mode: state.roomMode,
+              sending: isLockActive(state.sendLock) && state.sendLock.byId === selfId
+            }, { merge: true });
+          } catch (_) {}
+        } else if (payload.type === 'leave') {
+          try {
+            deleteDoc(state.firebase.selfPresenceRef);
+          } catch (_) {}
         }
-        tx.set(roomState.roomDocRef, { sendLock: lock, updatedAt: serverTimestamp(), lastSender: settings.name }, { merge: true });
-        const eventRef = doc(collection(roomState.roomDocRef, 'events'));
-        tx.set(eventRef, { kind: 'settings', payload, sender: settings.name, ts: Date.now() });
-      });
-      setToast('設定を送った');
-      setTimeout(async () => {
-        try {
-          const snap = await getDoc(roomState.roomDocRef);
-          const data = snap.data() || {};
-          if (data.sendLock?.name === settings.name) {
-            await updateDoc(roomState.roomDocRef, { sendLock: null, updatedAt: serverTimestamp() });
-          }
-        } catch (_) {}
-      }, 2600);
+      }
+      return payload;
     }
 
-    function makeSwipeEffect(startX, startY, dirX, dirY, broadcast = true, forced = null) {
+    function addTapEffect(x, y, broadcast = true) {
+      effects.push({
+        type: 'tap',
+        x,
+        y,
+        start: nowMs(),
+        duration: 650
+      });
+      if (broadcast) {
+        sendEffectToRoom('tap', { x, y });
+      }
+    }
+
+    function createSwipeEffect(startX, startY, dirX, dirY, broadcast = true, forced = null) {
       const len = Math.hypot(dirX, dirY) || 1;
-      dirX /= len; dirY /= len;
+      dirX /= len;
+      dirY /= len;
+
       const pad = 90;
-      const minX = -pad, minY = -pad, maxX = w + pad, maxY = h + pad;
+      const minX = -pad;
+      const minY = -pad;
+      const maxX = w + pad;
+      const maxY = h + pad;
       const hits = [];
-      const pushCandidate = (t, x, y) => {
-        if (x >= minX - 0.5 && x <= maxX + 0.5 && y >= minY - 0.5 && y <= maxY + 0.5) hits.push({ t, x, y });
-      };
+
+      function pushCandidate(t, x, y) {
+        if (x >= minX - 0.5 && x <= maxX + 0.5 && y >= minY - 0.5 && y <= maxY + 0.5) {
+          hits.push({ t, x, y });
+        }
+      }
 
       if (forced && forced.forceFrom && forced.forceTo) {
-        hits.push({ t: 0, x: forced.forceFrom.x, y: forced.forceFrom.y }, { t: 1, x: forced.forceTo.x, y: forced.forceTo.y });
+        hits.push(
+          { t: 0, x: forced.forceFrom.x, y: forced.forceFrom.y },
+          { t: 1, x: forced.forceTo.x, y: forced.forceTo.y }
+        );
       } else {
         if (Math.abs(dirX) > 1e-6) {
-          let t = (minX - startX) / dirX; pushCandidate(t, minX, startY + dirY * t);
-          t = (maxX - startX) / dirX; pushCandidate(t, maxX, startY + dirY * t);
+          let t = (minX - startX) / dirX;
+          pushCandidate(t, minX, startY + dirY * t);
+          t = (maxX - startX) / dirX;
+          pushCandidate(t, maxX, startY + dirY * t);
         }
         if (Math.abs(dirY) > 1e-6) {
-          let t = (minY - startY) / dirY; pushCandidate(t, startX + dirX * t, minY);
-          t = (maxY - startY) / dirY; pushCandidate(t, startX + dirX * t, maxY);
+          let t = (minY - startY) / dirY;
+          pushCandidate(t, startX + dirX * t, minY);
+          t = (maxY - startY) / dirY;
+          pushCandidate(t, startX + dirX * t, maxY);
         }
         if (hits.length < 2) {
-          hits.push({ t: -400, x: startX - dirX * 400, y: startY - dirY * 400 }, { t: 400, x: startX + dirX * 400, y: startY + dirY * 400 });
+          hits.push(
+            { t: -400, x: startX - dirX * 400, y: startY - dirY * 400 },
+            { t: 400, x: startX + dirX * 400, y: startY + dirY * 400 }
+          );
         } else {
           hits.sort((a, b) => a.t - b.t);
         }
       }
 
-      const first = forced?.forceFrom || hits[0];
-      const last = forced?.forceTo || hits[hits.length - 1];
+      const first = forced && forced.forceFrom ? forced.forceFrom : hits[0];
+      const last = forced && forced.forceTo ? forced.forceTo : hits[hits.length - 1];
       const travel = distance(first.x, first.y, last.x, last.y);
       const duration = clamp(460 + travel * 0.12, 520, 900);
-      const radius = typeof forced?.forceRadius === 'number' ? forced.forceRadius : clamp(Math.min(w, h) * 0.045, 18, 38);
+
+      const radius = typeof (forced && forced.forceRadius) === 'number'
+        ? forced.forceRadius
+        : clamp(Math.min(w, h) * 0.045, 18, 38);
 
       effects.push({
         type: 'swipe',
@@ -1446,24 +1598,28 @@
         radius
       });
 
-      if (broadcast) broadcastEffectToPeers('swipe', {
-        from: { x: first.x, y: first.y },
-        to: { x: last.x, y: last.y },
-        dir: { x: dirX, y: dirY },
-        radius
-      });
+      if (broadcast) {
+        sendEffectToRoom('swipe', {
+          from: { x: first.x, y: first.y },
+          to: { x: last.x, y: last.y },
+          dir: { x: dirX, y: dirY },
+          radius
+        });
+      }
     }
 
-    function makeTapEffect(x, y, broadcast = true) {
-      effects.push({ type: 'tap', x, y, start: nowMs(), duration: 650 });
-      if (broadcast) broadcastEffectToPeers('tap', { x, y });
-    }
-
-    function makeLoopEffect(points, broadcast = true) {
+    function createLoopEffect(points, broadcast = true) {
       if (points.length < 3) return;
       const copy = points.map(p => ({ x: p.x, y: p.y }));
-      effects.push({ type: 'loop', start: nowMs(), duration: 420, points: copy });
-      if (broadcast) broadcastEffectToPeers('loop', { points: copy });
+      effects.push({
+        type: 'loop',
+        start: nowMs(),
+        duration: 420,
+        points: copy
+      });
+      if (broadcast) {
+        sendEffectToRoom('loop', { points: copy });
+      }
     }
 
     function detectLoop(points, currentX, currentY) {
@@ -1471,7 +1627,8 @@
       const n = points.length;
       const safeEnd = Math.max(0, n - 1 - LASSO_IGNORE_RECENT_SEGMENTS);
       for (let i = 0; i < safeEnd - 1; i++) {
-        const a = points[i], b = points[i + 1];
+        const a = points[i];
+        const b = points[i + 1];
         const d = pointToSegmentDistance(currentX, currentY, a.x, a.y, b.x, b.y);
         if (d <= LASSO_HIT_RADIUS) {
           let traveled = 0;
@@ -1487,28 +1644,32 @@
 
     function drawGrid() {
       if (!settings.gridEnabled) return;
-      const base = getGridBaseColor();
-      const low = hexToRgba(base, 0.40) || (darkMode ? 'rgba(34,34,34,0.40)' : 'rgba(232,232,232,0.40)');
-      const high = hexToRgba(base, 0.56) || (darkMode ? 'rgba(58,58,58,0.56)' : 'rgba(210,210,210,0.56)');
+      const baseColor = getGridBaseColor();
+      const lineLow = hexToRgba(baseColor, 0.40) || (darkMode ? 'rgba(34,34,34,0.40)' : 'rgba(232,232,232,0.40)');
+      const lineHigh = hexToRgba(baseColor, 0.56) || (darkMode ? 'rgba(58,58,58,0.56)' : 'rgba(210,210,210,0.56)');
+
       ctx.save();
       ctx.globalCompositeOperation = 'source-over';
       ctx.lineWidth = 1;
+
       for (let x = 0; x <= w + settings.gridSpacing; x += settings.gridSpacing) {
-        const accent = Math.round(x / settings.gridSpacing) % 4 === 0;
-        ctx.strokeStyle = accent ? high : low;
+        const isAccent = Math.round(x / settings.gridSpacing) % 4 === 0;
+        ctx.strokeStyle = isAccent ? lineHigh : lineLow;
         ctx.beginPath();
-        ctx.moveTo(Math.floor(x) + .5, 0);
-        ctx.lineTo(Math.floor(x) + .5, h);
+        ctx.moveTo(Math.floor(x) + 0.5, 0);
+        ctx.lineTo(Math.floor(x) + 0.5, h);
         ctx.stroke();
       }
+
       for (let y = 0; y <= h + settings.gridSpacing; y += settings.gridSpacing) {
-        const accent = Math.round(y / settings.gridSpacing) % 4 === 0;
-        ctx.strokeStyle = accent ? high : low;
+        const isAccent = Math.round(y / settings.gridSpacing) % 4 === 0;
+        ctx.strokeStyle = isAccent ? lineHigh : lineLow;
         ctx.beginPath();
-        ctx.moveTo(0, Math.floor(y) + .5);
-        ctx.lineTo(w, Math.floor(y) + .5);
+        ctx.moveTo(0, Math.floor(y) + 0.5);
+        ctx.lineTo(w, Math.floor(y) + 0.5);
         ctx.stroke();
       }
+
       ctx.restore();
     }
 
@@ -1516,422 +1677,1228 @@
       const p = clamp((t - effect.start) / effect.duration, 0, 1);
       if (p >= 1) return;
       const e = easeOutCubic(p);
-      const radius = lerp(10, Math.max(w, h) * 0.22, e);
+      const radius = Math.max(10, lerp(10, Math.max(w, h) * 0.22, e));
       const alpha = 0.34 * Math.pow(1 - p, 1.7);
-      const base = getTapBaseColor();
+      const baseColor = getTapBaseColor();
+
       ctx.save();
       ctx.globalAlpha = alpha;
+      ctx.globalCompositeOperation = 'source-over';
       ctx.shadowBlur = radius * 0.22;
-      ctx.shadowColor = hexToRgba(base, 0.55) || 'rgba(70, 255, 120, 0.55)';
+      ctx.shadowColor = hexToRgba(baseColor, 0.55) || 'rgba(70, 255, 120, 0.55)';
+
       const g = ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, radius);
-      g.addColorStop(0.00, hexToRgba(base, 0.92) || 'rgba(70, 255, 120, 0.92)');
-      g.addColorStop(0.28, hexToRgba(base, 0.60) || 'rgba(60, 235, 110, 0.60)');
-      g.addColorStop(0.68, hexToRgba(base, 0.25) || 'rgba(50, 220, 100, 0.25)');
-      g.addColorStop(1.00, hexToRgba(base, 0.00) || 'rgba(50, 220, 100, 0)');
+      g.addColorStop(0.00, hexToRgba(baseColor, 0.92) || 'rgba(70, 255, 120, 0.92)');
+      g.addColorStop(0.28, hexToRgba(baseColor, 0.60) || 'rgba(60, 235, 110, 0.60)');
+      g.addColorStop(0.68, hexToRgba(baseColor, 0.25) || 'rgba(50, 220, 100, 0.25)');
+      g.addColorStop(1.00, hexToRgba(baseColor, 0.00) || 'rgba(50, 220, 100, 0)');
+
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(effect.x, effect.y, radius, 0, Math.PI * 2);
       ctx.fill();
+
       ctx.restore();
     }
 
     function drawSwipe(effect, t) {
       const p = clamp((t - effect.start) / effect.duration, 0, 1);
       if (p >= 1) return;
+
       const e = easeOutCubic(p);
       const x = lerp(effect.from.x, effect.to.x, e);
       const y = lerp(effect.from.y, effect.to.y, e);
       const trailSteps = 16;
-      const trailSpacing = effect.radius * .82;
-      const base = getSwipeBaseColor();
+      const trailSpacing = effect.radius * 0.82;
+      const baseColor = getSwipeBaseColor();
 
       ctx.save();
       ctx.globalCompositeOperation = 'source-over';
+
       for (let i = trailSteps; i >= 0; i--) {
         const back = i * trailSpacing;
         const px = x - effect.dir.x * back;
         const py = y - effect.dir.y * back;
         const a = 0.24 * Math.pow(1 - i / (trailSteps + 1), 2.2) * Math.pow(1 - p, 0.35);
         if (a <= 0.001) continue;
+
         const r = effect.radius * (1 + (trailSteps - i) * 0.02);
+
         ctx.globalAlpha = a;
         ctx.shadowBlur = r * 0.35;
-        ctx.shadowColor = hexToRgba(base, 0.55) || 'rgba(90, 150, 255, 0.55)';
-        ctx.fillStyle = hexToRgba(base, 1) || 'rgba(110, 165, 255, 1)';
+        ctx.shadowColor = hexToRgba(baseColor, 0.55) || 'rgba(90, 150, 255, 0.55)';
+        ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(110, 165, 255, 1)';
         ctx.beginPath();
         ctx.arc(px, py, r, 0, Math.PI * 2);
         ctx.fill();
       }
+
       ctx.globalAlpha = 0.45 * Math.pow(1 - p, 0.7);
       ctx.shadowBlur = effect.radius * 0.6;
-      ctx.shadowColor = hexToRgba(base, 0.45) || 'rgba(110, 165, 255, 0.45)';
-      ctx.fillStyle = hexToRgba(base, 1) || 'rgba(110, 165, 255, 1)';
+      ctx.shadowColor = hexToRgba(baseColor, 0.45) || 'rgba(110, 165, 255, 0.45)';
+      ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(110, 165, 255, 1)';
       ctx.beginPath();
       ctx.arc(x, y, effect.radius * 1.02, 0, Math.PI * 2);
       ctx.fill();
+
       ctx.restore();
     }
 
     function drawLoop(effect, t) {
       const p = clamp((t - effect.start) / effect.duration, 0, 1);
-      if (p >= 1 || effect.points.length < 3) return;
+      if (p >= 1) return;
+      if (effect.points.length < 3) return;
+
       const alpha = 0.36 * Math.pow(1 - p, 2.0);
       const blur = 8 * Math.pow(1 - p, 0.55);
-      const base = getLoopBaseColor();
+      const baseColor = getLoopBaseColor();
+
       ctx.save();
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = alpha;
       ctx.shadowBlur = blur;
-      ctx.shadowColor = hexToRgba(base, 0.40) || 'rgba(255, 60, 60, 0.40)';
-      ctx.fillStyle = hexToRgba(base, 1) || 'rgba(255, 78, 78, 1)';
+      ctx.shadowColor = hexToRgba(baseColor, 0.40) || 'rgba(255, 60, 60, 0.40)';
+      ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(255, 78, 78, 1)';
+
       ctx.beginPath();
       ctx.moveTo(effect.points[0].x, effect.points[0].y);
-      for (let i = 1; i < effect.points.length; i++) ctx.lineTo(effect.points[i].x, effect.points[i].y);
+      for (let i = 1; i < effect.points.length; i++) {
+        ctx.lineTo(effect.points[i].x, effect.points[i].y);
+      }
       ctx.closePath();
       ctx.fill('evenodd');
+
       ctx.restore();
     }
 
     function render() {
       const t = nowMs();
+
       ctx.fillStyle = getBgColor();
       ctx.fillRect(0, 0, w, h);
       drawGrid();
+
       for (let i = 0; i < effects.length; i++) {
         const effect = effects[i];
         if (effect.type === 'tap') drawTap(effect, t);
         else if (effect.type === 'swipe') drawSwipe(effect, t);
         else if (effect.type === 'loop') drawLoop(effect, t);
       }
+
       for (let i = effects.length - 1; i >= 0; i--) {
         if (t - effects[i].start >= effects[i].duration) effects.splice(i, 1);
       }
+
       requestAnimationFrame(render);
     }
 
-    function broadcastEffectToPeers(kind, payload) {
-      if (roomState.mode === 'local' && roomState.localChannel) {
-        postLocalPacket({ type: 'effect', kind, payload });
-      } else if (roomState.mode === 'firebase' && roomState.roomDocRef) {
-        const eventRef = doc(collection(roomState.roomDocRef, 'events'));
-        setDoc(eventRef, { kind: 'effect', effectKind: kind, payload, sender: settings.name, ts: Date.now() }).catch(() => {});
+    function getPoint(e) {
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function handleSelfPresenceHeartbeat() {
+      if (state.transport === 'local') {
+        localPostMessage({
+          type: 'presence',
+          id: selfId,
+          name: currentDisplayName(),
+          lastSeen: nowEpoch(),
+          self: true
+        });
+      } else if (state.transport === 'firebase') {
+        if (state.firebase.selfPresenceRef) {
+          setDoc(state.firebase.selfPresenceRef, {
+            id: selfId,
+            name: currentDisplayName(),
+            lastSeen: nowEpoch(),
+            mode: state.roomMode,
+            self: true
+          }, { merge: true }).catch(() => {});
+        }
       }
     }
 
-    function applyRemoteEffect(kind, payload) {
-      if (!payload || typeof payload !== 'object') return;
-      if (kind === 'tap') {
-        if (typeof payload.x === 'number' && typeof payload.y === 'number') makeTapEffect(payload.x, payload.y, false);
+    function applyIncomingPresence(packet) {
+      if (!packet || typeof packet !== 'object' || !packet.id) return;
+      if (packet.id === selfId) return;
+      if (typeof packet.name !== 'string') return;
+      setRoomParticipant(packet.id, {
+        id: packet.id,
+        name: packet.name.trim() || '名無し',
+        lastSeen: typeof packet.lastSeen === 'number' ? packet.lastSeen : nowEpoch(),
+        self: false
+      });
+      updateConnectionStateFromParticipants();
+    }
+
+    function applyIncomingLock(lockPacket) {
+      if (!lockPacket || typeof lockPacket !== 'object') return;
+      if (typeof lockPacket.byId !== 'string' || typeof lockPacket.byName !== 'string') return;
+      state.sendLock = {
+        byId: lockPacket.byId,
+        byName: lockPacket.byName,
+        until: typeof lockPacket.until === 'number' ? lockPacket.until : 0,
+        token: lockPacket.token || ''
+      };
+      updatePeerMenuUi();
+    }
+
+    function applySettingsSnapshot(snapshot) {
+      if (!snapshot || typeof snapshot !== 'object') return;
+      if (typeof snapshot.token === 'string' && snapshot.token === state.currentSettingsToken) return;
+      if (snapshot.senderId && snapshot.senderId === selfId) return;
+      if (Date.now() > state.receiveWindowUntil) return;
+      state.currentSettingsToken = typeof snapshot.token === 'string' ? snapshot.token : state.currentSettingsToken;
+      state.receiveWindowUntil = 0;
+      if (snapshot.payload && typeof snapshot.payload === 'object') {
+        const p = snapshot.payload;
+        if (isValidMode(p.bgMode)) settings.bgMode = p.bgMode;
+        if (typeof p.bgCustom === 'string') settings.bgCustom = p.bgCustom;
+        if (typeof p.tapColor === 'string') settings.tapColor = p.tapColor;
+        if (typeof p.swipeColor === 'string') settings.swipeColor = p.swipeColor;
+        if (typeof p.loopColor === 'string') settings.loopColor = p.loopColor;
+        if (typeof p.gridEnabled === 'boolean') settings.gridEnabled = p.gridEnabled;
+        if (isValidMode(p.gridMode)) settings.gridMode = p.gridMode;
+        if (typeof p.gridCustom === 'string') settings.gridCustom = p.gridCustom;
+        if (typeof p.gridSpacing === 'number' && isFinite(p.gridSpacing)) settings.gridSpacing = clamp(Math.round(p.gridSpacing), 18, 100);
+        if (typeof p.displayName === 'string') settings.displayName = p.displayName.slice(0, 20) || settings.displayName;
+      }
+      syncSettingsUi();
+      document.body.style.background = getBgColor();
+      saveSettings();
+      showToast('設定を受信した');
+    }
+
+    function applyEffectPacket(packet) {
+      if (!packet || typeof packet !== 'object') return;
+      if (packet.sender === selfId) return;
+      if (!pushSeenPacket(packet.id)) return;
+      const kind = packet.kind;
+      const payload = packet.payload || {};
+      if (kind === 'tap' && typeof payload.x === 'number' && typeof payload.y === 'number') {
+        addTapEffect(payload.x, payload.y, false);
+      } else if (kind === 'swipe' && payload.from && payload.to && payload.dir) {
+        createSwipeEffect(payload.from.x, payload.from.y, payload.dir.x * 100, payload.dir.y * 100, false, {
+          forceFrom: payload.from,
+          forceTo: payload.to,
+          forceRadius: payload.radius
+        });
+      } else if (kind === 'loop' && Array.isArray(payload.points)) {
+        const pts = payload.points.filter(p => p && typeof p.x === 'number' && typeof p.y === 'number');
+        if (pts.length >= 3) createLoopEffect(pts, false);
+      }
+    }
+
+    function updateFromRoomSnapshot() {
+      const count = activeParticipants().length;
+      state.peerState = count >= 2 ? 'connected' : (state.roomCode ? 'searching' : 'off');
+      updatePeerButtonUi();
+      updatePeerMenuUi();
+    }
+
+    function disconnectLocalRoom(sendLeave = true) {
+      if (sendLeave && state.roomCode && state.transport === 'local') {
+        localPostMessage({
+          type: 'leave',
+          id: selfId
+        });
+      }
+      if (state.localHeartbeat) {
+        clearInterval(state.localHeartbeat);
+        state.localHeartbeat = null;
+      }
+      if (state.localChannel) {
+        try { state.localChannel.close(); } catch (_) {}
+        state.localChannel = null;
+      }
+      window.removeEventListener('storage', onLocalStorage);
+      state.localBusKey = '';
+      state.transport = 'none';
+      state.roomCode = '';
+      state.participants.clear();
+      state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+      state.receiveWindowUntil = 0;
+      state.lastSeenByPeer = 0;
+      updateFromRoomSnapshot();
+    }
+
+    function onLocalStorage(ev) {
+      if (ev.key !== state.localBusKey || !ev.newValue) return;
+      try {
+        handleIncomingMessage(JSON.parse(ev.newValue), 'local');
+      } catch (_) {}
+    }
+
+    function openLocalRoom(roomCode) {
+      disconnectRoom(false);
+
+      state.roomCode = roomCode;
+      state.transport = 'local';
+      state.localBusKey = getLocalBusKey();
+      state.participants.clear();
+      state.participants.set(selfId, {
+        id: selfId,
+        name: currentDisplayName(),
+        lastSeen: nowEpoch(),
+        self: true
+      });
+      state.peerState = 'searching';
+      updatePeerButtonUi();
+      updatePeerMenuUi();
+
+      try {
+        state.localChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('touch_effect_local_' + roomCode) : null;
+        if (state.localChannel) {
+          state.localChannel.onmessage = (ev) => handleIncomingMessage(ev.data, 'local');
+        }
+      } catch (_) {
+        state.localChannel = null;
+      }
+
+      window.addEventListener('storage', onLocalStorage);
+
+      state.localHeartbeat = setInterval(() => {
+        handleSelfPresenceHeartbeat();
+        cleanupParticipants();
+        if (state.transport === 'local') {
+          localPostMessage({
+            type: 'presence',
+            id: selfId,
+            name: currentDisplayName(),
+            lastSeen: nowEpoch(),
+            self: true
+          });
+        }
+      }, 2000);
+
+      handleSelfPresenceHeartbeat();
+      if (state.roomMode === 'local' && state.showQrAfterJoin) {
+        openQrOverlay('QRコードを表示', 'このコードを相手に見せるか、同じ文字を入力してください。', `local:${roomCode}`);
+      }
+      showToast('ローカル部屋を開いた');
+      startRoomSyncTimer();
+    }
+
+    function openFirebaseRoom(roomCode) {
+      disconnectRoom(false);
+
+      state.roomCode = roomCode;
+      state.transport = 'firebase';
+      state.participants.clear();
+      state.participants.set(selfId, {
+        id: selfId,
+        name: currentDisplayName(),
+        lastSeen: nowEpoch(),
+        self: true
+      });
+      state.peerState = 'searching';
+      updatePeerButtonUi();
+      updatePeerMenuUi();
+
+      const roomRef = doc(db, firebaseRoomBase, roomCode);
+      const settingsRef = doc(db, firebaseRoomBase, roomCode, 'meta', 'settings');
+      const participantsCol = collection(db, firebaseRoomBase, roomCode, 'participants');
+      const eventsCol = collection(db, firebaseRoomBase, roomCode, 'events');
+      const selfPresenceRef = doc(db, firebaseRoomBase, roomCode, 'participants', selfId);
+
+      state.firebase.roomRef = roomRef;
+      state.firebase.settingsRef = settingsRef;
+      state.firebase.participantsCol = participantsCol;
+      state.firebase.eventsCol = eventsCol;
+      state.firebase.selfPresenceRef = selfPresenceRef;
+
+      state.firebase.unsubRoom = onSnapshot(roomRef, (snap) => {
+        const data = snap.data() || {};
+        if (data.sendLock && typeof data.sendLock === 'object') {
+          state.sendLock = {
+            byId: data.sendLock.byId || '',
+            byName: data.sendLock.byName || '',
+            until: typeof data.sendLock.until === 'number' ? data.sendLock.until : 0,
+            token: data.sendLock.token || ''
+          };
+        } else {
+          state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+        }
+        updatePeerMenuUi();
+        updateFromRoomSnapshot();
+      });
+
+      state.firebase.unsubSettings = onSnapshot(settingsRef, (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        if (data && typeof data === 'object' && data.token) {
+          if (data.senderId === selfId) return;
+          if (Date.now() <= state.receiveWindowUntil) {
+            applySettingsSnapshot(data);
+          }
+        }
+      });
+
+      state.firebase.unsubParticipants = onSnapshot(participantsCol, (snap) => {
+        const list = [];
+        snap.forEach((d) => {
+          const data = d.data() || {};
+          list.push({
+            id: d.id,
+            name: (data.name || '名無し').toString().slice(0, 20),
+            lastSeen: typeof data.lastSeen === 'number' ? data.lastSeen : 0,
+            self: d.id === selfId
+          });
+        });
+        updateRoomParticipantsFromSnapshot(list);
+      });
+
+      state.firebase.unsubEvents = onSnapshot(query(eventsCol, orderBy('createdAt', 'asc'), limit(200)), (snap) => {
+        snap.docChanges().forEach((ch) => {
+          if (ch.type !== 'added') return;
+          const data = ch.doc.data() || {};
+          if (data.sender === selfId) return;
+          if (!pushSeenPacket(ch.doc.id)) return;
+          applyEffectPacket({
+            id: ch.doc.id,
+            sender: data.sender,
+            kind: data.kind,
+            payload: data.payload
+          });
+        });
+      });
+
+      state.firebase.heartbeat = setInterval(() => {
+        handleSelfPresenceHeartbeat();
+        cleanupParticipants();
+      }, 2000);
+
+      handleSelfPresenceHeartbeat();
+      showToast('オンライン部屋を開いた');
+      startRoomSyncTimer();
+    }
+
+    function disconnectFirebaseRoom(sendLeave = true) {
+      if (sendLeave && state.firebase.selfPresenceRef) {
+        deleteDoc(state.firebase.selfPresenceRef).catch(() => {});
+      }
+      if (state.firebase.unsubRoom) state.firebase.unsubRoom();
+      if (state.firebase.unsubSettings) state.firebase.unsubSettings();
+      if (state.firebase.unsubParticipants) state.firebase.unsubParticipants();
+      if (state.firebase.unsubEvents) state.firebase.unsubEvents();
+      if (state.firebase.heartbeat) {
+        clearInterval(state.firebase.heartbeat);
+        state.firebase.heartbeat = null;
+      }
+      state.firebase.roomRef = null;
+      state.firebase.settingsRef = null;
+      state.firebase.participantsCol = null;
+      state.firebase.eventsCol = null;
+      state.firebase.selfPresenceRef = null;
+      state.firebase.unsubRoom = null;
+      state.firebase.unsubSettings = null;
+      state.firebase.unsubParticipants = null;
+      state.firebase.unsubEvents = null;
+      state.transport = 'none';
+      state.roomCode = '';
+      state.participants.clear();
+      state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+      state.receiveWindowUntil = 0;
+      state.lastSeenByPeer = 0;
+      updateFromRoomSnapshot();
+    }
+
+    function disconnectRoom(sendLeave = true) {
+      stopRoomSyncTimer();
+      if (state.transport === 'local') {
+        disconnectLocalRoom(sendLeave);
+      } else if (state.transport === 'firebase') {
+        disconnectFirebaseRoom(sendLeave);
+      } else {
+        state.roomCode = '';
+        state.participants.clear();
+        state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+        state.receiveWindowUntil = 0;
+        updateFromRoomSnapshot();
+      }
+      closePeerMenu();
+      closeRoomOverlay();
+      closeQrOverlay();
+    }
+
+    function cleanupParticipants() {
+      const now = nowEpoch();
+      for (const [id, item] of state.participants.entries()) {
+        if (id === selfId) continue;
+        if (!item || typeof item.lastSeen !== 'number' || now - item.lastSeen > 7000) {
+          state.participants.delete(id);
+        }
+      }
+      state.participants.set(selfId, {
+        id: selfId,
+        name: currentDisplayName(),
+        lastSeen: now,
+        self: true
+      });
+      updateFromRoomSnapshot();
+      updatePeerMenuUi();
+    }
+
+    function startRoomSyncTimer() {
+      stopRoomSyncTimer();
+      roomSyncTimer = setInterval(() => {
+        if (!state.roomCode || state.transport === 'none') return;
+        cleanupParticipants();
+        if (state.sendLock && isLockActive(state.sendLock) && state.sendLock.byId !== selfId) {
+          updatePeerMenuUi();
+        }
+        if (state.sendLock && state.sendLock.until && nowEpoch() > state.sendLock.until) {
+          state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+          updatePeerMenuUi();
+        }
+      }, 1000);
+    }
+
+    function stopRoomSyncTimer() {
+      if (roomSyncTimer) {
+        clearInterval(roomSyncTimer);
+        roomSyncTimer = null;
+      }
+    }
+
+    function handleIncomingMessage(packet, via) {
+      if (!packet || typeof packet !== 'object') return;
+      if (!packet.id) packet.id = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
+      if (packet.sender === selfId) return;
+      if (!pushSeenPacket(packet.id)) return;
+
+      if (packet.type === 'presence') {
+        applyIncomingPresence(packet);
+        updateConnectionStateFromParticipants();
         return;
       }
-      if (kind === 'swipe') {
-        const { from, to, dir, radius } = payload;
-        if (from && to && dir && typeof from.x === 'number' && typeof to.x === 'number' && typeof dir.x === 'number') {
-          makeSwipeEffect(from.x, from.y, dir.x * 100, dir.y * 100, false, {
-            forceFrom: from,
-            forceTo: to,
-            forceRadius: typeof radius === 'number' ? radius : undefined
+
+      if (packet.type === 'leave') {
+        removeRoomParticipant(packet.id || packet.sender);
+        if (state.transport === via && state.roomCode) {
+          updateConnectionStateFromParticipants();
+        }
+        return;
+      }
+
+      if (packet.type === 'lock') {
+        applyIncomingLock(packet);
+        if (packet.byId && packet.byId !== selfId) {
+          updatePeerMenuUi();
+        }
+        return;
+      }
+
+      if (packet.type === 'settings') {
+        if (Date.now() <= state.receiveWindowUntil) {
+          state.currentSettingsToken = packet.token || '';
+          applySettingsSnapshot({
+            token: packet.token,
+            senderId: packet.sender,
+            senderName: packet.senderName,
+            payload: packet.payload
           });
         }
         return;
       }
-      if (kind === 'loop' && Array.isArray(payload.points)) {
-        const points = payload.points.filter(p => p && typeof p.x === 'number' && typeof p.y === 'number').map(p => ({ x: p.x, y: p.y }));
-        if (points.length >= 3) makeLoopEffect(points, false);
+
+      if (packet.type === 'effect') {
+        applyEffectPacket(packet);
+        return;
       }
     }
 
-    function updateNameAvailability() {
-      const on = settings.peerButtonVisible;
-      nameWrap.classList.toggle('faint', !on);
-      nameInput.disabled = !on;
+    function sendEffectToRoom(kind, payload) {
+      if (!state.roomCode || state.transport === 'none') return;
+      const packet = broadcastRoomMessage({
+        type: 'effect',
+        kind,
+        payload
+      });
+      if (state.transport === 'local') {
+        // local echo ignored by self id check, but the view should update immediately from local effect above
+      }
+      return packet;
     }
 
-    function applyAndSave() {
-      setBodyBg();
-      syncSettingsUi();
-      updateNameAvailability();
-      saveSettings();
+    function currentLockIsMine() {
+      return isLockActive(state.sendLock) && state.sendLock.byId === selfId;
     }
 
-    function resetAllSettings() {
-      const ok = confirm('設定を初期状態に戻します。よろしいですか？');
-      if (!ok) return;
-      Object.assign(settings, defaults);
-      try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
-      applyAndSave();
+    function tryAcquireSendLock() {
+      const now = nowEpoch();
+      if (isLockActive(state.sendLock) && state.sendLock.byId !== selfId) {
+        return false;
+      }
+      state.sendLock = {
+        byId: selfId,
+        byName: currentDisplayName(),
+        until: now + 10000,
+        token: crypto.randomUUID?.() || Math.random().toString(36).slice(2)
+      };
+      updatePeerMenuUi();
+      broadcastRoomMessage({
+        type: 'lock',
+        byId: selfId,
+        byName: currentDisplayName(),
+        until: state.sendLock.until,
+        token: state.sendLock.token
+      });
+      return true;
     }
 
-    function getRoomCode() {
-      const raw = connectInput.value.trim();
-      return raw || `room-${makeId().slice(0, 6)}`;
+    function sendCurrentSettings() {
+      if (state.peerState !== 'connected') {
+        showToast('まだ接続されてない');
+        return;
+      }
+      if (!tryAcquireSendLock() && !currentLockIsMine()) {
+        showToast(`${state.sendLock.byName || '誰か'}が送信中…`);
+        return;
+      }
+
+      const payload = {
+        bgMode: settings.bgMode,
+        bgCustom: settings.bgCustom,
+        tapColor: settings.tapColor,
+        swipeColor: settings.swipeColor,
+        loopColor: settings.loopColor,
+        gridEnabled: settings.gridEnabled,
+        gridMode: settings.gridMode,
+        gridCustom: settings.gridCustom,
+        gridSpacing: settings.gridSpacing,
+        displayName: settings.displayName
+      };
+
+      const token = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
+      state.currentSettingsToken = token;
+      broadcastRoomMessage({
+        type: 'settings',
+        token,
+        payload
+      });
+      if (state.transport === 'firebase') {
+        setDoc(state.firebase.settingsRef, {
+          type: 'settings',
+          token,
+          senderId: selfId,
+          senderName: currentDisplayName(),
+          payload,
+          updatedAt: nowEpoch()
+        }, { merge: false }).catch(() => {});
+      }
+      showToast('設定を送った');
     }
 
-    function startSelectedConnect() {
-      const roomCode = getRoomCode();
-      roomState.lastShownMode = roomState.pendingJoinMode || roomState.lastShownMode;
-      closeConnectOverlay();
-      if (roomState.pendingJoinMode === 'local') {
-        startLocal(roomCode);
-      } else if (roomState.pendingJoinMode === 'firebase') {
-        startFirebase(roomCode);
+    function joinRoomFromOverlay() {
+      const code = normalizeRoomCode(roomCodeInput.value) || generateRoomCode();
+      roomCodeInput.value = code;
+
+      if (state.roomMode === 'local') {
+        openLocalRoom(code);
+      } else {
+        openFirebaseRoom(code);
+      }
+
+      closeRoomOverlay();
+      if (state.showQrAfterJoin) {
+        openQrOverlay(
+          'QRコードを表示',
+          'このコードを相手に見せるか、同じ文字を入力してください。',
+          `${state.roomMode}:${code}`
+        );
       }
     }
 
     function openPeerMenuFromButton() {
-      if (!settings.peerButtonVisible) return;
-      if (roomState.mode === 'off') {
-        showPeerMenu('off');
+      if (state.peerState === 'searching') {
+        disconnectRoom(true);
+        showToast('キャンセルした');
         return;
       }
-      showPeerMenu('connected');
-    }
-
-    function openInviteQrChooser() {
-      const defaultMode = roomState.lastShownMode || 'firebase';
-      const payload = JSON.stringify({
-        type: 'invite-choice',
-        name: settings.name,
-        defaultMode,
-        roomId: roomState.roomId || '',
-        time: Date.now()
-      });
-      showQrOverlay(
-        'QRコードを表示',
-        'このQRを相手に見せて、同じ部屋に入る手がかりにしてね。',
-        payload,
-        'QRを読み取る',
-        () => {
-          roomState.qrModeAfterScan = 'invite';
-          openScanOverlay();
-          startScanLoop();
-        }
-      );
-    }
-
-    function openQrFromScannedInvite(data) {
-      if (!data || typeof data !== 'object') return false;
-      if (data.type !== 'invite-choice') return false;
-      if (data.defaultMode === 'local') {
-        connectInput.value = data.roomId || '';
-        openConnectOverlay('local', '文字を入力して同じところにマッチングします。');
-        return true;
-      }
-      connectInput.value = data.roomId || '';
-      openConnectOverlay('firebase', '文字を入力して同じところにマッチングします。');
-      return true;
-    }
-
-    function stopScanLoop() {
-      scanLoopRunning = false;
-      roomState.qrModeAfterScan = null;
-      scanInput.value = '';
-      if (scanStream) {
-        for (const track of scanStream.getTracks()) track.stop();
-        scanStream = null;
-      }
-      scanVideo.srcObject = null;
-      scanDetector = null;
-    }
-
-    let scanLoopRunning = false;
-    let scanStream = null;
-    let scanDetector = null;
-    async function startScanLoop() {
-      if (scanLoopRunning) return;
-      scanLoopRunning = true;
-      scanAcceptButton.textContent = '読み込む';
-      if ('BarcodeDetector' in window) {
-        try { scanDetector = new BarcodeDetector({ formats: ['qr_code'] }); } catch (_) { scanDetector = null; }
-      } else {
-        scanDetector = null;
-      }
-
-      if (navigator.mediaDevices?.getUserMedia && scanDetector) {
-        scanFallback.textContent = 'カメラで読み取り中。うまくいかないときは文字列を貼り付けてください。';
-        try {
-          scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
-          scanVideo.srcObject = scanStream;
-          await scanVideo.play().catch(() => {});
-          requestAnimationFrame(scanFrame);
-        } catch (_) {
-          scanFallback.textContent = 'カメラが使えないので、文字列貼り付けで進めてください。';
-        }
-      } else {
-        scanFallback.textContent = 'この環境ではカメラ読み取りが使えないので、文字列貼り付けで進めてください。';
-      }
-    }
-
-    async function scanFrame() {
-      if (!scanLoopRunning) return;
-      if (!scanDetector || !scanVideo.videoWidth) { requestAnimationFrame(scanFrame); return; }
-      try {
-        const results = await scanDetector.detect(scanVideo);
-        if (results?.length > 0) {
-          const raw = results[0].rawValue || '';
-          if (raw.trim()) {
-            await handleScannedText(raw.trim());
-            return;
-          }
-        }
-      } catch (_) {}
-      requestAnimationFrame(scanFrame);
-    }
-
-    async function handleScannedText(text) {
-      scanInput.value = text;
-      try {
-        const data = JSON.parse(text);
-        if (roomState.qrModeAfterScan === 'invite' && openQrFromScannedInvite(data)) return;
-      } catch (_) {}
-
-      if (roomState.qrModeAfterScan === 'hostAnswer') {
-        setToast('このQRは今は使わない形');
+      if (state.peerState === 'connected') {
+        openPeerMenu('connected');
         return;
       }
-      setToast('QRを読み込んだ');
+      openPeerMenu('off');
     }
 
-    function openLocalOrFirebaseChoiceByQr() {
-      // keep entry point minimal
-      openInviteQrChooser();
+    function applySettingsSnapshotToUi() {
+      syncSettingsUi();
+      document.body.style.background = getBgColor();
+      saveSettings();
+      updatePeerMenuUi();
     }
 
-    let firebaseRoomUnsubA = null;
-    let firebaseRoomUnsubB = null;
-    let firebaseEventsQuery = null;
-    async function openFirebaseRoom(roomId) {
-      stopFirebase();
-      const roomRef = doc(db, FIRESTORE_ROOM_ROOT, roomId);
-      roomState.roomDocRef = roomRef;
-
-      await setDoc(roomRef, {
-        roomId,
-        updatedAt: serverTimestamp(),
-        sendLock: null,
-        lastSender: null
-      }, { merge: true });
-
-      roomState.participantDocRef = doc(collection(roomRef, 'participants'), roomState.selfId);
-      await setDoc(roomState.participantDocRef, {
-        name: settings.name,
-        selfId: roomState.selfId,
-        joinedAt: serverTimestamp(),
-        lastSeen: serverTimestamp()
-      }, { merge: true });
-
-      roomState.participantsUnsub = onSnapshot(collection(roomRef, 'participants'), (snap) => {
-        const arr = [];
-        snap.forEach(d => {
-          const data = d.data();
-          if (data?.name) arr.push({ id: d.id, name: String(data.name).slice(0,20), lastSeen: data.lastSeen?.toMillis ? data.lastSeen.toMillis() : Date.now() });
-        });
-        roomState.participants = arr;
-        renderPeerMenuNames();
-      });
-
-      roomState.statusDocUnsub = onSnapshot(roomRef, (snap) => {
-        const data = snap.data() || {};
-        roomState.sendLock = data.sendLock || null;
-        updatePeerButtonUi();
-        renderPeerMenuNames();
-      });
-
-      firebaseEventsQuery = query(collection(roomRef, 'events'), orderBy('ts', 'asc'), limit(100));
-      roomState.eventsUnsub = onSnapshot(firebaseEventsQuery, (snap) => {
-        snap.docChanges().forEach(ch => {
-          if (ch.type !== 'added') return;
-          const data = ch.doc.data();
-          if (data?.kind === 'settings' && data.payload) {
-            if (Date.now() <= roomState.receiveWindowUntil) {
-              roomState.receiveWindowUntil = 0;
-              applySettingsSnapshot(data.payload);
-              setToast('設定を受信した');
-            }
-          }
-          if (data?.kind === 'effect') {
-            applyRemoteEffect(data.effectKind, data.payload);
-          }
-        });
-      });
-
-      roomState.heartbeatTimer = setInterval(async () => {
-        if (!roomState.participantDocRef) return;
-        try { await updateDoc(roomState.participantDocRef, { name: settings.name, lastSeen: serverTimestamp() }); } catch (_) {}
-      }, 2500);
-
-      setConnectedState('firebase');
-      roomState.lastShownMode = 'firebase';
-      setToast(`オンライン接続: ${roomId}`);
-    }
-
-    function stopFirebase() {
-      clearInterval(roomState.heartbeatTimer);
-      roomState.heartbeatTimer = null;
-      if (roomState.statusDocUnsub) { roomState.statusDocUnsub(); roomState.statusDocUnsub = null; }
-      if (roomState.participantsUnsub) { roomState.participantsUnsub(); roomState.participantsUnsub = null; }
-      if (roomState.eventsUnsub) { roomState.eventsUnsub(); roomState.eventsUnsub = null; }
-      if (roomState.participantDocRef) {
-        deleteDoc(roomState.participantDocRef).catch(()=>{});
-        roomState.participantDocRef = null;
-      }
-      roomState.roomDocRef = null;
-      roomState.sendLock = null;
-    }
-
-    function openLocalOrFirebase(roomMode) {
-      const code = connectInput.value.trim() || `room-${makeId().slice(0,6)}`;
-      if (roomMode === 'local') startLocal(code);
-      else startFirebase(code);
-    }
-
-    function localRoomBroadcastCleanup() {
+    function resetAllSettings() {
+      const ok = window.confirm('設定を初期状態に戻します。よろしいですか？');
+      if (!ok) return;
+      Object.assign(settings, defaults);
       try {
-        window.removeEventListener('storage', handleLocalStorage);
+        localStorage.removeItem(STORAGE_KEY);
       } catch (_) {}
+      applySettingsSnapshotToUi();
     }
 
-    function maybeUpdateSendButtonText() {
-      const lock = roomState.sendLock;
-      if (isConnected() && lock && lock.until && Date.now() < lock.until && lock.name !== settings.name) {
-        peerChoiceLabel2.textContent = `${lock.name}が\n送信中…`;
-      } else if (isConnected()) {
-        peerChoiceLabel2.textContent = '設定を\n送信';
-      }
+    function joinLocalOrFirebaseFromChoice(mode, showQr = false) {
+      openRoomOverlay(mode, showQr);
     }
 
-    function makePeerMenuLabels(mode) {
-      if (mode === 'off') {
-        peerChoiceLabel1.textContent = 'Wi-Fiで\n通信';
-        peerChoiceLabel2.textContent = 'QRコードを\n表示';
-        peerChoiceLabel3.textContent = 'オンラインで\n通信';
-      } else {
+    function handlePeerChoiceLabels() {
+      if (state.peerState === 'connected') {
+        const lockActive = isLockActive(state.sendLock);
         peerChoiceLabel1.textContent = '接続を\n切断';
-        peerChoiceLabel2.textContent = '設定を\n送信';
+        peerChoiceLabel2.textContent = lockActive
+          ? (state.sendLock.byId === selfId ? '送信中…' : `${state.sendLock.byName || '誰か'}が\n送信中…`)
+          : '設定を\n送信';
         peerChoiceLabel3.textContent = '設定を\n受信';
       }
     }
 
-    function patchPeerMenuForState() {
-      if (!peerMenuOverlay.classList.contains('open')) return;
-      if (roomState.mode === 'off') {
-        peerMenuOverlay.classList.remove('connected');
-        peerMenuOverlay.classList.add('searching');
-        makePeerMenuLabels('off');
-      } else {
-        peerMenuOverlay.classList.remove('searching');
-        peerMenuOverlay.classList.add('connected');
-        makePeerMenuLabels('connected');
-        maybeUpdateSendButtonText();
-      }
-      renderPeerMenuNames();
+    function updateLoopedMenu() {
+      updatePeerMenuUi();
+      handlePeerChoiceLabels();
     }
 
-    function showPeerMenu(mode) {
-      peerMenuOverlay.classList.add('open');
-      peerMenuOverlay.setAttribute('aria-hidden', 'false');
-      peerMenuOverlay.classList.toggle('searching', mode === 'off');
-      peerMenuOverlay.classList.toggle('connected', mode !== 'off');
+    bgMode.addEventListener('change', () => {
+      settings.bgMode = bgMode.value;
+      bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
+      applySettingsSnapshotToUi();
+    });
+
+    bgCustomInput.addEventListener('input', () => {
+      settings.bgCustom = bgCustomInput.value.trim();
+      applySettingsSnapshotToUi();
+    });
+
+    tapColorInput.addEventListener('input', () => {
+      settings.tapColor = tapColorInput.value.trim();
+      saveSettings();
+    });
+
+    swipeColorInput.addEventListener('input', () => {
+      settings.swipeColor = swipeColorInput.value.trim();
+      saveSettings();
+    });
+
+    loopColorInput.addEventListener('input', () => {
+      settings.loopColor = loopColorInput.value.trim();
+      saveSettings();
+    });
+
+    gridToggle.addEventListener('change', () => {
+      settings.gridEnabled = gridToggle.checked;
+      gridDetails.classList.toggle('disabled', !settings.gridEnabled);
+      saveSettings();
+    });
+
+    gridMode.addEventListener('change', () => {
+      settings.gridMode = gridMode.value;
+      gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
+      saveSettings();
+    });
+
+    gridCustomInput.addEventListener('input', () => {
+      settings.gridCustom = gridCustomInput.value.trim();
+      saveSettings();
+    });
+
+    spacingRange.addEventListener('input', () => {
+      settings.gridSpacing = clamp(Number(spacingRange.value) || 36, 18, 100);
+      spacingValue.textContent = String(settings.gridSpacing);
+      saveSettings();
+    });
+
+    peerButtonToggle.addEventListener('change', () => {
+      settings.peerButtonVisible = peerButtonToggle.checked;
+      if (!settings.peerButtonVisible) {
+        disconnectRoom(false);
+      }
+      syncSettingsUi();
+      updatePeerButtonUi();
+      saveSettings();
+    });
+
+    displayNameInput.addEventListener('input', () => {
+      settings.displayName = displayNameInput.value.trim().slice(0, 20) || '自分';
+      saveSettings();
+      if (state.transport !== 'none') {
+        handleSelfPresenceHeartbeat();
+        updatePeerMenuUi();
+      }
+    });
+
+    resetSettings.addEventListener('click', resetAllSettings);
+
+    openSettings.addEventListener('click', openOverlay);
+    closeSettings.addEventListener('click', closeOverlay);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeOverlay();
+    });
+
+    peerButton.addEventListener('click', openPeerMenuFromButton);
+
+    peerMenuOverlay.addEventListener('click', (e) => {
+      if (e.target === peerMenuOverlay) closePeerMenu();
+    });
+
+    qrOverlay.addEventListener('click', (e) => {
+      if (e.target === qrOverlay) closeQrOverlay();
+    });
+
+    roomOverlay.addEventListener('click', (e) => {
+      if (e.target === roomOverlay) closeRoomOverlay();
+    });
+
+    roomJoinButton.addEventListener('click', joinRoomFromOverlay);
+    roomCancelButton.addEventListener('click', closeRoomOverlay);
+    roomQrToggleButton.addEventListener('click', () => {
+      state.showQrAfterJoin = !state.showQrAfterJoin;
+      roomQrToggleButton.textContent = state.showQrAfterJoin ? 'QR表示: ON' : 'QR表示: OFF';
+    });
+
+    qrCloseButton.addEventListener('click', closeQrOverlay);
+
+    canvas.addEventListener('pointerdown', (e) => {
+      if (overlay.classList.contains('open')) return;
+      if (peerMenuOverlay.classList.contains('open')) return;
+      if (qrOverlay.classList.contains('open')) return;
+      if (roomOverlay.classList.contains('open')) return;
+      if (activePointerId !== null) return;
+
+      activePointerId = e.pointerId;
+      canvas.setPointerCapture(activePointerId);
+
+      const p = getPoint(e);
+      pointerDownTime = nowMs();
+      pointerDownPos = { x: p.x, y: p.y };
+      lastPos = { x: p.x, y: p.y };
+      strokePoints = [p];
+      pointerHadLoop = false;
+      e.preventDefault();
+    }, { passive: false });
+
+    canvas.addEventListener('pointermove', (e) => {
+      if (activePointerId !== e.pointerId) return;
+      const p = getPoint(e);
+      const t = nowMs();
+
+      if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
+        strokePoints.push(p);
+        lastPos = p;
+      }
+
+      if (t - lastLoopAt >= LASSO_COOLDOWN) {
+        if (detectLoop(strokePoints, p.x, p.y)) {
+          createLoopEffect(strokePoints);
+          lastLoopAt = t;
+          pointerHadLoop = true;
+          strokePoints = [p];
+        }
+      }
+
+      e.preventDefault();
+    }, { passive: false });
+
+    function finishPointer(e) {
+      if (activePointerId !== e.pointerId) return;
+
+      const p = getPoint(e);
+      const elapsed = nowMs() - pointerDownTime;
+      const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
+
+      if (!pointerHadLoop) {
+        if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
+          addTapEffect(p.x, p.y);
+        } else if (totalMove >= SWIPE_MIN_DISTANCE) {
+          const dx = p.x - pointerDownPos.x;
+          const dy = p.y - pointerDownPos.y;
+          createSwipeEffect(p.x, p.y, dx, dy);
+        }
+      }
+
+      activePointerId = null;
+      strokePoints = [];
+      pointerHadLoop = false;
+      e.preventDefault();
+    }
+
+    canvas.addEventListener('pointerup', finishPointer, { passive: false });
+    canvas.addEventListener('pointercancel', finishPointer, { passive: false });
+    canvas.addEventListener('lostpointercapture', () => {
+      activePointerId = null;
+      strokePoints = [];
+      pointerHadLoop = false;
+    });
+
+    function handleSelfEffectBroadcast() {
+      if (state.transport === 'local') {
+        if (state.localChannel) {
+          state.localChannel.onmessage = (ev) => handleIncomingMessage(ev.data, 'local');
+        }
+      }
+    }
+
+    function sendCurrentPresenceToRoom() {
+      if (state.transport === 'none' || !state.roomCode) return;
+      if (state.transport === 'local') {
+        localPostMessage({
+          type: 'presence',
+          id: selfId,
+          name: currentDisplayName(),
+          lastSeen: nowEpoch(),
+          self: true
+        });
+      } else if (state.transport === 'firebase') {
+        setDoc(state.firebase.selfPresenceRef, {
+          id: selfId,
+          name: currentDisplayName(),
+          lastSeen: nowEpoch(),
+          mode: state.roomMode,
+          self: true
+        }, { merge: true }).catch(() => {});
+      }
+      updatePeerMenuUi();
+    }
+
+    function joinLocalRoom(roomCode) {
+      disconnectRoom(false);
+      state.roomCode = roomCode;
+      state.transport = 'local';
+      state.localBusKey = getLocalBusKey();
+      state.participants.clear();
+      state.participants.set(selfId, { id: selfId, name: currentDisplayName(), lastSeen: nowEpoch(), self: true });
+      state.peerState = 'searching';
+      updatePeerButtonUi();
+      updatePeerMenuUi();
+
+      try {
+        state.localChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('touch_effect_local_' + roomCode) : null;
+        if (state.localChannel) {
+          state.localChannel.onmessage = (ev) => handleIncomingMessage(ev.data, 'local');
+        }
+      } catch (_) {
+        state.localChannel = null;
+      }
+
+      window.addEventListener('storage', onLocalStorage);
+      state.localHeartbeat = setInterval(() => {
+        sendCurrentPresenceToRoom();
+        cleanupParticipants();
+      }, 2000);
+
+      sendCurrentPresenceToRoom();
+      updateConnectionStateFromParticipants();
+      showToast('ローカルで待機中');
+      startRoomSyncTimer();
+    }
+
+    function joinFirebaseRoom(roomCode) {
+      disconnectRoom(false);
+      state.roomCode = roomCode;
+      state.transport = 'firebase';
+      state.participants.clear();
+      state.participants.set(selfId, { id: selfId, name: currentDisplayName(), lastSeen: nowEpoch(), self: true });
+      state.peerState = 'searching';
+      updatePeerButtonUi();
+      updatePeerMenuUi();
+
+      const roomRef = doc(db, firebaseRoomBase, roomCode);
+      const settingsRef = doc(db, firebaseRoomBase, roomCode, 'meta', 'settings');
+      const participantsCol = collection(db, firebaseRoomBase, roomCode, 'participants');
+      const eventsCol = collection(db, firebaseRoomBase, roomCode, 'events');
+      const selfPresenceRef = doc(db, firebaseRoomBase, roomCode, 'participants', selfId);
+
+      state.firebase.roomRef = roomRef;
+      state.firebase.settingsRef = settingsRef;
+      state.firebase.participantsCol = participantsCol;
+      state.firebase.eventsCol = eventsCol;
+      state.firebase.selfPresenceRef = selfPresenceRef;
+
+      state.firebase.unsubRoom = onSnapshot(roomRef, (snap) => {
+        const data = snap.data() || {};
+        if (data.sendLock && typeof data.sendLock === 'object') {
+          state.sendLock = {
+            byId: data.sendLock.byId || '',
+            byName: data.sendLock.byName || '',
+            until: typeof data.sendLock.until === 'number' ? data.sendLock.until : 0,
+            token: data.sendLock.token || ''
+          };
+        } else {
+          state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+        }
+        updatePeerMenuUi();
+        updateConnectionStateFromParticipants();
+      });
+
+      state.firebase.unsubSettings = onSnapshot(settingsRef, (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        if (data.senderId === selfId) return;
+        if (Date.now() <= state.receiveWindowUntil) {
+          applySettingsSnapshot({
+            token: data.token,
+            senderId: data.senderId,
+            senderName: data.senderName,
+            payload: data.payload
+          });
+        }
+      });
+
+      state.firebase.unsubParticipants = onSnapshot(participantsCol, (snap) => {
+        const list = [];
+        snap.forEach((d) => {
+          const data = d.data() || {};
+          list.push({
+            id: d.id,
+            name: (data.name || '名無し').toString().slice(0, 20),
+            lastSeen: typeof data.lastSeen === 'number' ? data.lastSeen : 0,
+            self: d.id === selfId
+          });
+        });
+        updateRoomParticipantsFromSnapshot(list);
+      });
+
+      state.firebase.unsubEvents = onSnapshot(query(eventsCol, orderBy('createdAt', 'asc'), limit(200)), (snap) => {
+        snap.docChanges().forEach((ch) => {
+          if (ch.type !== 'added') return;
+          const data = ch.doc.data() || {};
+          if (data.sender === selfId) return;
+          if (!pushSeenPacket(ch.doc.id)) return;
+          applyEffectPacket({
+            id: ch.doc.id,
+            sender: data.sender,
+            kind: data.kind,
+            payload: data.payload
+          });
+        });
+      });
+
+      state.firebase.heartbeat = setInterval(() => {
+        sendCurrentPresenceToRoom();
+        cleanupParticipants();
+      }, 2000);
+
+      sendCurrentPresenceToRoom();
+      updateConnectionStateFromParticipants();
+      showToast('オンラインで待機中');
+      startRoomSyncTimer();
+    }
+
+    function disconnectFirebaseRoom(sendLeave = true) {
+      if (sendLeave && state.firebase.selfPresenceRef) {
+        deleteDoc(state.firebase.selfPresenceRef).catch(() => {});
+      }
+      if (state.firebase.unsubRoom) state.firebase.unsubRoom();
+      if (state.firebase.unsubSettings) state.firebase.unsubSettings();
+      if (state.firebase.unsubParticipants) state.firebase.unsubParticipants();
+      if (state.firebase.unsubEvents) state.firebase.unsubEvents();
+      if (state.firebase.heartbeat) {
+        clearInterval(state.firebase.heartbeat);
+        state.firebase.heartbeat = null;
+      }
+      state.firebase.roomRef = null;
+      state.firebase.settingsRef = null;
+      state.firebase.participantsCol = null;
+      state.firebase.eventsCol = null;
+      state.firebase.selfPresenceRef = null;
+      state.firebase.unsubRoom = null;
+      state.firebase.unsubSettings = null;
+      state.firebase.unsubParticipants = null;
+      state.firebase.unsubEvents = null;
+      state.transport = 'none';
+      state.roomCode = '';
+      state.participants.clear();
+      state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+      state.receiveWindowUntil = 0;
+      updateFromRoomSnapshot();
+    }
+
+    function disconnectRoom(sendLeave = true) {
+      stopRoomSyncTimer();
+      if (state.transport === 'local') {
+        if (sendLeave) {
+          localPostMessage({ type: 'leave', id: selfId });
+        }
+        if (state.localHeartbeat) {
+          clearInterval(state.localHeartbeat);
+          state.localHeartbeat = null;
+        }
+        if (state.localChannel) {
+          try { state.localChannel.close(); } catch (_) {}
+          state.localChannel = null;
+        }
+        window.removeEventListener('storage', onLocalStorage);
+        state.localBusKey = '';
+        state.transport = 'none';
+        state.roomCode = '';
+        state.participants.clear();
+        state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+        state.receiveWindowUntil = 0;
+        updateFromRoomSnapshot();
+      } else if (state.transport === 'firebase') {
+        disconnectFirebaseRoom(sendLeave);
+      } else {
+        state.roomCode = '';
+        state.participants.clear();
+        state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+        state.receiveWindowUntil = 0;
+        updateFromRoomSnapshot();
+      }
+      closePeerMenu();
+      closeRoomOverlay();
+      closeQrOverlay();
+    }
+
+    function stopRoomSyncTimer() {
+      if (roomSyncTimer) {
+        clearInterval(roomSyncTimer);
+        roomSyncTimer = null;
+      }
+    }
+
+    function startRoomSyncTimer() {
+      stopRoomSyncTimer();
+      roomSyncTimer = setInterval(() => {
+        if (!state.roomCode || state.transport === 'none') return;
+        cleanupParticipants();
+        if (state.sendLock && isLockActive(state.sendLock) && state.sendLock.until < nowEpoch()) {
+          state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+          updatePeerMenuUi();
+        }
+      }, 1000);
+    }
+
+    function handleIncomingMessage(packet, via) {
+      if (!packet || typeof packet !== 'object') return;
+      if (packet.sender === selfId) return;
+      if (!pushSeenPacket(packet.id)) return;
+
+      if (packet.type === 'presence') {
+        applyIncomingPresence(packet);
+        updateConnectionStateFromParticipants();
+        return;
+      }
+
+      if (packet.type === 'leave') {
+        removeRoomParticipant(packet.id || packet.sender);
+        updateConnectionStateFromParticipants();
+        return;
+      }
+
+      if (packet.type === 'lock') {
+        applyIncomingLock(packet);
+        updatePeerMenuUi();
+        return;
+      }
+
+      if (packet.type === 'settings') {
+        if (Date.now() <= state.receiveWindowUntil) {
+          applySettingsSnapshot(packet);
+        }
+        return;
+      }
+
+      if (packet.type === 'effect') {
+        applyEffectPacket(packet);
+        return;
+      }
+    }
+
+    function handleRoomSelection(mode, showQr = false) {
+      openRoomOverlay(mode, showQr);
+    }
+
+    function applySettingsSnapshotToUi() {
+      syncSettingsUi();
+      document.body.style.background = getBgColor();
+      saveSettings();
+      updatePeerMenuUi();
+    }
+
+    function cleanupParticipants() {
+      const now = nowEpoch();
+      for (const [id, item] of state.participants.entries()) {
+        if (id === selfId) continue;
+        if (!item || typeof item.lastSeen !== 'number' || now - item.lastSeen > 7000) {
+          state.participants.delete(id);
+        }
+      }
+      state.participants.set(selfId, {
+        id: selfId,
+        name: currentDisplayName(),
+        lastSeen: now,
+        self: true
+      });
+      updateConnectionStateFromParticipants();
+      updatePeerMenuUi();
+    }
+
+    function handleConnectionButton() {
+      if (state.peerState === 'searching') {
+        disconnectRoom(true);
+        showToast('キャンセルした');
+        return;
+      }
+      if (state.peerState === 'connected') {
+        openPeerMenu('connected');
+        return;
+      }
+      openPeerMenu('off');
+    }
+
+    function setPeerStateBasedOnParticipants() {
+      const count = activeParticipants().length;
+      if (!state.roomCode || state.transport === 'none') {
+        state.peerState = 'off';
+      } else {
+        state.peerState = count >= 2 ? 'connected' : 'searching';
+      }
+      updatePeerButtonUi();
+      updatePeerMenuUi();
+    }
+
+    function ensureConnectedLabels() {
+      if (state.peerState !== 'connected') return;
+      const lock = state.sendLock;
+      const lockActive = isLockActive(lock);
+      peerChoiceLabel1.textContent = '接続を\n切断';
+      peerChoiceLabel2.textContent = lockActive
+        ? (lock.byId === selfId ? '送信中…' : `${lock.byName || '誰か'}が\n送信中…`)
+        : '設定を\n送信';
+      peerChoiceLabel3.textContent = '設定を\n受信';
+    }
+
+    function updatePeerMenuUi() {
+      if (state.peerState !== 'connected') {
+        peerMenuOverlay.classList.remove('connected');
+      } else {
+        peerMenuOverlay.classList.add('connected');
+      }
+
+      if (state.peerState === 'connected') {
+        renderPeerNamesBar();
+        ensureConnectedLabels();
+        const lock = state.sendLock;
+        const lockActive = isLockActive(lock);
+        peerChoice2.disabled = lockActive && lock.byId !== selfId;
+      }
+    }
+
+    function renderPeerNamesBar() {
+      const list = activeParticipants();
+      peerNamesBar.innerHTML = '';
+      for (const p of list) {
+        const chip = document.createElement('div');
+        chip.className = 'peer-name-chip';
+        chip.textContent = p.self ? `${p.name || '自分'}（自分）` : (p.name || '名無し');
+        peerNamesBar.appendChild(chip);
+      }
+    }
+
+    function openPeerMenu(mode) {
+      state.roomMenuMode = mode;
+      updatePeerMenuUi();
 
       const rect = peerButton.getBoundingClientRect();
       const stageRect = peerMenuStage.getBoundingClientRect();
@@ -1947,157 +2914,676 @@
         el.style.setProperty('--to-y', `${ty}px`);
       };
 
-      makePeerMenuLabels(mode);
-      renderPeerMenuNames();
-
       if (mode === 'off') {
+        peerChoiceLabel1.textContent = 'Wi-Fiで\n通信';
+        peerChoiceLabel2.textContent = 'QRコードを\n表示';
+        peerChoiceLabel3.textContent = 'オンラインで\n通信';
+
         peerChoice1.className = 'peer-choice wifi';
         peerChoice2.className = 'peer-choice qr-show';
         peerChoice3.className = 'peer-choice online';
-        peerChoice1.onclick = () => { hidePeerMenu(); openConnectOverlay('local', '文字を入力して同じところにマッチングします。'); };
-        peerChoice2.onclick = () => { hidePeerMenu(); openInviteQrChooser(); };
-        peerChoice3.onclick = () => { hidePeerMenu(); openConnectOverlay('firebase', '文字を入力して同じところにマッチングします。'); };
+
+        peerChoice1.onclick = () => {
+          closePeerMenu();
+          handleRoomSelection('local', false);
+        };
+        peerChoice2.onclick = () => {
+          closePeerMenu();
+          handleRoomSelection('local', true);
+        };
+        peerChoice3.onclick = () => {
+          closePeerMenu();
+          handleRoomSelection('firebase', false);
+        };
+        peerChoice1.disabled = false;
+        peerChoice2.disabled = false;
+        peerChoice3.disabled = false;
+
         setFrom(peerChoice1, 0, -118);
         setFrom(peerChoice2, -118, 108);
         setFrom(peerChoice3, 118, 108);
       } else {
+        peerChoiceLabel1.textContent = '接続を\n切断';
+        peerChoiceLabel2.textContent = '設定を\n送信';
+        peerChoiceLabel3.textContent = '設定を\n受信';
+
         peerChoice1.className = 'peer-choice disconnect';
         peerChoice2.className = 'peer-choice send';
         peerChoice3.className = 'peer-choice receive';
-        peerChoice1.onclick = () => { hidePeerMenu(); stopAllConnections(true); setToast('切断した'); };
-        peerChoice2.onclick = () => { hidePeerMenu(); sendCurrentSettings(); };
-        peerChoice3.onclick = () => { hidePeerMenu(); roomState.receiveWindowUntil = Date.now() + 10000; setToast('10秒以内の設定を待ってる'); };
+
+        peerChoice1.onclick = () => {
+          closePeerMenu();
+          disconnectRoom(true);
+          showToast('切断した');
+        };
+        peerChoice2.onclick = () => {
+          closePeerMenu();
+          sendCurrentSettings();
+        };
+        peerChoice3.onclick = () => {
+          closePeerMenu();
+          state.receiveWindowUntil = nowEpoch() + 10000;
+          showToast('10秒以内の設定を待ってる');
+        };
+
         setFrom(peerChoice1, 0, -118);
         setFrom(peerChoice2, -118, 108);
         setFrom(peerChoice3, 118, 108);
       }
+
+      peerMenuOverlay.classList.add('open');
+      peerMenuOverlay.setAttribute('aria-hidden', 'false');
+      if (state.peerState === 'connected') peerMenuOverlay.classList.add('connected');
+      else peerMenuOverlay.classList.remove('connected');
     }
 
-    function hidePeerMenu() {
-      peerMenuOverlay.classList.remove('open', 'searching', 'connected');
+    function closePeerMenu() {
+      peerMenuOverlay.classList.remove('open');
       peerMenuOverlay.setAttribute('aria-hidden', 'true');
     }
 
-    function sendEffect(kind, payload) {
-      if (!isConnected()) return;
-      if (roomState.mode === 'local') {
-        postLocalPacket({ type: 'effect', kind, payload });
-      } else if (roomState.mode === 'firebase' && roomState.roomDocRef) {
-        const eventRef = doc(collection(roomState.roomDocRef, 'events'));
-        setDoc(eventRef, { kind: 'effect', effectKind: kind, payload, sender: settings.name, ts: Date.now() }).catch(() => {});
-      }
+    function openQrForLocalRoom(code) {
+      openQrOverlay('QRコードを表示', 'このコードを相手に見せるか、同じ文字を入力してください。', `local:${code}`);
     }
 
-    function broadcastEffectToPeers(kind, payload) { sendEffect(kind, payload); }
-
-    function stopConnectionButtonAction() {
-      if (!settings.peerButtonVisible) return;
-      if (!isConnected() && roomState.activeTransport === 'none') {
-        openPeerMenu('off');
+    async function sendCurrentSettings() {
+      if (state.peerState !== 'connected') {
+        showToast('まだ接続されてない');
         return;
       }
-      if (roomState.activeTransport !== 'none' && !isConnected()) {
-        stopAllConnections(true);
-        setToast('キャンセルした');
+
+      const lockOk = tryAcquireSendLock();
+      if (!lockOk && !currentLockIsMine()) {
+        showToast(`${state.sendLock.byName || '誰か'}が送信中…`);
         return;
       }
-      openPeerMenu('connected');
-    }
 
-    function handleLocalReceiveWindow() {
-      if (roomState.sendLock && roomState.sendLock.until && Date.now() > roomState.sendLock.until) roomState.sendLock = null;
-      if (roomState.receiveWindowUntil && Date.now() > roomState.receiveWindowUntil) roomState.receiveWindowUntil = 0;
-      maybeUpdateSendButtonText();
-    }
+      const payload = {
+        bgMode: settings.bgMode,
+        bgCustom: settings.bgCustom,
+        tapColor: settings.tapColor,
+        swipeColor: settings.swipeColor,
+        loopColor: settings.loopColor,
+        gridEnabled: settings.gridEnabled,
+        gridMode: settings.gridMode,
+        gridCustom: settings.gridCustom,
+        gridSpacing: settings.gridSpacing,
+        displayName: settings.displayName
+      };
 
-    function createLocalRoomCodeHint() {
-      return `${roomState.lastShownMode || 'local'}-${makeId().slice(0, 6)}`;
-    }
+      const token = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
+      state.currentSettingsToken = token;
 
-    function handleConnectStart() {
-      const code = connectInput.value.trim() || createLocalRoomCodeHint();
-      if (roomState.pendingJoinMode === 'local') startLocal(code);
-      else startFirebase(code);
-      closeConnectOverlay();
-    }
+      const message = {
+        type: 'settings',
+        token,
+        payload,
+        senderId: selfId,
+        senderName: currentDisplayName()
+      };
 
-    function handlePeerButtonTap() {
-      if (!settings.peerButtonVisible) return;
-      if (roomState.activeTransport !== 'none' && !isConnected()) {
-        stopAllConnections(true);
-        setToast('キャンセルした');
-        return;
+      if (state.transport === 'local') {
+        localPostMessage({
+          ...message,
+          id: crypto.randomUUID?.() || Math.random().toString(36).slice(2),
+          sender: selfId,
+          ts: nowEpoch()
+        });
+      } else if (state.transport === 'firebase') {
+        try {
+          await setDoc(state.firebase.settingsRef, {
+            ...message,
+            updatedAt: nowEpoch()
+          });
+        } catch (_) {
+          showToast('Firebaseに送れなかった');
+        }
       }
-      if (!isConnected()) {
-        showPeerMenu('off');
-      } else {
-        showPeerMenu('connected');
+
+      showToast('設定を送った');
+    }
+
+    function tryAcquireSendLock() {
+      const now = nowEpoch();
+      if (isLockActive(state.sendLock) && state.sendLock.byId !== selfId) return false;
+      state.sendLock = {
+        byId: selfId,
+        byName: currentDisplayName(),
+        until: now + 10000,
+        token: crypto.randomUUID?.() || Math.random().toString(36).slice(2)
+      };
+      updatePeerMenuUi();
+      const packet = {
+        type: 'lock',
+        byId: selfId,
+        byName: currentDisplayName(),
+        until: state.sendLock.until,
+        token: state.sendLock.token
+      };
+      if (state.transport === 'local') {
+        localPostMessage({
+          ...packet,
+          id: crypto.randomUUID?.() || Math.random().toString(36).slice(2),
+          sender: selfId,
+          ts: nowEpoch()
+        });
+      } else if (state.transport === 'firebase') {
+        setDoc(state.firebase.roomRef, {
+          sendLock: {
+            byId: packet.byId,
+            byName: packet.byName,
+            until: packet.until,
+            token: packet.token
+          },
+          updatedAt: nowEpoch()
+        }, { merge: true }).catch(() => {});
       }
+      return true;
     }
 
-    function handleWindowStorage(ev) {
-      if (roomState.mode === 'local') handleLocalStorage(ev);
+    function currentLockIsMine() {
+      return isLockActive(state.sendLock) && state.sendLock.byId === selfId;
     }
 
-    function openLocalOrFirebaseRoom() {
-      openConnectOverlay(roomState.pendingJoinMode || 'local', '文字を入力して同じところにマッチングします。');
-    }
-
-    function syncConnectedStateVisuals() {
+    function disconnectSelfFromRoom(sendLeave = true) {
+      if (state.transport === 'none') return;
+      if (state.transport === 'local') {
+        if (sendLeave) {
+          localPostMessage({
+            type: 'leave',
+            id: selfId,
+            sender: selfId,
+            ts: nowEpoch()
+          });
+        }
+        disconnectLocalRoom(false);
+      } else if (state.transport === 'firebase') {
+        disconnectFirebaseRoom(sendLeave);
+      }
+      state.peerState = 'off';
       updatePeerButtonUi();
-      patchPeerMenuForState();
-      handleLocalReceiveWindow();
+      updatePeerMenuUi();
+      stopRoomSyncTimer();
     }
 
-    // UI events
+    function cleanupAfterDisconnect() {
+      state.roomCode = '';
+      state.participants.clear();
+      state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+      state.receiveWindowUntil = 0;
+      state.currentSettingsToken = '';
+      updateFromRoomSnapshot();
+      syncSettingsUi();
+      document.body.style.background = getBgColor();
+    }
+
+    function disconnectRoom(sendLeave = true) {
+      if (state.transport === 'local') {
+        if (sendLeave) {
+          localPostMessage({
+            type: 'leave',
+            id: selfId,
+            sender: selfId,
+            ts: nowEpoch()
+          });
+        }
+      } else if (state.transport === 'firebase') {
+        if (sendLeave && state.firebase.selfPresenceRef) {
+          deleteDoc(state.firebase.selfPresenceRef).catch(() => {});
+        }
+      }
+
+      if (state.localHeartbeat) {
+        clearInterval(state.localHeartbeat);
+        state.localHeartbeat = null;
+      }
+      if (state.localChannel) {
+        try { state.localChannel.close(); } catch (_) {}
+        state.localChannel = null;
+      }
+      window.removeEventListener('storage', onLocalStorage);
+
+      if (state.firebase.unsubRoom) state.firebase.unsubRoom();
+      if (state.firebase.unsubSettings) state.firebase.unsubSettings();
+      if (state.firebase.unsubParticipants) state.firebase.unsubParticipants();
+      if (state.firebase.unsubEvents) state.firebase.unsubEvents();
+      if (state.firebase.heartbeat) {
+        clearInterval(state.firebase.heartbeat);
+        state.firebase.heartbeat = null;
+      }
+
+      state.firebase.roomRef = null;
+      state.firebase.settingsRef = null;
+      state.firebase.participantsCol = null;
+      state.firebase.eventsCol = null;
+      state.firebase.selfPresenceRef = null;
+      state.firebase.unsubRoom = null;
+      state.firebase.unsubSettings = null;
+      state.firebase.unsubParticipants = null;
+      state.firebase.unsubEvents = null;
+
+      state.transport = 'none';
+      state.localBusKey = '';
+      state.peerState = 'off';
+      cleanupAfterDisconnect();
+      closePeerMenu();
+      closeRoomOverlay();
+      closeQrOverlay();
+      stopRoomSyncTimer();
+    }
+
+    function onLocalStorage(ev) {
+      if (ev.key !== state.localBusKey || !ev.newValue) return;
+      try {
+        handleIncomingMessage(JSON.parse(ev.newValue), 'local');
+      } catch (_) {}
+    }
+
+    function openLocalRoom(roomCode) {
+      disconnectRoom(false);
+      state.roomCode = roomCode;
+      state.transport = 'local';
+      state.localBusKey = getLocalBusKey();
+      state.participants.clear();
+      state.participants.set(selfId, {
+        id: selfId,
+        name: currentDisplayName(),
+        lastSeen: nowEpoch(),
+        self: true
+      });
+      state.peerState = 'searching';
+      updatePeerButtonUi();
+      updatePeerMenuUi();
+
+      try {
+        state.localChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('touch_effect_local_' + roomCode) : null;
+        if (state.localChannel) {
+          state.localChannel.onmessage = (ev) => handleIncomingMessage(ev.data, 'local');
+        }
+      } catch (_) {
+        state.localChannel = null;
+      }
+
+      window.addEventListener('storage', onLocalStorage);
+      state.localHeartbeat = setInterval(() => {
+        sendCurrentPresenceToRoom();
+        cleanupParticipants();
+      }, 2000);
+
+      sendCurrentPresenceToRoom();
+      updateConnectionStateFromParticipants();
+      showToast('ローカルで待機中');
+      startRoomSyncTimer();
+
+      if (state.showQrAfterJoin) {
+        openQrForLocalRoom(roomCode);
+      }
+    }
+
+    function openFirebaseRoom(roomCode) {
+      disconnectRoom(false);
+      state.roomCode = roomCode;
+      state.transport = 'firebase';
+      state.participants.clear();
+      state.participants.set(selfId, {
+        id: selfId,
+        name: currentDisplayName(),
+        lastSeen: nowEpoch(),
+        self: true
+      });
+      state.peerState = 'searching';
+      updatePeerButtonUi();
+      updatePeerMenuUi();
+
+      const roomRef = doc(db, firebaseRoomBase, roomCode);
+      const settingsRef = doc(db, firebaseRoomBase, roomCode, 'meta', 'settings');
+      const participantsCol = collection(db, firebaseRoomBase, roomCode, 'participants');
+      const eventsCol = collection(db, firebaseRoomBase, roomCode, 'events');
+      const selfPresenceRef = doc(db, firebaseRoomBase, roomCode, 'participants', selfId);
+
+      state.firebase.roomRef = roomRef;
+      state.firebase.settingsRef = settingsRef;
+      state.firebase.participantsCol = participantsCol;
+      state.firebase.eventsCol = eventsCol;
+      state.firebase.selfPresenceRef = selfPresenceRef;
+
+      state.firebase.unsubRoom = onSnapshot(roomRef, (snap) => {
+        const data = snap.data() || {};
+        if (data.sendLock && typeof data.sendLock === 'object') {
+          state.sendLock = {
+            byId: data.sendLock.byId || '',
+            byName: data.sendLock.byName || '',
+            until: typeof data.sendLock.until === 'number' ? data.sendLock.until : 0,
+            token: data.sendLock.token || ''
+          };
+        } else {
+          state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+        }
+        updatePeerMenuUi();
+        updateConnectionStateFromParticipants();
+      });
+
+      state.firebase.unsubSettings = onSnapshot(settingsRef, (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        if (data.senderId === selfId) return;
+        if (Date.now() <= state.receiveWindowUntil) {
+          applySettingsSnapshot(data);
+        }
+      });
+
+      state.firebase.unsubParticipants = onSnapshot(participantsCol, (snap) => {
+        const list = [];
+        snap.forEach((d) => {
+          const data = d.data() || {};
+          list.push({
+            id: d.id,
+            name: (data.name || '名無し').toString().slice(0, 20),
+            lastSeen: typeof data.lastSeen === 'number' ? data.lastSeen : 0,
+            self: d.id === selfId
+          });
+        });
+        updateRoomParticipantsFromSnapshot(list);
+      });
+
+      state.firebase.unsubEvents = onSnapshot(query(eventsCol, orderBy('createdAt', 'asc'), limit(200)), (snap) => {
+        snap.docChanges().forEach((ch) => {
+          if (ch.type !== 'added') return;
+          const data = ch.doc.data() || {};
+          if (data.sender === selfId) return;
+          if (!pushSeenPacket(ch.doc.id)) return;
+          applyEffectPacket({
+            id: ch.doc.id,
+            sender: data.sender,
+            kind: data.kind,
+            payload: data.payload
+          });
+        });
+      });
+
+      state.firebase.heartbeat = setInterval(() => {
+        sendCurrentPresenceToRoom();
+        cleanupParticipants();
+      }, 2000);
+
+      sendCurrentPresenceToRoom();
+      updateConnectionStateFromParticipants();
+      showToast('オンラインで待機中');
+      startRoomSyncTimer();
+    }
+
+    function sendCurrentPresenceToRoom() {
+      if (state.transport === 'none' || !state.roomCode) return;
+      if (state.transport === 'local') {
+        localPostMessage({
+          type: 'presence',
+          id: selfId,
+          name: currentDisplayName(),
+          lastSeen: nowEpoch(),
+          self: true
+        });
+      } else if (state.transport === 'firebase') {
+        setDoc(state.firebase.selfPresenceRef, {
+          id: selfId,
+          name: currentDisplayName(),
+          lastSeen: nowEpoch(),
+          mode: state.roomMode,
+          self: true
+        }, { merge: true }).catch(() => {});
+      }
+    }
+
+    function applyIncomingPresence(packet) {
+      if (!packet || typeof packet !== 'object' || !packet.id) return;
+      if (packet.id === selfId) return;
+      if (typeof packet.name !== 'string') return;
+      setRoomParticipant(packet.id, {
+        id: packet.id,
+        name: packet.name.trim() || '名無し',
+        lastSeen: typeof packet.lastSeen === 'number' ? packet.lastSeen : nowEpoch(),
+        self: false
+      });
+      updateConnectionStateFromParticipants();
+    }
+
+    function applyIncomingLock(lockPacket) {
+      if (!lockPacket || typeof lockPacket !== 'object') return;
+      if (typeof lockPacket.byId !== 'string' || typeof lockPacket.byName !== 'string') return;
+      state.sendLock = {
+        byId: lockPacket.byId,
+        byName: lockPacket.byName,
+        until: typeof lockPacket.until === 'number' ? lockPacket.until : 0,
+        token: lockPacket.token || ''
+      };
+      updatePeerMenuUi();
+    }
+
+    function applySettingsSnapshot(snapshot) {
+      if (!snapshot || typeof snapshot !== 'object') return;
+      if (typeof snapshot.token === 'string' && snapshot.token === state.currentSettingsToken) return;
+      if (snapshot.senderId && snapshot.senderId === selfId) return;
+      if (Date.now() > state.receiveWindowUntil) return;
+
+      state.currentSettingsToken = typeof snapshot.token === 'string' ? snapshot.token : state.currentSettingsToken;
+      state.receiveWindowUntil = 0;
+
+      if (snapshot.payload && typeof snapshot.payload === 'object') {
+        const p = snapshot.payload;
+        if (isValidMode(p.bgMode)) settings.bgMode = p.bgMode;
+        if (typeof p.bgCustom === 'string') settings.bgCustom = p.bgCustom;
+        if (typeof p.tapColor === 'string') settings.tapColor = p.tapColor;
+        if (typeof p.swipeColor === 'string') settings.swipeColor = p.swipeColor;
+        if (typeof p.loopColor === 'string') settings.loopColor = p.loopColor;
+        if (typeof p.gridEnabled === 'boolean') settings.gridEnabled = p.gridEnabled;
+        if (isValidMode(p.gridMode)) settings.gridMode = p.gridMode;
+        if (typeof p.gridCustom === 'string') settings.gridCustom = p.gridCustom;
+        if (typeof p.gridSpacing === 'number' && isFinite(p.gridSpacing)) settings.gridSpacing = clamp(Math.round(p.gridSpacing), 18, 100);
+        if (typeof p.displayName === 'string') settings.displayName = p.displayName.slice(0, 20) || settings.displayName;
+      }
+
+      syncSettingsUi();
+      document.body.style.background = getBgColor();
+      saveSettings();
+      updatePeerMenuUi();
+      showToast('設定を受信した');
+    }
+
+    function applyEffectPacket(packet) {
+      if (!packet || typeof packet !== 'object') return;
+      if (packet.sender === selfId) return;
+      if (!pushSeenPacket(packet.id)) return;
+
+      const kind = packet.kind;
+      const payload = packet.payload || {};
+      if (kind === 'tap' && typeof payload.x === 'number' && typeof payload.y === 'number') {
+        addTapEffect(payload.x, payload.y, false);
+      } else if (kind === 'swipe' && payload.from && payload.to && payload.dir) {
+        createSwipeEffect(payload.from.x, payload.from.y, payload.dir.x * 100, payload.dir.y * 100, false, {
+          forceFrom: payload.from,
+          forceTo: payload.to,
+          forceRadius: payload.radius
+        });
+      } else if (kind === 'loop' && Array.isArray(payload.points)) {
+        const pts = payload.points.filter(p => p && typeof p.x === 'number' && typeof p.y === 'number');
+        if (pts.length >= 3) createLoopEffect(pts, false);
+      }
+    }
+
+    function disconnectAfterButton() {
+      disconnectRoom(true);
+      showToast('切断した');
+    }
+
+    function openPeerChoiceConnectionByMode(mode, qr = false) {
+      if (mode === 'local') {
+        handleRoomSelection('local', qr);
+      } else {
+        handleRoomSelection('firebase', false);
+      }
+    }
+
+    function updatePeerButtonHidden() {
+      peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
+      displayNameWrap.classList.toggle('disabled', !settings.peerButtonVisible);
+      displayNameInput.disabled = !settings.peerButtonVisible;
+    }
+
+    function maybeShowConnectedToast() {
+      if (state.peerState === 'connected' && !state.maybeConnectedToastShown) {
+        state.maybeConnectedToastShown = true;
+        showToast('接続した');
+      }
+      if (state.peerState !== 'connected') {
+        state.maybeConnectedToastShown = false;
+      }
+    }
+
+    function getRoomModeText() {
+      return state.roomMode === 'firebase' ? 'オンラインで通信' : 'ローカルで通信';
+    }
+
+    function updateRoomOverlayLabel() {
+      roomTitle.textContent = state.roomMode === 'firebase' ? 'オンラインで通信' : 'ローカルで通信';
+      roomText.textContent = state.roomMode === 'firebase'
+        ? '同じ文字を入力した人と同じ部屋になります。マッチング中も普通に遊べます。'
+        : '同じ文字を入力した人と同じローカル部屋になります。マッチング中も普通に遊べます。';
+      roomJoinButton.textContent = state.showQrAfterJoin ? '表示して参加' : '参加する';
+      roomQrToggleButton.textContent = state.showQrAfterJoin ? 'QR表示: ON' : 'QR表示: OFF';
+    }
+
+    function clearRoomUi() {
+      roomCodeInput.value = '';
+      closeRoomOverlay();
+      closeQrOverlay();
+      closePeerMenu();
+      updatePeerMenuUi();
+    }
+
+    function handleRoomJoin() {
+      const code = normalizeRoomCode(roomCodeInput.value) || generateRoomCode();
+      roomCodeInput.value = code;
+      if (state.roomMode === 'firebase') {
+        openFirebaseRoom(code);
+        closeRoomOverlay();
+      } else {
+        openLocalRoom(code);
+        closeRoomOverlay();
+      }
+    }
+
+    function handlePeerDisconnect() {
+      disconnectRoom(true);
+      showToast('切断した');
+    }
+
+    function handlePeerSend() {
+      sendCurrentSettings();
+    }
+
+    function handlePeerReceive() {
+      state.receiveWindowUntil = nowEpoch() + 10000;
+      showToast('10秒以内の設定を待ってる');
+    }
+
+    function handleRoomResetOnLeave() {
+      state.showQrAfterJoin = false;
+      updateRoomOverlayLabel();
+    }
+
+    function setInitialUiState() {
+      syncSettingsUi();
+      updateTheme();
+      resize();
+      updatePeerButtonUi();
+      updatePeerMenuUi();
+      document.body.style.background = getBgColor();
+    }
+
     openSettings.addEventListener('click', openOverlay);
     closeSettings.addEventListener('click', closeOverlay);
-    overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
-
-    peerButton.addEventListener('click', handlePeerButtonTap);
-    peerMenuOverlay.addEventListener('click', e => { if (e.target === peerMenuOverlay) hidePeerMenu(); });
-    peerChoice1.addEventListener('click', () => {});
-    peerChoice2.addEventListener('click', () => {});
-    peerChoice3.addEventListener('click', () => {});
-
-    connectStartButton.addEventListener('click', handleConnectStart);
-    connectCloseButton.addEventListener('click', closeConnectOverlay);
-    connectOverlay.addEventListener('click', e => { if (e.target === connectOverlay) closeConnectOverlay(); });
-
-    qrOverlay.addEventListener('click', e => { if (e.target === qrOverlay) closeQrOverlay(); });
-    qrCloseButton.addEventListener('click', closeQrOverlay);
-    qrModeButton.addEventListener('click', () => {
-      openScanOverlay();
-      roomState.qrModeAfterScan = 'invite';
-      startScanLoop();
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeOverlay();
     });
 
-    scanOverlay.addEventListener('click', e => { if (e.target === scanOverlay) closeScanOverlay(); });
-    scanCloseButton.addEventListener('click', closeScanOverlay);
-    scanAcceptButton.addEventListener('click', async () => {
-      const text = scanInput.value.trim();
-      if (!text) { setToast('文字列がない'); return; }
-      await handleScannedText(text);
+    peerButton.addEventListener('click', () => {
+      if (state.peerState === 'searching') {
+        disconnectRoom(true);
+        showToast('キャンセルした');
+        return;
+      }
+      if (state.peerState === 'connected') {
+        openPeerMenu('connected');
+        return;
+      }
+      openPeerMenu('off');
+    });
+
+    peerMenuOverlay.addEventListener('click', (e) => {
+      if (e.target === peerMenuOverlay) closePeerMenu();
+    });
+
+    qrOverlay.addEventListener('click', (e) => {
+      if (e.target === qrOverlay) closeQrOverlay();
+    });
+
+    roomOverlay.addEventListener('click', (e) => {
+      if (e.target === roomOverlay) closeRoomOverlay();
+    });
+
+    qrCloseButton.addEventListener('click', closeQrOverlay);
+
+    roomJoinButton.addEventListener('click', handleRoomJoin);
+    roomCancelButton.addEventListener('click', () => {
+      closeRoomOverlay();
+    });
+    roomQrToggleButton.addEventListener('click', () => {
+      state.showQrAfterJoin = !state.showQrAfterJoin;
+      updateRoomOverlayLabel();
     });
 
     bgMode.addEventListener('change', () => {
       settings.bgMode = bgMode.value;
       bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
-      applyAndSave();
+      applySettingsSnapshotToUi();
     });
-    bgCustomInput.addEventListener('input', () => { settings.bgCustom = bgCustomInput.value.trim(); applyAndSave(); });
 
-    tapColorInput.addEventListener('input', () => { settings.tapColor = tapColorInput.value.trim(); saveSettings(); });
-    swipeColorInput.addEventListener('input', () => { settings.swipeColor = swipeColorInput.value.trim(); saveSettings(); });
-    loopColorInput.addEventListener('input', () => { settings.loopColor = loopColorInput.value.trim(); saveSettings(); });
+    bgCustomInput.addEventListener('input', () => {
+      settings.bgCustom = bgCustomInput.value.trim();
+      applySettingsSnapshotToUi();
+    });
+
+    tapColorInput.addEventListener('input', () => {
+      settings.tapColor = tapColorInput.value.trim();
+      saveSettings();
+    });
+
+    swipeColorInput.addEventListener('input', () => {
+      settings.swipeColor = swipeColorInput.value.trim();
+      saveSettings();
+    });
+
+    loopColorInput.addEventListener('input', () => {
+      settings.loopColor = loopColorInput.value.trim();
+      saveSettings();
+    });
 
     gridToggle.addEventListener('change', () => {
       settings.gridEnabled = gridToggle.checked;
       gridDetails.classList.toggle('disabled', !settings.gridEnabled);
       saveSettings();
     });
-    gridMode.addEventListener('change', () => { settings.gridMode = gridMode.value; gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom'); saveSettings(); });
-    gridCustomInput.addEventListener('input', () => { settings.gridCustom = gridCustomInput.value.trim(); saveSettings(); });
+
+    gridMode.addEventListener('change', () => {
+      settings.gridMode = gridMode.value;
+      gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
+      saveSettings();
+    });
+
+    gridCustomInput.addEventListener('input', () => {
+      settings.gridCustom = gridCustomInput.value.trim();
+      saveSettings();
+    });
+
     spacingRange.addEventListener('input', () => {
       settings.gridSpacing = clamp(Number(spacingRange.value) || 36, 18, 100);
       spacingValue.textContent = String(settings.gridSpacing);
@@ -2106,213 +3592,319 @@
 
     peerButtonToggle.addEventListener('change', () => {
       settings.peerButtonVisible = peerButtonToggle.checked;
-      if (!settings.peerButtonVisible) stopAllConnections(false);
-      updateNameAvailability();
-      updatePeerButtonUi();
+      if (!settings.peerButtonVisible) {
+        disconnectRoom(false);
+      }
+      updatePeerButtonHidden();
       saveSettings();
     });
 
-    nameInput.addEventListener('input', () => {
-      settings.name = (nameInput.value.trim() || defaults.name).slice(0, 20);
-      if (roomState.mode === 'firebase' && roomState.participantDocRef) updateDoc(roomState.participantDocRef, { name: settings.name, lastSeen: serverTimestamp() }).catch(()=>{});
+    displayNameInput.addEventListener('input', () => {
+      settings.displayName = displayNameInput.value.trim().slice(0, 20) || '自分';
       saveSettings();
-      renderPeerMenuNames();
+      if (state.transport !== 'none') {
+        sendCurrentPresenceToRoom();
+        updatePeerMenuUi();
+      }
     });
 
     resetSettings.addEventListener('click', resetAllSettings);
 
-    // Pointer drawing
+    roomCodeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleRoomJoin();
+      }
+    });
+
     canvas.addEventListener('pointerdown', (e) => {
-      if (overlay.classList.contains('open') || peerMenuOverlay.classList.contains('open') || connectOverlay.classList.contains('open') || qrOverlay.classList.contains('open') || scanOverlay.classList.contains('open')) return;
+      if (overlay.classList.contains('open')) return;
+      if (peerMenuOverlay.classList.contains('open')) return;
+      if (qrOverlay.classList.contains('open')) return;
+      if (roomOverlay.classList.contains('open')) return;
       if (activePointerId !== null) return;
+
       activePointerId = e.pointerId;
       canvas.setPointerCapture(activePointerId);
-      const p = { x: e.clientX, y: e.clientY };
+
+      const p = getPoint(e);
       pointerDownTime = nowMs();
       pointerDownPos = { x: p.x, y: p.y };
       lastPos = { x: p.x, y: p.y };
       strokePoints = [p];
       pointerHadLoop = false;
       e.preventDefault();
-    }, { passive:false });
+    }, { passive: false });
 
     canvas.addEventListener('pointermove', (e) => {
       if (activePointerId !== e.pointerId) return;
-      const p = { x: e.clientX, y: e.clientY };
+      const p = getPoint(e);
       const t = nowMs();
+
       if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
         strokePoints.push(p);
         lastPos = p;
       }
+
       if (t - lastLoopAt >= LASSO_COOLDOWN) {
         if (detectLoop(strokePoints, p.x, p.y)) {
-          makeLoopEffect(strokePoints);
+          createLoopEffect(strokePoints);
           lastLoopAt = t;
           pointerHadLoop = true;
           strokePoints = [p];
         }
       }
+
       e.preventDefault();
-    }, { passive:false });
+    }, { passive: false });
 
     function finishPointer(e) {
       if (activePointerId !== e.pointerId) return;
-      const p = { x: e.clientX, y: e.clientY };
+
+      const p = getPoint(e);
       const elapsed = nowMs() - pointerDownTime;
       const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
+
       if (!pointerHadLoop) {
         if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
-          makeTapEffect(p.x, p.y);
+          addTapEffect(p.x, p.y);
         } else if (totalMove >= SWIPE_MIN_DISTANCE) {
-          makeSwipeEffect(p.x, p.y, p.x - pointerDownPos.x, p.y - pointerDownPos.y);
+          const dx = p.x - pointerDownPos.x;
+          const dy = p.y - pointerDownPos.y;
+          createSwipeEffect(p.x, p.y, dx, dy);
         }
       }
+
       activePointerId = null;
       strokePoints = [];
       pointerHadLoop = false;
       e.preventDefault();
     }
-    canvas.addEventListener('pointerup', finishPointer, { passive:false });
-    canvas.addEventListener('pointercancel', finishPointer, { passive:false });
-    canvas.addEventListener('lostpointercapture', () => { activePointerId = null; strokePoints = []; pointerHadLoop = false; });
 
-    // Connection logic
-    function stopFirebaseAndLocalLeave(sendLeave = false) {
-      if (roomState.mode === 'local') stopLocal(sendLeave);
-      if (roomState.mode === 'firebase') stopFirebase();
-    }
-
-    function stopAllConnections(sendLeave = false) {
-      stopFirebaseAndLocalLeave(sendLeave);
-      roomState.mode = 'off';
-      roomState.roomId = '';
-      roomState.activeTransport = 'none';
-      roomState.sendLock = null;
-      roomState.participants = [];
-      roomState.receiveWindowUntil = 0;
-      updatePeerButtonUi();
-      hidePeerMenu();
-      closeQrOverlay();
-      closeScanOverlay();
-      closeConnectOverlay();
-    }
-
-    function isFirebaseLockedByOther() {
-      const lock = roomState.sendLock;
-      if (!lock) return false;
-      if (lock.until && Date.now() > lock.until) return false;
-      return lock.name && lock.name !== settings.name;
-    }
-
-    function updatePeerButtonUi() {
-      peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
-      const active = roomState.mode !== 'off' && roomState.activeTransport !== 'none';
-      peerButton.classList.toggle('searching', active && !isConnected());
-      peerButton.classList.toggle('connected', isConnected());
-      if (!settings.peerButtonVisible) {
-        peerButton.setAttribute('aria-label', 'ローカル通信');
-      } else if (active && !isConnected()) {
-        peerButton.setAttribute('aria-label', 'ローカル通信をキャンセル');
-      } else if (isConnected()) {
-        peerButton.setAttribute('aria-label', '接続メニューを開く');
-      } else {
-        peerButton.setAttribute('aria-label', 'ローカル通信');
-      }
-    }
-
-    function handleLocalRoomTick() {
-      if (roomState.mode !== 'local') return;
-      handleLocalReceiveWindow();
-      heartbeatLocal();
-    }
-
-    setInterval(handleLocalRoomTick, 1200);
-    window.addEventListener('storage', handleWindowStorage);
-
-    // Settings UI hooks
-    function syncUiAll() {
-      syncSettingsUi();
-      updateNameAvailability();
-      updatePeerButtonUi();
-      renderPeerMenuNames();
-    }
-
-    // Init
-    loadSettings();
-    updateTheme();
-    resize();
-    syncUiAll();
-    setBodyBg();
-
-    if (window.matchMedia) {
-      const darkMql = window.matchMedia('(prefers-color-scheme: dark)');
-      if (typeof darkMql.addEventListener === 'function') darkMql.addEventListener('change', updateTheme);
-      else if (typeof darkMql.addListener === 'function') darkMql.addListener(updateTheme);
-    }
-
-    window.addEventListener('resize', resize);
-
-    // connect overlay defaults
-    connectStartButton.textContent = '開始';
-    connectCloseButton.textContent = '閉じる';
-
-    // peer button action toggle
-    peerButton.addEventListener('click', () => {
-      if (!settings.peerButtonVisible) return;
-      if (roomState.activeTransport !== 'none' && !isConnected()) {
-        stopAllConnections(true);
-        setToast('キャンセルした');
-        return;
-      }
-      if (!isConnected()) {
-        showPeerMenu('off');
-      } else {
-        showPeerMenu('connected');
-      }
+    canvas.addEventListener('pointerup', finishPointer, { passive: false });
+    canvas.addEventListener('pointercancel', finishPointer, { passive: false });
+    canvas.addEventListener('lostpointercapture', () => {
+      activePointerId = null;
+      strokePoints = [];
+      pointerHadLoop = false;
     });
 
-    // better menu updates
+    function handleWindowResize() {
+      resize();
+    }
+
+    window.addEventListener('resize', handleWindowResize);
+
+    function openOverlayFromSettings() {
+      openOverlay();
+    }
+
+    function connectRenderLoop() {
+      loadSettings();
+      setInitialUiState();
+      updatePeerButtonHidden();
+      handleRoomResetOnLeave();
+      updateRoomOverlayLabel();
+      updatePeerMenuUi();
+      requestAnimationFrame(render);
+    }
+
+    function refreshConnectedUI() {
+      setPeerStateBasedOnParticipants();
+      updatePeerMenuUi();
+      maybeShowConnectedToast();
+    }
+
+    function safeDisconnectOnUnload() {
+      try {
+        disconnectRoom(false);
+      } catch (_) {}
+    }
+
+    window.addEventListener('beforeunload', safeDisconnectOnUnload);
+
+    const darkMql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    if (darkMql) {
+      if (typeof darkMql.addEventListener === 'function') {
+        darkMql.addEventListener('change', updateTheme);
+      } else if (typeof darkMql.addListener === 'function') {
+        darkMql.addListener(updateTheme);
+      }
+    }
+
     setInterval(() => {
-      if (roomState.mode === 'firebase') {
-        maybeUpdateSendButtonText();
-        syncConnectedStateVisuals();
+      if (state.transport === 'none') return;
+      cleanupParticipants();
+      if (state.sendLock && isLockActive(state.sendLock) && state.sendLock.until < nowEpoch()) {
+        state.sendLock = { byId: '', byName: '', until: 0, token: '' };
+        updatePeerMenuUi();
       }
-      if (roomState.mode === 'local') {
-        handleLocalReceiveWindow();
-        syncConnectedStateVisuals();
-      }
-    }, 500);
+      refreshConnectedUI();
+    }, 1000);
 
-    // QR/text helpers
-    qrModeButton.onclick = () => {
-      openScanOverlay();
-      roomState.qrModeAfterScan = 'invite';
-      startScanLoop();
-    };
-
-    // after open connect, choosing start should work
-    connectStartButton.onclick = handleConnectStart;
-
-    // keep openPeerMenu only as alias to avoid shadowing issues
-    // (actual implementation lives in showPeerMenu)
-    void openPeerMenu;
-
-    // show peer button state from settings
-    updateNameAvailability();
-    updatePeerButtonUi();
-
-    // keyboard-friendly close on Escape
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        if (scanOverlay.classList.contains('open')) closeScanOverlay();
-        else if (qrOverlay.classList.contains('open')) closeQrOverlay();
-        else if (connectOverlay.classList.contains('open')) closeConnectOverlay();
-        else if (peerMenuOverlay.classList.contains('open')) hidePeerMenu();
-        else if (overlay.classList.contains('open')) closeOverlay();
-      }
-    });
-
-    requestAnimationFrame(render);
+    connectRenderLoop();
   </script>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <button class="gear-btn" id="openSettings" aria-label="設定を開く">
+    <span>⛭</span>
+  </button>
+
+  <button class="peer-btn hidden" id="peerButton" aria-label="ローカル通信">
+    <span class="peer-icon">☋</span>
+    <span class="peer-spinner" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+    </span>
+  </button>
+
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="panel" role="dialog" aria-modal="true" aria-label="設定">
+      <div class="panel-header">
+        <div class="panel-title">設定</div>
+        <button class="close-btn" id="closeSettings">戻る</button>
+      </div>
+
+      <div class="setting-block">
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="main">背景色</div>
+            <div class="sub">システム / 白 / 黒 / カスタム</div>
+          </div>
+          <select class="mode-select" id="bgMode">
+            <option value="system">システム</option>
+            <option value="white">白</option>
+            <option value="black">黒</option>
+            <option value="custom">カスタム</option>
+          </select>
+        </div>
+        <div class="sub-input-wrap hidden" id="bgCustomWrap">
+          <input class="hex-input" id="bgCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ffffff" />
+        </div>
+      </div>
+
+      <div class="setting-block">
+        <div class="setting-label">
+          <div class="main">色</div>
+          <div class="sub">タップ / スワイプ / 囲い の色をカラーコードで指定</div>
+        </div>
+
+        <div class="effect-grid">
+          <div class="effect-item">
+            <div class="effect-name">タップの色</div>
+            <input class="hex-input" id="tapColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#46ff78" />
+          </div>
+          <div class="effect-item">
+            <div class="effect-name">スワイプの色</div>
+            <input class="hex-input" id="swipeColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#6ea5ff" />
+          </div>
+          <div class="effect-item">
+            <div class="effect-name">囲いの色</div>
+            <input class="hex-input" id="loopColorInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ff4e4e" />
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-block">
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="main">グリッドを表示</div>
+            <div class="sub">ONで背景に格子を出します</div>
+          </div>
+          <label class="switch" aria-label="グリッドを表示">
+            <input type="checkbox" id="gridToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div id="gridDetails">
+          <div class="range-wrap">
+            <div class="range-head">
+              <div class="range-title">間隔</div>
+              <div class="range-value"><span id="spacingValue">36</span>px</div>
+            </div>
+            <input type="range" id="spacingRange" min="18" max="100" step="1" value="36" />
+          </div>
+
+          <div class="control-row">
+            <div class="setting-label">
+              <div class="main" style="font-size: 13px;">グリッド色</div>
+              <div class="sub">システム / 白 / 黒 / カスタム</div>
+            </div>
+            <select class="mode-select" id="gridMode">
+              <option value="system">システム</option>
+              <option value="white">白</option>
+              <option value="black">黒</option>
+              <option value="custom">カスタム</option>
+            </select>
+          </div>
+
+          <div class="sub-input-wrap hidden" id="gridCustomWrap">
+            <input class="hex-input" id="gridCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#e8e8e8" />
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-block">
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="main">ローカル通信ボタンを表示</div>
+            <div class="sub">左上に通信ボタンを出します</div>
+          </div>
+          <label class="switch" aria-label="ローカル通信ボタンを表示">
+            <input type="checkbox" id="peerButtonToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="name-input-wrap" id="displayNameWrap">
+          <input class="hex-input" id="displayNameInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="表示名" />
+        </div>
+      </div>
+
+      <div class="setting-block">
+        <div class="footer-actions">
+          <button class="danger-btn" id="resetSettings">設定をリセット</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="peer-menu-overlay" id="peerMenuOverlay" aria-hidden="true">
+    <div class="peer-menu-stage" id="peerMenuStage">
+      <div class="peer-burst-ring"></div>
+      <div class="peer-names-bar" id="peerNamesBar"></div>
+      <button class="peer-choice" id="peerChoice1"><span class="peer-choice-label" id="peerChoiceLabel1"></span></button>
+      <button class="peer-choice" id="peerChoice2"><span class="peer-choice-label" id="peerChoiceLabel2"></span></button>
+      <button class="peer-choice" id="peerChoice3"><span class="peer-choice-label" id="peerChoiceLabel3"></span></button>
+    </div>
+  </div>
+
+  <div class="qr-overlay" id="qrOverlay" aria-hidden="true">
+    <div class="dialog">
+      <div class="dialog-title" id="qrTitle">QRコード</div>
+      <div class="dialog-text" id="qrText">読み込み中…</div>
+      <div class="qr-box"><img id="qrImage" alt="QRコード" /></div>
+      <div class="qr-actions">
+        <button class="ghost-btn" id="qrCloseButton">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="room-overlay" id="roomOverlay" aria-hidden="true">
+    <div class="dialog">
+      <div class="dialog-title" id="roomTitle">通信</div>
+      <div class="dialog-text" id="roomText">同じ文字を入力した人と同じ部屋になります。</div>
+      <input class="hex-input" id="roomCodeInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="参加コード" />
+      <div class="room-actions" style="margin-top: 12px;">
+        <button class="ghost-btn" id="roomJoinButton">参加する</button>
+        <button class="ghost-btn" id="roomQrToggleButton">QR表示: OFF</button>
+        <button class="ghost-btn" id="roomCancelButton">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
 </body>
 </html>
