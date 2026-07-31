@@ -107,11 +107,16 @@
       transform: scale(0.97);
     }
 
-    .peer-btn.hidden {
+    .peer-btn.hidden,
+    .peer-top-strip.hidden {
       display: none;
     }
 
-    .peer-btn.searching,
+    .peer-btn.searching {
+      border-color: var(--peer-blue);
+      color: var(--peer-blue);
+    }
+
     .peer-btn.connected {
       border-color: var(--peer-blue);
       color: var(--peer-blue);
@@ -170,6 +175,89 @@
       to { transform: rotate(360deg); }
     }
 
+    .peer-top-strip {
+      position: fixed;
+      left: 50%;
+      top: calc(env(safe-area-inset-top, 0px) + 62px);
+      transform: translateX(-50%);
+      width: min(94vw, 760px);
+      z-index: 18;
+      pointer-events: none;
+    }
+
+    .peer-top-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-radius: 18px;
+      background: rgba(127, 127, 127, 0.12);
+      border: 1px solid rgba(127, 127, 127, 0.16);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 10px 12px;
+      box-sizing: border-box;
+    }
+
+    .peer-top-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .peer-top-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .peer-top-room {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 66vw;
+    }
+
+    .peer-top-names {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+
+    .peer-top-names::-webkit-scrollbar {
+      display: none;
+    }
+
+    .peer-chip {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      border: 1px solid rgba(127, 127, 127, 0.22);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 4px 10px;
+      font-size: 12px;
+      line-height: 1.2;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .peer-chip.self {
+      border-color: rgba(47, 120, 255, 0.65);
+      color: var(--peer-blue);
+    }
+
+    .peer-chip.sending {
+      border-color: rgba(47, 120, 255, 0.85);
+      background: rgba(47, 120, 255, 0.14);
+      color: var(--peer-blue);
+    }
+
     .overlay {
       position: fixed;
       inset: 0;
@@ -212,7 +300,7 @@
       gap: 12px;
       margin: -18px -18px 18px;
       padding: 18px 18px 14px;
-      background: linear-gradient(to bottom, var(--panel-bg) 78%, rgba(0,0,0,0));
+      background: linear-gradient(to bottom, var(--panel-bg) 80%, rgba(0,0,0,0));
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(127, 127, 127, 0.12);
@@ -345,8 +433,7 @@
       -webkit-appearance: none;
     }
 
-    .hex-input,
-    .text-input {
+    .hex-input {
       width: 100%;
       box-sizing: border-box;
       height: 38px;
@@ -359,12 +446,7 @@
       outline: none;
     }
 
-    .text-input {
-      text-transform: none;
-    }
-
-    .hex-input::placeholder,
-    .text-input::placeholder {
+    .hex-input::placeholder {
       color: var(--muted);
     }
 
@@ -475,6 +557,12 @@
       font-weight: 650;
     }
 
+    .effect-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
     .footer-actions {
       display: flex;
       gap: 10px;
@@ -501,9 +589,7 @@
       transform: scale(0.98);
     }
 
-    .peer-menu-overlay,
-    .connect-overlay,
-    .qr-overlay {
+    .peer-menu-overlay {
       position: fixed;
       inset: 0;
       z-index: 40;
@@ -517,9 +603,7 @@
       box-sizing: border-box;
     }
 
-    .peer-menu-overlay.open,
-    .connect-overlay.open,
-    .qr-overlay.open {
+    .peer-menu-overlay.open {
       display: flex;
     }
 
@@ -528,32 +612,6 @@
       width: min(92vw, 420px);
       height: min(84vh, 420px);
       pointer-events: none;
-    }
-
-    .peer-name-strip {
-      position: absolute;
-      top: calc(env(safe-area-inset-top, 0px) + 12px);
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(92vw, 520px);
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    .peer-name-chip {
-      border: 1px solid rgba(47, 120, 255, 0.42);
-      color: #2f78ff;
-      background: rgba(255,255,255,0.06);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 12px;
-      line-height: 1;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
     }
 
     .peer-burst-ring {
@@ -579,8 +637,8 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 122px;
-      height: 122px;
+      width: 126px;
+      height: 126px;
       border: 1.7px solid rgba(47, 120, 255, 0.82);
       background: rgba(255, 255, 255, 0.08);
       border-radius: 50%;
@@ -618,9 +676,9 @@
     }
 
     .peer-choice:disabled {
-      opacity: 0.38;
+      opacity: 0.34;
       pointer-events: none;
-      filter: grayscale(0.2);
+      filter: saturate(0.7);
     }
 
     .peer-choice .peer-choice-label {
@@ -656,12 +714,12 @@
       --to-y: -118px;
     }
 
-    .peer-choice.qr-show {
+    .peer-choice.fb {
       --to-x: -118px;
       --to-y: 108px;
     }
 
-    .peer-choice.online {
+    .peer-choice.solo {
       --to-x: 118px;
       --to-y: 108px;
     }
@@ -679,82 +737,6 @@
     .peer-choice.receive {
       --to-x: 118px;
       --to-y: 108px;
-    }
-
-    .dialog {
-      width: min(92vw, 520px);
-      border-radius: 26px;
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
-      color: var(--text);
-      padding: 18px;
-      box-sizing: border-box;
-      max-height: min(86vh, 720px);
-      overflow: auto;
-    }
-
-    .dialog-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-
-    .dialog-text {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.45;
-      margin-bottom: 12px;
-    }
-
-    .dialog-sub {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.35;
-      margin-top: 8px;
-    }
-
-    .qr-box {
-      width: min(72vw, 320px);
-      aspect-ratio: 1 / 1;
-      margin: 0 auto 12px;
-      border-radius: 18px;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(0,0,0,0.08);
-      display: grid;
-      place-items: center;
-    }
-
-    .qr-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .dialog-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .ghost-btn {
-      appearance: none;
-      border: 1.5px solid var(--panel-border);
-      background: transparent;
-      color: var(--text);
-      border-radius: 14px;
-      height: 40px;
-      padding: 0 14px;
-      font-size: 14px;
-      font-weight: 650;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .ghost-btn:active {
-      transform: scale(0.98);
     }
 
     .toast {
@@ -802,7 +784,17 @@
     </span>
   </button>
 
-  <div class="overlay" id="settingsOverlay" aria-hidden="true">
+  <div class="peer-top-strip hidden" id="peerTopStrip">
+    <div class="peer-top-card">
+      <div class="peer-top-head">
+        <div class="peer-top-title" id="peerTopTitle">通信</div>
+        <div class="peer-top-room" id="peerTopRoom">room</div>
+      </div>
+      <div class="peer-top-names" id="peerTopNames"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay" aria-hidden="true">
     <div class="panel" role="dialog" aria-modal="true" aria-label="設定">
       <div class="panel-header">
         <div class="panel-title">設定</div>
@@ -824,18 +816,6 @@
         </div>
         <div class="sub-input-wrap hidden" id="bgCustomWrap">
           <input class="hex-input" id="bgCustomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="#ffffff" />
-        </div>
-      </div>
-
-      <div class="setting-block">
-        <div class="setting-row">
-          <div class="setting-label">
-            <div class="main">名前</div>
-            <div class="sub">ローカル通信 / Firebase で表示されます</div>
-          </div>
-        </div>
-        <div class="sub-input-wrap" id="displayNameWrap">
-          <input class="text-input" id="displayNameInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="名前" />
         </div>
       </div>
 
@@ -912,6 +892,20 @@
             <span class="slider"></span>
           </label>
         </div>
+
+        <div class="setting-block" id="commConfigBlock" style="border-top: 0; padding-top: 12px;">
+          <div class="effect-item">
+            <div class="effect-name">自分の名前</div>
+            <input class="hex-input" id="displayNameInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="あなた" />
+            <div class="effect-desc">通信中の名前表示に使います</div>
+          </div>
+
+          <div class="effect-item">
+            <div class="effect-name">Firebaseマッチング文字</div>
+            <input class="hex-input" id="firebaseRoomInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="room" />
+            <div class="effect-desc">同じ文字の人と同じ部屋に入ります</div>
+          </div>
+        </div>
       </div>
 
       <div class="setting-block">
@@ -923,40 +917,11 @@
   </div>
 
   <div class="peer-menu-overlay" id="peerMenuOverlay" aria-hidden="true">
-    <div class="peer-name-strip hidden" id="peerNameStrip"></div>
     <div class="peer-menu-stage" id="peerMenuStage">
       <div class="peer-burst-ring"></div>
-      <button class="peer-choice wifi" id="peerChoice1"><span class="peer-choice-label" id="peerChoiceLabel1"></span></button>
-      <button class="peer-choice qr-show" id="peerChoice2"><span class="peer-choice-label" id="peerChoiceLabel2"></span></button>
-      <button class="peer-choice online" id="peerChoice3"><span class="peer-choice-label" id="peerChoiceLabel3"></span></button>
-    </div>
-  </div>
-
-  <div class="connect-overlay" id="connectOverlay" aria-hidden="true">
-    <div class="dialog">
-      <div class="dialog-title" id="connectTitle">接続</div>
-      <div class="dialog-text" id="connectText">同じコードを入れた人同士でつながります。</div>
-      <input class="text-input" id="roomCodeInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="ルームコード" />
-      <div class="dialog-sub">マッチング中も、閉じれば1人でそのまま遊べます。</div>
-      <div style="height: 12px;"></div>
-      <div class="dialog-actions">
-        <button class="ghost-btn" id="connectStartButton">接続する</button>
-        <button class="ghost-btn" id="connectCancelButton">閉じる</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="qr-overlay" id="qrOverlay" aria-hidden="true">
-    <div class="dialog">
-      <div class="dialog-title">QRコードを表示</div>
-      <div class="dialog-text">入力したルームコードをQRにして表示します。</div>
-      <input class="text-input" id="qrRoomCodeInput" type="text" inputmode="text" spellcheck="false" autocomplete="off" placeholder="ルームコード" />
-      <div class="dialog-sub">読み取りは別の手段で使ってください。ここでは表示だけします。</div>
-      <div style="height: 12px;"></div>
-      <div class="qr-box"><img id="qrImage" alt="QRコード" /></div>
-      <div class="dialog-actions">
-        <button class="ghost-btn" id="qrCloseButton">閉じる</button>
-      </div>
+      <button class="peer-choice wifi" id="peerChoice1" type="button"><span class="peer-choice-label" id="peerChoiceLabel1"></span></button>
+      <button class="peer-choice fb" id="peerChoice2" type="button"><span class="peer-choice-label" id="peerChoiceLabel2"></span></button>
+      <button class="peer-choice solo" id="peerChoice3" type="button"><span class="peer-choice-label" id="peerChoiceLabel3"></span></button>
     </div>
   </div>
 
@@ -965,20 +930,9 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
-    import {
-      getFirestore,
-      doc,
-      setDoc,
-      deleteDoc,
-      collection,
-      onSnapshot,
-      query,
-      orderBy,
-      addDoc,
-      runTransaction
-    } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, doc, collection, onSnapshot, setDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-    // Firestore rules must allow rooms/{roomId}, participants, and effects read/write.
+    // Firestore rules must allow the room docs / member docs used below.
 
     const firebaseConfig = {
       apiKey: "AIzaSyAYPZs5qIydcNiFs_2KQDgtkb9oNsnvI2E",
@@ -990,47 +944,35 @@
       measurementId: "G-QX5C0SHB9Y"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app); // optional, but kept from your CDN snippet
-    const db = getFirestore(app);
+    let firebaseApp = null;
+    let firebaseDb = null;
+    try {
+      firebaseApp = initializeApp(firebaseConfig);
+      try {
+        getAnalytics(firebaseApp);
+      } catch (_) {}
+      firebaseDb = getFirestore(firebaseApp);
+    } catch (err) {
+      console.warn("Firebase init failed:", err);
+    }
 
     (() => {
       const canvas = document.getElementById('c');
       const ctx = canvas.getContext('2d', { alpha: true });
 
-      const settingsOverlay = document.getElementById('settingsOverlay');
+      const overlay = document.getElementById('overlay');
       const openSettings = document.getElementById('openSettings');
       const closeSettings = document.getElementById('closeSettings');
 
       const peerButton = document.getElementById('peerButton');
-      const peerMenuOverlay = document.getElementById('peerMenuOverlay');
-      const peerNameStrip = document.getElementById('peerNameStrip');
-      const peerMenuStage = document.getElementById('peerMenuStage');
-      const peerChoice1 = document.getElementById('peerChoice1');
-      const peerChoice2 = document.getElementById('peerChoice2');
-      const peerChoice3 = document.getElementById('peerChoice3');
-      const peerChoiceLabel1 = document.getElementById('peerChoiceLabel1');
-      const peerChoiceLabel2 = document.getElementById('peerChoiceLabel2');
-      const peerChoiceLabel3 = document.getElementById('peerChoiceLabel3');
-
-      const connectOverlay = document.getElementById('connectOverlay');
-      const connectTitle = document.getElementById('connectTitle');
-      const connectText = document.getElementById('connectText');
-      const roomCodeInput = document.getElementById('roomCodeInput');
-      const connectStartButton = document.getElementById('connectStartButton');
-      const connectCancelButton = document.getElementById('connectCancelButton');
-
-      const qrOverlay = document.getElementById('qrOverlay');
-      const qrRoomCodeInput = document.getElementById('qrRoomCodeInput');
-      const qrImage = document.getElementById('qrImage');
-      const qrCloseButton = document.getElementById('qrCloseButton');
+      const peerTopStrip = document.getElementById('peerTopStrip');
+      const peerTopTitle = document.getElementById('peerTopTitle');
+      const peerTopRoom = document.getElementById('peerTopRoom');
+      const peerTopNames = document.getElementById('peerTopNames');
 
       const bgMode = document.getElementById('bgMode');
       const bgCustomWrap = document.getElementById('bgCustomWrap');
       const bgCustomInput = document.getElementById('bgCustomInput');
-
-      const displayNameInput = document.getElementById('displayNameInput');
-      const displayNameWrap = document.getElementById('displayNameWrap');
 
       const tapColorInput = document.getElementById('tapColorInput');
       const swipeColorInput = document.getElementById('swipeColorInput');
@@ -1045,18 +987,30 @@
       const spacingValue = document.getElementById('spacingValue');
 
       const peerButtonToggle = document.getElementById('peerButtonToggle');
+      const displayNameInput = document.getElementById('displayNameInput');
+      const firebaseRoomInput = document.getElementById('firebaseRoomInput');
+      const commConfigBlock = document.getElementById('commConfigBlock');
+
       const resetSettings = document.getElementById('resetSettings');
+
+      const peerMenuOverlay = document.getElementById('peerMenuOverlay');
+      const peerMenuStage = document.getElementById('peerMenuStage');
+      const peerChoice1 = document.getElementById('peerChoice1');
+      const peerChoice2 = document.getElementById('peerChoice2');
+      const peerChoice3 = document.getElementById('peerChoice3');
+      const peerChoiceLabel1 = document.getElementById('peerChoiceLabel1');
+      const peerChoiceLabel2 = document.getElementById('peerChoiceLabel2');
+      const peerChoiceLabel3 = document.getElementById('peerChoiceLabel3');
 
       const toast = document.getElementById('toast');
 
       const STORAGE_KEY = 'touch_effect_settings_v6';
-      const LOCAL_BUS_KEY_PREFIX = 'touch_effect_local_bus_v2_';
+      const LOCAL_STATE_KEY = 'touch_effect_local_room_state_v3';
+      const LOCAL_ROOM_LABEL = 'ローカル通信';
 
-      const defaults = {
+      const appDefaults = {
         bgMode: 'system',
         bgCustom: '#ffffff',
-        displayName: '',
-        lastRoomCode: '',
 
         tapColor: '#46ff78',
         swipeColor: '#6ea5ff',
@@ -1067,82 +1021,73 @@
         gridCustom: '#e8e8e8',
         gridSpacing: 36,
 
-        peerButtonVisible: false
+        peerButtonVisible: false,
+        displayName: 'あなた',
+        firebaseRoomText: 'room'
       };
 
-      const settings = { ...defaults };
+      const appSettings = { ...appDefaults };
 
-      let w = 0;
-      let h = 0;
-      let dpr = 1;
-      let darkMode = false;
+      let appWidth = 0;
+      let appHeight = 0;
+      let appDpr = 1;
+      let appIsDark = false;
 
-      const effects = [];
-      const seenPackets = new Set();
-      const seenPacketQueue = [];
+      const appEffects = [];
 
-      let activePointerId = null;
-      let pointerDownTime = 0;
-      let pointerDownPos = { x: 0, y: 0 };
-      let lastPos = { x: 0, y: 0 };
-      let strokePoints = [];
-      let pointerHadLoop = false;
-      let lastLoopAt = 0;
+      let appActivePointerId = null;
+      let appPointerDownTime = 0;
+      let appPointerDownPos = { x: 0, y: 0 };
+      let appLastPos = { x: 0, y: 0 };
+      let appStrokePoints = [];
+      let appPointerHadLoop = false;
+      let appLastLoopAt = 0;
 
-      const SWIPE_MIN_DISTANCE = 42;
-      const TAP_MAX_DISTANCE = 12;
-      const TAP_MAX_TIME = 320;
-      const LASSO_MIN_POINTS = 20;
-      const LASSO_HIT_RADIUS = 18;
-      const LASSO_IGNORE_RECENT_SEGMENTS = 10;
-      const LASSO_COOLDOWN = 140;
+      const APP_SWIPE_MIN_DISTANCE = 42;
+      const APP_TAP_MAX_DISTANCE = 12;
+      const APP_TAP_MAX_TIME = 320;
+      const APP_LASSO_MIN_POINTS = 20;
+      const APP_LASSO_HIT_RADIUS = 18;
+      const APP_LASSO_IGNORE_RECENT_SEGMENTS = 10;
+      const APP_LASSO_COOLDOWN = 140;
 
-      const qrApiBase = 'https://api.qrserver.com/v1/create-qr-code/?size=420x420&margin=10&data=';
+      const appSeenPacketIds = new Set();
+      const appSeenPacketQueue = [];
 
-      let toastTimer = null;
-      let connectionDialogMode = 'local'; // local | firebase
-      let peerMenuOpen = false;
-      let connectionState = 'off'; // off | searching | connected
-
-      let connection = {
-        kind: 'none', // local | firebase | none
-        roomCode: '',
-        participants: new Map(),
-        sendLockOwnerId: '',
-        sendLockOwnerName: '',
-        sendLockUntil: 0,
-        latestSettings: null,
-        latestSettingsAt: 0,
-        latestSettingsSenderId: '',
-        latestSettingsSenderName: ''
+      let appTransportKind = 'none'; // none | local | firebase
+      let appPeerState = 'off'; // off | searching | connected
+      let appJoinedRoomLabel = '';
+      let appMemberRoster = [];
+      let appSharedRoomState = {
+        activeSenderId: '',
+        activeSenderName: '',
+        activeSenderUntilMs: 0,
+        latestSettingsPacket: null,
+        latestEffectPacket: null
       };
 
-      let receiveWindowUntil = 0;
+      let appReceiveWindowUntilMs = 0;
+      let appLastAppliedSettingsPacketId = '';
+      let appLastAppliedEffectPacketId = '';
 
-      let localChannel = null;
-      let localHeartbeatTimer = null;
-      let localPurgeTimer = null;
+      let appMenuMode = 'off'; // off | connected
+      let appMenuOpen = false;
 
-      let fbRoomRef = null;
-      let fbSelfParticipantRef = null;
-      let fbRoomUnsub = null;
-      let fbParticipantsUnsub = null;
-      let fbEffectsUnsub = null;
-      let fbHeartbeatTimer = null;
+      let appSelfId = appMakeId();
 
-      let selfPeerId = makeId();
-      let effectiveDefaultName = `ユーザー${selfPeerId.slice(0, 4)}`;
+      let appLocalHeartbeatTimer = null;
+      let appLocalStorageListenerActive = false;
 
-      function showToast(message, duration = 1700) {
-        toast.textContent = message;
-        toast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-          toast.classList.remove('show');
-        }, duration);
-      }
+      let appFirebaseRoomRef = null;
+      let appFirebaseMembersColRef = null;
+      let appFirebaseSelfMemberRef = null;
+      let appFirebaseRoomUnsub = null;
+      let appFirebaseMembersUnsub = null;
+      let appFirebaseHeartbeatTimer = null;
 
-      function makeId() {
+      let appToastTimer = null;
+
+      function appMakeId() {
         if (window.crypto && typeof window.crypto.randomUUID === 'function') {
           return window.crypto.randomUUID();
         }
@@ -1151,53 +1096,27 @@
         return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
       }
 
-      function makeRoomCode() {
-        const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        const bytes = new Uint8Array(6);
-        (window.crypto || window.msCrypto).getRandomValues(bytes);
-        let out = '';
-        for (let i = 0; i < bytes.length; i++) {
-          out += alphabet[bytes[i] % alphabet.length];
-        }
-        return out;
-      }
-
-      function sanitizeRoomCode(raw) {
-        let s = String(raw || '').trim().toUpperCase();
-        s = s.replace(/\s+/g, '');
-        s = s.replace(/[^A-Z0-9_-]/g, '');
-        if (!s) s = makeRoomCode();
-        return s.slice(0, 18);
-      }
-
-      function normalizeDisplayName(raw) {
-        let s = String(raw || '').trim();
-        if (!s) s = effectiveDefaultName;
-        if (s.length > 20) s = s.slice(0, 20);
-        return s;
-      }
-
-      function clamp(v, min, max) {
+      function appClamp(v, min, max) {
         return Math.min(max, Math.max(min, v));
       }
 
-      function lerp(a, b, t) {
+      function appLerp(a, b, t) {
         return a + (b - a) * t;
       }
 
-      function nowMs() {
+      function appNowMs() {
         return performance.now();
       }
 
-      function easeOutCubic(t) {
+      function appEaseOutCubic(t) {
         return 1 - Math.pow(1 - t, 3);
       }
 
-      function distance(ax, ay, bx, by) {
+      function appDistance(ax, ay, bx, by) {
         return Math.hypot(ax - bx, ay - by);
       }
 
-      function pointToSegmentDistance(px, py, ax, ay, bx, by) {
+      function appPointToSegmentDistance(px, py, ax, ay, bx, by) {
         const abx = bx - ax;
         const aby = by - ay;
         const apx = px - ax;
@@ -1207,18 +1126,25 @@
         if (abLen2 === 0) return Math.hypot(px - ax, py - ay);
 
         let t = (apx * abx + apy * aby) / abLen2;
-        t = clamp(t, 0, 1);
+        t = appClamp(t, 0, 1);
 
         const cx = ax + abx * t;
         const cy = ay + aby * t;
         return Math.hypot(px - cx, py - cy);
       }
 
-      function isValidMode(value) {
+      function appNormalizeText(raw, fallback, limit = 40) {
+        let s = String(raw ?? '').trim();
+        if (!s) s = fallback;
+        if (s.length > limit) s = s.slice(0, limit);
+        return s;
+      }
+
+      function appIsValidMode(value) {
         return value === 'system' || value === 'white' || value === 'black' || value === 'custom';
       }
 
-      function normalizeHexColor(raw) {
+      function appNormalizeHexColor(raw) {
         if (typeof raw !== 'string') return null;
         let s = raw.trim();
         if (!s) return null;
@@ -1233,8 +1159,8 @@
         return '#' + s.toLowerCase();
       }
 
-      function hexToRgba(rawHex, alphaOverride = 1) {
-        const hex = normalizeHexColor(rawHex);
+      function appHexToRgba(rawHex, alphaOverride = 1) {
+        const hex = appNormalizeHexColor(rawHex);
         if (!hex) return null;
 
         const s = hex.slice(1);
@@ -1242,154 +1168,274 @@
         const g = parseInt(s.slice(2, 4), 16);
         const b = parseInt(s.slice(4, 6), 16);
         const a = s.length === 8 ? parseInt(s.slice(6, 8), 16) / 255 : 1;
-        return `rgba(${r}, ${g}, ${b}, ${clamp(a * alphaOverride, 0, 1)})`;
+        return `rgba(${r}, ${g}, ${b}, ${appClamp(a * alphaOverride, 0, 1)})`;
       }
 
-      function resolveModeColor(mode, customRaw, lightHex, darkHex) {
-        const fallback = darkMode ? darkHex : lightHex;
+      function appResolveModeColor(mode, customRaw, lightHex, darkHex) {
+        const fallback = appIsDark ? darkHex : lightHex;
         if (mode === 'system') return fallback;
         if (mode === 'white') return '#ffffff';
         if (mode === 'black') return '#000000';
-        if (mode === 'custom') return normalizeHexColor(customRaw) || fallback;
+        if (mode === 'custom') return appNormalizeHexColor(customRaw) || fallback;
         return fallback;
       }
 
-      function saveSettings() {
+      function appToast(message, duration = 1700) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(appToastTimer);
+        appToastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, duration);
+      }
+
+      function appSaveSettings() {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(appSettings));
         } catch (_) {}
       }
 
-      function loadSettings() {
+      function appLoadSettings() {
         try {
           const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) {
-            settings.displayName = effectiveDefaultName;
-            settings.lastRoomCode = makeRoomCode();
-            return;
-          }
+          if (!raw) return;
           const data = JSON.parse(raw);
 
-          if (isValidMode(data.bgMode)) settings.bgMode = data.bgMode;
-          if (typeof data.bgCustom === 'string') settings.bgCustom = data.bgCustom;
+          if (appIsValidMode(data.bgMode)) appSettings.bgMode = data.bgMode;
+          if (typeof data.bgCustom === 'string') appSettings.bgCustom = data.bgCustom;
 
-          if (typeof data.displayName === 'string') settings.displayName = data.displayName;
-          if (typeof data.lastRoomCode === 'string') settings.lastRoomCode = data.lastRoomCode;
+          if (typeof data.tapColor === 'string') appSettings.tapColor = data.tapColor;
+          if (typeof data.swipeColor === 'string') appSettings.swipeColor = data.swipeColor;
+          if (typeof data.loopColor === 'string') appSettings.loopColor = data.loopColor;
 
-          if (typeof data.tapColor === 'string') settings.tapColor = data.tapColor;
-          if (typeof data.swipeColor === 'string') settings.swipeColor = data.swipeColor;
-          if (typeof data.loopColor === 'string') settings.loopColor = data.loopColor;
-
-          if (typeof data.gridEnabled === 'boolean') settings.gridEnabled = data.gridEnabled;
-          if (isValidMode(data.gridMode)) settings.gridMode = data.gridMode;
-          if (typeof data.gridCustom === 'string') settings.gridCustom = data.gridCustom;
+          if (typeof data.gridEnabled === 'boolean') appSettings.gridEnabled = data.gridEnabled;
+          if (appIsValidMode(data.gridMode)) appSettings.gridMode = data.gridMode;
+          if (typeof data.gridCustom === 'string') appSettings.gridCustom = data.gridCustom;
           if (typeof data.gridSpacing === 'number' && isFinite(data.gridSpacing)) {
-            settings.gridSpacing = clamp(Math.round(data.gridSpacing), 18, 100);
+            appSettings.gridSpacing = appClamp(Math.round(data.gridSpacing), 18, 100);
           }
 
-          if (typeof data.peerButtonVisible === 'boolean') settings.peerButtonVisible = data.peerButtonVisible;
-          if (!settings.displayName) settings.displayName = effectiveDefaultName;
-          if (!settings.lastRoomCode) settings.lastRoomCode = makeRoomCode();
-        } catch (_) {
-          settings.displayName = effectiveDefaultName;
-          settings.lastRoomCode = makeRoomCode();
-        }
+          if (typeof data.peerButtonVisible === 'boolean') appSettings.peerButtonVisible = data.peerButtonVisible;
+          if (typeof data.displayName === 'string') appSettings.displayName = appNormalizeText(data.displayName, 'あなた', 24);
+          if (typeof data.firebaseRoomText === 'string') appSettings.firebaseRoomText = appNormalizeText(data.firebaseRoomText, 'room', 40);
+        } catch (_) {}
       }
 
-      function updateTheme() {
-        darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        document.documentElement.style.setProperty('--bg', darkMode ? '#000' : '#fff');
-        document.documentElement.style.setProperty('--edge', darkMode ? '#fafafa' : '#111');
-        document.documentElement.style.setProperty('--panel-bg', darkMode ? 'rgba(0, 0, 0, 0.82)' : 'rgba(255, 255, 255, 0.84)');
-        document.documentElement.style.setProperty('--panel-border', darkMode ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.14)');
-        document.documentElement.style.setProperty('--text', darkMode ? '#f5f5f5' : '#101010');
-        document.documentElement.style.setProperty('--muted', darkMode ? 'rgba(245, 245, 245, 0.45)' : 'rgba(16, 16, 16, 0.45)');
-        document.documentElement.style.setProperty('--track', darkMode ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.12)');
-        document.documentElement.style.setProperty('--track-disabled', darkMode ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)');
-        document.documentElement.style.setProperty('--thumb', darkMode ? 'rgba(255, 255, 255, 0.78)' : 'rgba(0, 0, 0, 0.72)');
-
-        document.body.style.background = getBgColor();
+      function appGetBgColor() {
+        return appResolveModeColor(appSettings.bgMode, appSettings.bgCustom, '#ffffff', '#000000');
       }
 
-      function resize() {
-        dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
-        w = window.innerWidth;
-        h = window.innerHeight;
-        canvas.width = Math.floor(w * dpr);
-        canvas.height = Math.floor(h * dpr);
-        canvas.style.width = w + 'px';
-        canvas.style.height = h + 'px';
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      function appGetGridBaseColor() {
+        return appResolveModeColor(
+          appSettings.gridMode,
+          appSettings.gridCustom,
+          appIsDark ? '#262626' : '#e8e8e8',
+          appIsDark ? '#262626' : '#e8e8e8'
+        );
       }
 
-      function getEffectiveDisplayName() {
-        const name = normalizeDisplayName(settings.displayName);
-        settings.displayName = name;
-        return name;
+      function appGetTapBaseColor() {
+        return appNormalizeHexColor(appSettings.tapColor) || appDefaults.tapColor;
       }
 
-      function syncSettingsUi() {
-        bgMode.value = settings.bgMode;
-        bgCustomInput.value = settings.bgCustom;
-        bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
-
-        displayNameInput.value = getEffectiveDisplayName();
-
-        tapColorInput.value = settings.tapColor;
-        swipeColorInput.value = settings.swipeColor;
-        loopColorInput.value = settings.loopColor;
-
-        gridToggle.checked = settings.gridEnabled;
-        gridDetails.classList.toggle('disabled', !settings.gridEnabled);
-
-        gridMode.value = settings.gridMode;
-        gridCustomInput.value = settings.gridCustom;
-        gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
-
-        spacingRange.value = String(settings.gridSpacing);
-        spacingValue.textContent = String(settings.gridSpacing);
-
-        peerButtonToggle.checked = settings.peerButtonVisible;
-        updateDisplayNameEnabledState();
+      function appGetSwipeBaseColor() {
+        return appNormalizeHexColor(appSettings.swipeColor) || appDefaults.swipeColor;
       }
 
-      function updateDisplayNameEnabledState() {
-        const enabled = !!settings.peerButtonVisible;
-        displayNameInput.disabled = !enabled;
-        displayNameWrap.classList.toggle('disabled', !enabled);
+      function appGetLoopBaseColor() {
+        return appNormalizeHexColor(appSettings.loopColor) || appDefaults.loopColor;
       }
 
-      function updatePeerButtonUi() {
-        peerButton.classList.toggle('hidden', !settings.peerButtonVisible);
-        peerButton.classList.toggle('searching', connectionState === 'searching');
-        peerButton.classList.toggle('connected', connectionState === 'connected');
+      function appCurrentDisplayName() {
+        return appNormalizeText(appSettings.displayName, 'あなた', 24);
+      }
 
-        if (connectionState === 'searching') {
+      function appCurrentFirebaseRoomText() {
+        return appNormalizeText(appSettings.firebaseRoomText, 'room', 40);
+      }
+
+      function appUpdateTheme() {
+        appIsDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        document.documentElement.style.setProperty('--bg', appIsDark ? '#000' : '#fff');
+        document.documentElement.style.setProperty('--edge', appIsDark ? '#fafafa' : '#111');
+        document.documentElement.style.setProperty('--panel-bg', appIsDark ? 'rgba(0, 0, 0, 0.82)' : 'rgba(255, 255, 255, 0.84)');
+        document.documentElement.style.setProperty('--panel-border', appIsDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.14)');
+        document.documentElement.style.setProperty('--text', appIsDark ? '#f5f5f5' : '#101010');
+        document.documentElement.style.setProperty('--muted', appIsDark ? 'rgba(245, 245, 245, 0.45)' : 'rgba(16, 16, 16, 0.45)');
+        document.documentElement.style.setProperty('--track', appIsDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.12)');
+        document.documentElement.style.setProperty('--track-disabled', appIsDark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)');
+        document.documentElement.style.setProperty('--thumb', appIsDark ? 'rgba(255, 255, 255, 0.78)' : 'rgba(0, 0, 0, 0.72)');
+
+        document.body.style.background = appGetBgColor();
+      }
+
+      function appResizeCanvas() {
+        appDpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+        appWidth = window.innerWidth;
+        appHeight = window.innerHeight;
+        canvas.width = Math.floor(appWidth * appDpr);
+        canvas.height = Math.floor(appHeight * appDpr);
+        canvas.style.width = appWidth + 'px';
+        canvas.style.height = appHeight + 'px';
+        ctx.setTransform(appDpr, 0, 0, appDpr, 0, 0);
+      }
+
+      function appSyncSettingsUi() {
+        bgMode.value = appSettings.bgMode;
+        bgCustomInput.value = appSettings.bgCustom;
+        bgCustomWrap.classList.toggle('hidden', appSettings.bgMode !== 'custom');
+
+        tapColorInput.value = appSettings.tapColor;
+        swipeColorInput.value = appSettings.swipeColor;
+        loopColorInput.value = appSettings.loopColor;
+
+        gridToggle.checked = appSettings.gridEnabled;
+        gridDetails.classList.toggle('disabled', !appSettings.gridEnabled);
+
+        gridMode.value = appSettings.gridMode;
+        gridCustomInput.value = appSettings.gridCustom;
+        gridCustomWrap.classList.toggle('hidden', appSettings.gridMode !== 'custom');
+
+        spacingRange.value = String(appSettings.gridSpacing);
+        spacingValue.textContent = String(appSettings.gridSpacing);
+
+        peerButtonToggle.checked = appSettings.peerButtonVisible;
+        displayNameInput.value = appCurrentDisplayName();
+        firebaseRoomInput.value = appCurrentFirebaseRoomText();
+
+        const commEnabled = appSettings.peerButtonVisible;
+        commConfigBlock.classList.toggle('disabled', !commEnabled);
+        displayNameInput.disabled = !commEnabled;
+        firebaseRoomInput.disabled = !commEnabled;
+      }
+
+      function appUpdatePeerButtonUi() {
+        peerButton.classList.toggle('hidden', !appSettings.peerButtonVisible);
+        peerButton.classList.toggle('searching', appPeerState === 'searching');
+        peerButton.classList.toggle('connected', appPeerState === 'connected');
+
+        if (appPeerState === 'searching') {
           peerButton.setAttribute('aria-label', 'ローカル通信をキャンセル');
-        } else if (connectionState === 'connected') {
+        } else if (appPeerState === 'connected') {
           peerButton.setAttribute('aria-label', '接続メニューを開く');
         } else {
           peerButton.setAttribute('aria-label', 'ローカル通信');
         }
       }
 
-      function openSettingsOverlay() {
-        settingsOverlay.classList.add('open');
-        settingsOverlay.setAttribute('aria-hidden', 'false');
+      function appGetJoinedLabel() {
+        return appJoinedRoomLabel || (appTransportKind === 'local' ? LOCAL_ROOM_LABEL : appCurrentFirebaseRoomText());
       }
 
-      function closeSettingsOverlay() {
-        settingsOverlay.classList.remove('open');
-        settingsOverlay.setAttribute('aria-hidden', 'true');
+      function appRenderPeerTopStrip() {
+        const joined = appTransportKind !== 'none';
+        peerTopStrip.classList.toggle('hidden', !joined);
+        if (!joined) return;
+
+        peerTopTitle.textContent = appTransportKind === 'firebase' ? 'Firebase通信' : 'ローカル通信';
+        peerTopRoom.textContent = appTransportKind === 'firebase'
+          ? `部屋: ${appGetJoinedLabel()}`
+          : '同じ端末内';
+
+        const activeSender = appGetActiveSenderInfo();
+        const displayList = appBuildRosterForDisplay();
+        peerTopNames.innerHTML = '';
+
+        if (displayList.length === 0) {
+          const empty = document.createElement('span');
+          empty.className = 'peer-chip';
+          empty.textContent = '待機中';
+          peerTopNames.appendChild(empty);
+          return;
+        }
+
+        for (const member of displayList) {
+          const chip = document.createElement('span');
+          chip.className = 'peer-chip';
+          if (member.id === appSelfId) chip.classList.add('self');
+          if (activeSender && member.id === activeSender.id) chip.classList.add('sending');
+          chip.textContent = member.name;
+          peerTopNames.appendChild(chip);
+        }
       }
 
-      function openPeerMenu(mode) {
-        peerMenuOpen = true;
-        peerMenuOverlay.classList.add('open');
-        peerMenuOverlay.setAttribute('aria-hidden', 'false');
-        refreshPeerMenu(mode);
+      function appBuildRosterForDisplay() {
+        const fresh = [];
+        const seenIds = new Set();
+        const now = Date.now();
 
+        const addMember = (member) => {
+          if (!member || !member.id || seenIds.has(member.id)) return;
+          seenIds.add(member.id);
+          fresh.push({
+            id: member.id,
+            name: appNormalizeText(member.name, '名無し', 24),
+            updatedAtMs: Number(member.updatedAtMs) || 0
+          });
+        };
+
+        addMember({
+          id: appSelfId,
+          name: appCurrentDisplayName(),
+          updatedAtMs: Date.now()
+        });
+
+        for (const member of appMemberRoster) {
+          const updatedAtMs = Number(member.updatedAtMs) || 0;
+          if (updatedAtMs && now - updatedAtMs > 10000) continue;
+          addMember(member);
+        }
+
+        fresh.sort((a, b) => {
+          if (a.id === appSelfId) return -1;
+          if (b.id === appSelfId) return 1;
+          return a.name.localeCompare(b.name, 'ja');
+        });
+
+        return fresh;
+      }
+
+      function appGetActiveSenderInfo() {
+        const info = appSharedRoomState || {};
+        const untilMs = Number(info.activeSenderUntilMs) || 0;
+        const now = Date.now();
+        if (!info.activeSenderId || !untilMs || untilMs <= now) return null;
+        return {
+          id: info.activeSenderId,
+          name: appNormalizeText(info.activeSenderName, '送信者', 24),
+          untilMs
+        };
+      }
+
+      function appRefreshPeerStateFromTransport() {
+        if (appTransportKind === 'none') {
+          appPeerState = 'off';
+          return;
+        }
+
+        const roster = appBuildRosterForDisplay();
+        const others = roster.filter(member => member.id !== appSelfId && member.updatedAtMs > 0);
+        appPeerState = others.length > 0 ? 'connected' : 'searching';
+      }
+
+      function appRefreshPeerUi() {
+        const wasOpenConnectedMenu = appMenuOpen && appMenuMode === 'connected';
+        appRefreshPeerStateFromTransport();
+        appUpdatePeerButtonUi();
+        appRenderPeerTopStrip();
+
+        if (wasOpenConnectedMenu && appPeerState !== 'connected') {
+          appClosePeerMenu();
+          return;
+        }
+
+        if (appMenuOpen) {
+          appRefreshPeerMenuLabels();
+        }
+      }
+
+      function appSyncPeerMenuLocation() {
         const rect = peerButton.getBoundingClientRect();
         const stageRect = peerMenuStage.getBoundingClientRect();
         const stageW = stageRect.width || window.innerWidth;
@@ -1398,691 +1444,659 @@
         const anchorX = rect.left + rect.width / 2 - stageW / 2;
         const anchorY = rect.top + rect.height / 2 - stageH / 2;
 
-        const setFrom = (el, tx, ty) => {
-          el.style.setProperty('--from-x', `${anchorX}px`);
-          el.style.setProperty('--from-y', `${anchorY}px`);
-          el.style.setProperty('--to-x', `${tx}px`);
-          el.style.setProperty('--to-y', `${ty}px`);
+        const applyVars = (button, toX, toY) => {
+          button.style.setProperty('--from-x', `${anchorX}px`);
+          button.style.setProperty('--from-y', `${anchorY}px`);
+          button.style.setProperty('--to-x', `${toX}px`);
+          button.style.setProperty('--to-y', `${toY}px`);
         };
 
-        if (mode === 'off') {
-          setFrom(peerChoice1, 0, -118);
-          setFrom(peerChoice2, -118, 108);
-          setFrom(peerChoice3, 118, 108);
-        } else {
-          setFrom(peerChoice1, 0, -118);
-          setFrom(peerChoice2, -118, 108);
-          setFrom(peerChoice3, 118, 108);
-        }
+        applyVars(peerChoice1, 0, -118);
+        applyVars(peerChoice2, -118, 108);
+        applyVars(peerChoice3, 118, 108);
       }
 
-      function closePeerMenu() {
-        peerMenuOpen = false;
-        peerMenuOverlay.classList.remove('open');
-        peerMenuOverlay.setAttribute('aria-hidden', 'true');
-        stopPeerMenuTicker();
-      }
+      function appRefreshPeerMenuLabels() {
+        if (!appMenuOpen) return;
 
-      let peerMenuTicker = null;
+        appSyncPeerMenuLocation();
 
-      function startPeerMenuTicker() {
-        stopPeerMenuTicker();
-        peerMenuTicker = setInterval(() => {
-          if (!peerMenuOpen) return;
-          refreshPeerMenu(connectionState === 'connected' ? 'connected' : 'off');
-        }, 250);
-      }
-
-      function stopPeerMenuTicker() {
-        if (peerMenuTicker) {
-          clearInterval(peerMenuTicker);
-          peerMenuTicker = null;
-        }
-      }
-
-      function refreshPeerMenu(mode) {
-        if (mode === 'off') {
-          peerNameStrip.classList.add('hidden');
-
-          peerChoiceLabel1.textContent = 'Wi-Fiで\n通信';
-          peerChoiceLabel2.textContent = 'QRコードを\n表示';
-          peerChoiceLabel3.textContent = 'オンラインで\n通信';
-
+        if (appMenuMode === 'off') {
           peerChoice1.className = 'peer-choice wifi';
-          peerChoice2.className = 'peer-choice qr-show';
-          peerChoice3.className = 'peer-choice online';
+          peerChoice2.className = 'peer-choice fb';
+          peerChoice3.className = 'peer-choice solo';
+
+          peerChoiceLabel1.textContent = 'ローカル\n通信';
+          peerChoiceLabel2.textContent = 'Firebaseで\nマッチング';
+          peerChoiceLabel3.textContent = 'ひとりで\n遊ぶ';
 
           peerChoice1.disabled = false;
           peerChoice2.disabled = false;
           peerChoice3.disabled = false;
+        } else {
+          const activeSender = appGetActiveSenderInfo();
+          const busyByOther = !!activeSender && activeSender.id !== appSelfId;
+          const busyBySelf = !!activeSender && activeSender.id === appSelfId;
 
-          peerChoice1.onclick = () => {
-            closePeerMenu();
-            openConnectDialog('local');
+          peerChoice1.className = 'peer-choice disconnect';
+          peerChoice2.className = 'peer-choice send';
+          peerChoice3.className = 'peer-choice receive';
+
+          peerChoiceLabel1.textContent = '接続を\n切断';
+          peerChoiceLabel2.textContent = busyByOther
+            ? `${activeSender.name}\nが送信中…`
+            : busyBySelf
+              ? '送信中…'
+              : '設定を\n送信';
+          peerChoiceLabel3.textContent = '設定を\n受信';
+
+          peerChoice1.disabled = false;
+          peerChoice2.disabled = busyByOther || busyBySelf;
+          peerChoice3.disabled = false;
+        }
+      }
+
+      function appOpenPeerMenu(mode) {
+        appMenuMode = mode;
+        appMenuOpen = true;
+
+        appRefreshPeerMenuLabels();
+        peerMenuOverlay.classList.add('open');
+        peerMenuOverlay.setAttribute('aria-hidden', 'false');
+      }
+
+      function appClosePeerMenu() {
+        appMenuOpen = false;
+        peerMenuOverlay.classList.remove('open');
+        peerMenuOverlay.setAttribute('aria-hidden', 'true');
+      }
+
+      function appOpenSettings() {
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+      }
+
+      function appCloseSettings() {
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+      }
+
+      function appSetJoinedLabelFromLocal() {
+        appJoinedRoomLabel = LOCAL_ROOM_LABEL;
+      }
+
+      function appSetJoinedLabelFromFirebase() {
+        appJoinedRoomLabel = appCurrentFirebaseRoomText();
+      }
+
+      function appGetLocalStateDefault() {
+        return {
+          version: 1,
+          members: {},
+          activeSenderId: '',
+          activeSenderName: '',
+          activeSenderUntilMs: 0,
+          latestSettingsPacket: null,
+          latestEffectPacket: null
+        };
+      }
+
+      function appLocalReadState() {
+        try {
+          const raw = localStorage.getItem(LOCAL_STATE_KEY);
+          if (!raw) return appGetLocalStateDefault();
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return appGetLocalStateDefault();
+          return {
+            version: 1,
+            members: parsed.members && typeof parsed.members === 'object' ? parsed.members : {},
+            activeSenderId: typeof parsed.activeSenderId === 'string' ? parsed.activeSenderId : '',
+            activeSenderName: typeof parsed.activeSenderName === 'string' ? parsed.activeSenderName : '',
+            activeSenderUntilMs: Number(parsed.activeSenderUntilMs) || 0,
+            latestSettingsPacket: parsed.latestSettingsPacket && typeof parsed.latestSettingsPacket === 'object' ? parsed.latestSettingsPacket : null,
+            latestEffectPacket: parsed.latestEffectPacket && typeof parsed.latestEffectPacket === 'object' ? parsed.latestEffectPacket : null
           };
-          peerChoice2.onclick = () => {
-            closePeerMenu();
-            openQrDialog();
+        } catch (_) {
+          return appGetLocalStateDefault();
+        }
+      }
+
+      function appLocalWriteState(stateObj) {
+        try {
+          localStorage.setItem(LOCAL_STATE_KEY, JSON.stringify(stateObj));
+        } catch (_) {}
+      }
+
+      function appLocalMutateState(mutator, applyAfterWrite = true) {
+        const stateObj = appLocalReadState();
+        mutator(stateObj);
+        appLocalWriteState(stateObj);
+        if (applyAfterWrite) {
+          appApplyLocalStateObject(stateObj, true);
+        }
+      }
+
+      function appLocalPruneState(stateObj) {
+        const now = Date.now();
+        const members = stateObj.members && typeof stateObj.members === 'object' ? stateObj.members : {};
+        for (const [id, member] of Object.entries(members)) {
+          const updatedAtMs = Number(member && member.updatedAtMs) || 0;
+          if (updatedAtMs && now - updatedAtMs > 10000) {
+            delete members[id];
+          }
+        }
+        stateObj.members = members;
+
+        if (stateObj.activeSenderId && stateObj.activeSenderUntilMs && stateObj.activeSenderUntilMs <= now) {
+          stateObj.activeSenderId = '';
+          stateObj.activeSenderName = '';
+          stateObj.activeSenderUntilMs = 0;
+        }
+      }
+
+      function appLocalApplyStateObject(stateObj, fromSelf = false) {
+        appSharedRoomState = {
+          activeSenderId: stateObj.activeSenderId || '',
+          activeSenderName: stateObj.activeSenderName || '',
+          activeSenderUntilMs: Number(stateObj.activeSenderUntilMs) || 0,
+          latestSettingsPacket: stateObj.latestSettingsPacket || null,
+          latestEffectPacket: stateObj.latestEffectPacket || null
+        };
+
+        appMemberRoster = Object.entries(stateObj.members || {}).map(([id, member]) => ({
+          id,
+          name: appNormalizeText(member && member.name, '名無し', 24),
+          updatedAtMs: Number(member && member.updatedAtMs) || 0
+        }));
+
+        appMaybeApplyLatestSharedPackets();
+        appRefreshPeerUi();
+
+        if (fromSelf && appTransportKind === 'local') {
+          appUpdateLocalPresenceNameIfNeeded();
+        }
+      }
+
+      function appUpdateLocalPresenceNameIfNeeded() {
+        if (appTransportKind !== 'local') return;
+        appLocalMutateState((stateObj) => {
+          stateObj.members[appSelfId] = {
+            name: appCurrentDisplayName(),
+            updatedAtMs: Date.now()
           };
-          peerChoice3.onclick = () => {
-            closePeerMenu();
-            openConnectDialog('firebase');
+          if (stateObj.activeSenderId === appSelfId) {
+            stateObj.activeSenderName = appCurrentDisplayName();
+          }
+          appLocalPruneState(stateObj);
+        }, false);
+        appLocalWriteState(appLocalReadState());
+      }
+
+      function appLocalTouchPresence() {
+        if (appTransportKind !== 'local') return;
+        appLocalMutateState((stateObj) => {
+          stateObj.members[appSelfId] = {
+            name: appCurrentDisplayName(),
+            updatedAtMs: Date.now()
+          };
+          if (stateObj.activeSenderId === appSelfId) {
+            stateObj.activeSenderName = appCurrentDisplayName();
+          }
+          appLocalPruneState(stateObj);
+        });
+      }
+
+      function appLocalStartHeartbeat() {
+        appLocalStopHeartbeat();
+        appLocalHeartbeatTimer = setInterval(() => {
+          if (appTransportKind !== 'local') return;
+          appLocalTouchPresence();
+        }, 2500);
+      }
+
+      function appLocalStopHeartbeat() {
+        if (appLocalHeartbeatTimer) {
+          clearInterval(appLocalHeartbeatTimer);
+          appLocalHeartbeatTimer = null;
+        }
+      }
+
+      function appLocalJoinRoom() {
+        appLeaveCurrentTransport(false);
+
+        appTransportKind = 'local';
+        appSetJoinedLabelFromLocal();
+        appLocalTouchPresence();
+        appLocalStartHeartbeat();
+        appRefreshPeerUi();
+        appToast('ローカル通信を開始した');
+      }
+
+      function appLocalLeaveRoom() {
+        appLocalStopHeartbeat();
+
+        if (appTransportKind !== 'local') return;
+
+        appLocalMutateState((stateObj) => {
+          if (stateObj.members && stateObj.members[appSelfId]) {
+            delete stateObj.members[appSelfId];
+          }
+          if (stateObj.activeSenderId === appSelfId) {
+            stateObj.activeSenderId = '';
+            stateObj.activeSenderName = '';
+            stateObj.activeSenderUntilMs = 0;
+          }
+          appLocalPruneState(stateObj);
+        }, false);
+
+        appTransportKind = 'none';
+        appJoinedRoomLabel = '';
+        appSharedRoomState = {
+          activeSenderId: '',
+          activeSenderName: '',
+          activeSenderUntilMs: 0,
+          latestSettingsPacket: null,
+          latestEffectPacket: null
+        };
+        appMemberRoster = [];
+        appPeerState = 'off';
+        appRefreshPeerUi();
+      }
+
+      function appLocalBroadcastEffect(kind, payload) {
+        if (appTransportKind !== 'local') return;
+
+        appLocalMutateState((stateObj) => {
+          const packet = {
+            id: appMakeId(),
+            kind,
+            senderId: appSelfId,
+            senderName: appCurrentDisplayName(),
+            sentAtMs: Date.now(),
+            payload
           };
 
+          stateObj.latestEffectPacket = packet;
+          appLocalPruneState(stateObj);
+        });
+      }
+
+      function appLocalBroadcastSettings(settingsSnapshot) {
+        if (appTransportKind !== 'local') return;
+
+        appLocalMutateState((stateObj) => {
+          const now = Date.now();
+          const packet = {
+            id: appMakeId(),
+            kind: 'settings',
+            senderId: appSelfId,
+            senderName: appCurrentDisplayName(),
+            sentAtMs: now,
+            payload: settingsSnapshot
+          };
+
+          stateObj.activeSenderId = appSelfId;
+          stateObj.activeSenderName = appCurrentDisplayName();
+          stateObj.activeSenderUntilMs = now + 10000;
+          stateObj.latestSettingsPacket = packet;
+          appLocalPruneState(stateObj);
+        });
+
+        appToast('設定を送った');
+      }
+
+      function appLocalSetReceiveWindow() {
+        appReceiveWindowUntilMs = Date.now() + 10000;
+        appToast('受信待機中');
+        appMaybeApplyLatestSharedPackets();
+      }
+
+      function appLocalOnStorageEvent(ev) {
+        if (ev.key !== LOCAL_STATE_KEY) return;
+        const stateObj = appLocalReadState();
+        appLocalApplyStateObject(stateObj, false);
+      }
+
+      function appAttachLocalStorageListener() {
+        if (appLocalStorageListenerActive) return;
+        window.addEventListener('storage', appLocalOnStorageEvent);
+        appLocalStorageListenerActive = true;
+      }
+
+      function appDetachLocalStorageListener() {
+        if (!appLocalStorageListenerActive) return;
+        window.removeEventListener('storage', appLocalOnStorageEvent);
+        appLocalStorageListenerActive = false;
+      }
+
+      function appFirebaseRoomKey() {
+        return encodeURIComponent(appCurrentFirebaseRoomText());
+      }
+
+      async function appFirebaseJoinRoom() {
+        if (!firebaseDb) {
+          appToast('Firebaseが使えない');
           return;
         }
 
-        peerNameStrip.classList.remove('hidden');
-        renderPeerNameStrip();
+        appLeaveCurrentTransport(false);
 
-        const now = Date.now();
-        const sendLocked = connection.sendLockUntil > now && connection.sendLockOwnerId && connection.sendLockOwnerId !== selfPeerId;
-        const selfLocked = connection.sendLockUntil > now && connection.sendLockOwnerId === selfPeerId;
+        appTransportKind = 'firebase';
+        appSetJoinedLabelFromFirebase();
+        appRefreshPeerUi();
 
-        peerChoiceLabel1.textContent = '接続を\n切断';
+        const roomKey = appFirebaseRoomKey();
+        appFirebaseRoomRef = doc(firebaseDb, 'rooms', roomKey);
+        appFirebaseMembersColRef = collection(firebaseDb, 'rooms', roomKey, 'members');
+        appFirebaseSelfMemberRef = doc(firebaseDb, 'rooms', roomKey, 'members', appSelfId);
 
-        if (sendLocked) {
-          peerChoiceLabel2.textContent = `${connection.sendLockOwnerName || '誰か'}が\n送信中…`;
-        } else if (selfLocked) {
-          peerChoiceLabel2.textContent = '送信中…';
-        } else {
-          peerChoiceLabel2.textContent = '設定を\n送信';
+        try {
+          await setDoc(appFirebaseRoomRef, {
+            updatedAtMs: Date.now()
+          }, { merge: true });
+
+          await setDoc(appFirebaseSelfMemberRef, {
+            name: appCurrentDisplayName(),
+            updatedAtMs: Date.now(),
+            joinedAtMs: Date.now()
+          }, { merge: true });
+        } catch (err) {
+          console.warn(err);
+          appToast('Firebaseに入れなかった');
+          appTransportKind = 'none';
+          appJoinedRoomLabel = '';
+          appRefreshPeerUi();
+          return;
         }
 
-        peerChoiceLabel3.textContent = '設定を\n受信';
+        appFirebaseRoomUnsub = onSnapshot(appFirebaseRoomRef, (snap) => {
+          const data = snap.data() || {};
+          appSharedRoomState = {
+            activeSenderId: typeof data.activeSenderId === 'string' ? data.activeSenderId : '',
+            activeSenderName: typeof data.activeSenderName === 'string' ? data.activeSenderName : '',
+            activeSenderUntilMs: Number(data.activeSenderUntilMs) || 0,
+            latestSettingsPacket: data.latestSettingsPacket && typeof data.latestSettingsPacket === 'object' ? data.latestSettingsPacket : null,
+            latestEffectPacket: data.latestEffectPacket && typeof data.latestEffectPacket === 'object' ? data.latestEffectPacket : null
+          };
+          appMaybeApplyLatestSharedPackets();
+          appRefreshPeerUi();
+        });
 
-        peerChoice1.className = 'peer-choice disconnect';
-        peerChoice2.className = 'peer-choice send';
-        peerChoice3.className = 'peer-choice receive';
+        appFirebaseMembersUnsub = onSnapshot(appFirebaseMembersColRef, (snap) => {
+          const now = Date.now();
+          const roster = [];
+          snap.forEach((d) => {
+            const data = d.data() || {};
+            const updatedAtMs = Number(data.updatedAtMs) || 0;
+            if (updatedAtMs && now - updatedAtMs > 10000) return;
+            roster.push({
+              id: d.id,
+              name: appNormalizeText(data.name, '名無し', 24),
+              updatedAtMs
+            });
+          });
 
-        peerChoice1.disabled = false;
-        peerChoice2.disabled = sendLocked;
-        peerChoice3.disabled = false;
-
-        peerChoice1.onclick = () => {
-          closePeerMenu();
-          stopAllConnections(true);
-          showToast('切断した');
-        };
-
-        peerChoice2.onclick = () => {
-          if (sendLocked) {
-            showToast(`${connection.sendLockOwnerName || '誰か'}が送信中…`);
-            return;
+          const hasSelf = roster.some(member => member.id === appSelfId);
+          if (!hasSelf) {
+            roster.push({
+              id: appSelfId,
+              name: appCurrentDisplayName(),
+              updatedAtMs: Date.now()
+            });
           }
-          closePeerMenu();
-          sendCurrentSettings();
-        };
 
-        peerChoice3.onclick = () => {
-          closePeerMenu();
-          receiveWindowUntil = Date.now() + 10000;
-          maybeApplyLatestSettings();
-          showToast('10秒以内の設定を待ってる');
-        };
+          appMemberRoster = roster;
+          appRefreshPeerUi();
+        });
+
+        appFirebaseStopHeartbeat();
+        appFirebaseStartHeartbeat();
+
+        appToast('Firebaseで待機中');
       }
 
-      function renderPeerNameStrip() {
+      function appFirebaseStopHeartbeat() {
+        if (appFirebaseHeartbeatTimer) {
+          clearInterval(appFirebaseHeartbeatTimer);
+          appFirebaseHeartbeatTimer = null;
+        }
+      }
+
+      function appFirebaseStartHeartbeat() {
+        appFirebaseStopHeartbeat();
+        appFirebaseHeartbeatTimer = setInterval(async () => {
+          if (appTransportKind !== 'firebase') return;
+          if (!appFirebaseSelfMemberRef || !appFirebaseRoomRef) return;
+
+          try {
+            await setDoc(appFirebaseSelfMemberRef, {
+              name: appCurrentDisplayName(),
+              updatedAtMs: Date.now()
+            }, { merge: true });
+
+            if (appSharedRoomState.activeSenderId === appSelfId) {
+              await setDoc(appFirebaseRoomRef, {
+                activeSenderName: appCurrentDisplayName(),
+                updatedAtMs: Date.now()
+              }, { merge: true });
+            }
+          } catch (_) {}
+        }, 2500);
+      }
+
+      async function appFirebaseLeaveRoom() {
+        appFirebaseStopHeartbeat();
+
+        if (appTransportKind !== 'firebase') return;
+
+        try {
+          if (appFirebaseSelfMemberRef) {
+            await deleteDoc(appFirebaseSelfMemberRef);
+          }
+          if (appSharedRoomState.activeSenderId === appSelfId && appFirebaseRoomRef) {
+            await setDoc(appFirebaseRoomRef, {
+              activeSenderId: '',
+              activeSenderName: '',
+              activeSenderUntilMs: 0,
+              updatedAtMs: Date.now()
+            }, { merge: true });
+          }
+        } catch (_) {}
+
+        if (appFirebaseRoomUnsub) {
+          try { appFirebaseRoomUnsub(); } catch (_) {}
+          appFirebaseRoomUnsub = null;
+        }
+
+        if (appFirebaseMembersUnsub) {
+          try { appFirebaseMembersUnsub(); } catch (_) {}
+          appFirebaseMembersUnsub = null;
+        }
+
+        appFirebaseRoomRef = null;
+        appFirebaseMembersColRef = null;
+        appFirebaseSelfMemberRef = null;
+
+        appTransportKind = 'none';
+        appJoinedRoomLabel = '';
+        appSharedRoomState = {
+          activeSenderId: '',
+          activeSenderName: '',
+          activeSenderUntilMs: 0,
+          latestSettingsPacket: null,
+          latestEffectPacket: null
+        };
+        appMemberRoster = [];
+        appPeerState = 'off';
+        appRefreshPeerUi();
+      }
+
+      async function appFirebaseBroadcastSettings(settingsSnapshot) {
+        if (appTransportKind !== 'firebase') return;
+        if (!firebaseDb || !appFirebaseRoomRef) {
+          appToast('Firebaseが使えない');
+          return;
+        }
+
         const now = Date.now();
-        const names = Array.from(connection.participants.values())
-          .filter(p => p && p.name)
-          .filter(p => !p.lastSeen || now - p.lastSeen <= 15000)
-          .map(p => p.name);
-
-        const unique = [];
-        for (const n of names) {
-          if (!unique.includes(n)) unique.push(n);
-        }
-        if (!unique.includes(getEffectiveDisplayName())) {
-          unique.unshift(getEffectiveDisplayName());
-        }
-
-        peerNameStrip.innerHTML = '';
-        for (const name of unique.slice(0, 10)) {
-          const chip = document.createElement('div');
-          chip.className = 'peer-name-chip';
-          chip.textContent = name;
-          peerNameStrip.appendChild(chip);
-        }
-      }
-
-      function openConnectDialog(mode) {
-        connectionDialogMode = mode;
-        connectTitle.textContent = mode === 'firebase' ? 'オンラインで通信' : 'Wi-Fiで通信';
-        connectText.textContent = mode === 'firebase'
-          ? '同じルームコードを入れた人同士で、Firebase経由でつながります。'
-          : '同じルームコードを入れた人同士で、ローカル通信としてつながります。';
-        roomCodeInput.value = settings.lastRoomCode || makeRoomCode();
-        connectStartButton.textContent = '接続する';
-        connectOverlay.classList.add('open');
-        connectOverlay.setAttribute('aria-hidden', 'false');
-        roomCodeInput.focus();
-        roomCodeInput.select();
-      }
-
-      function closeConnectDialog() {
-        connectOverlay.classList.remove('open');
-        connectOverlay.setAttribute('aria-hidden', 'true');
-      }
-
-      function openQrDialog() {
-        const code = sanitizeRoomCode(settings.lastRoomCode || makeRoomCode());
-        qrRoomCodeInput.value = code;
-        updateQrImage(code);
-        qrOverlay.classList.add('open');
-        qrOverlay.setAttribute('aria-hidden', 'false');
-      }
-
-      function closeQrDialog() {
-        qrOverlay.classList.remove('open');
-        qrOverlay.setAttribute('aria-hidden', 'true');
-      }
-
-      function updateQrImage(code) {
-        const safe = sanitizeRoomCode(code);
-        qrImage.src = qrApiBase + encodeURIComponent(safe);
-        qrImage.alt = `QRコード: ${safe}`;
-      }
-
-      function captureSettingsSnapshot() {
-        return {
-          bgMode: settings.bgMode,
-          bgCustom: settings.bgCustom,
-          displayName: getEffectiveDisplayName(),
-          tapColor: settings.tapColor,
-          swipeColor: settings.swipeColor,
-          loopColor: settings.loopColor,
-          gridEnabled: settings.gridEnabled,
-          gridMode: settings.gridMode,
-          gridCustom: settings.gridCustom,
-          gridSpacing: settings.gridSpacing
+        const packet = {
+          id: appMakeId(),
+          kind: 'settings',
+          senderId: appSelfId,
+          senderName: appCurrentDisplayName(),
+          sentAtMs: now,
+          payload: settingsSnapshot
         };
+
+        try {
+          await runTransaction(firebaseDb, async (tx) => {
+            const snap = await tx.get(appFirebaseRoomRef);
+            const data = snap.data() || {};
+            const activeUntil = Number(data.activeSenderUntilMs) || 0;
+            const activeId = typeof data.activeSenderId === 'string' ? data.activeSenderId : '';
+
+            if (activeUntil > Date.now() && activeId && activeId !== appSelfId) {
+              const activeName = typeof data.activeSenderName === 'string' && data.activeSenderName
+                ? data.activeSenderName
+                : '他の人';
+              throw new Error(`${activeName}が送信中`);
+            }
+
+            tx.set(appFirebaseRoomRef, {
+              activeSenderId: appSelfId,
+              activeSenderName: appCurrentDisplayName(),
+              activeSenderUntilMs: now + 10000,
+              latestSettingsPacket: packet,
+              updatedAtMs: now
+            }, { merge: true });
+          });
+
+          appToast('設定を送った');
+        } catch (err) {
+          appToast(err && err.message ? err.message : '送信できなかった');
+        }
       }
 
-      function applySettingsSnapshot(snapshot) {
-        if (!snapshot || typeof snapshot !== 'object') return;
+      async function appFirebaseBroadcastEffect(kind, payload) {
+        if (appTransportKind !== 'firebase') return;
+        if (!firebaseDb || !appFirebaseRoomRef) return;
 
-        if (isValidMode(snapshot.bgMode)) settings.bgMode = snapshot.bgMode;
-        if (typeof snapshot.bgCustom === 'string') settings.bgCustom = snapshot.bgCustom;
-        if (typeof snapshot.displayName === 'string') settings.displayName = normalizeDisplayName(snapshot.displayName);
+        const packet = {
+          id: appMakeId(),
+          kind,
+          senderId: appSelfId,
+          senderName: appCurrentDisplayName(),
+          sentAtMs: Date.now(),
+          payload
+        };
 
-        if (typeof snapshot.tapColor === 'string') settings.tapColor = snapshot.tapColor;
-        if (typeof snapshot.swipeColor === 'string') settings.swipeColor = snapshot.swipeColor;
-        if (typeof snapshot.loopColor === 'string') settings.loopColor = snapshot.loopColor;
+        try {
+          await setDoc(appFirebaseRoomRef, {
+            latestEffectPacket: packet,
+            updatedAtMs: Date.now()
+          }, { merge: true });
+        } catch (_) {}
+      }
 
-        if (typeof snapshot.gridEnabled === 'boolean') settings.gridEnabled = snapshot.gridEnabled;
-        if (isValidMode(snapshot.gridMode)) settings.gridMode = snapshot.gridMode;
-        if (typeof snapshot.gridCustom === 'string') settings.gridCustom = snapshot.gridCustom;
-        if (typeof snapshot.gridSpacing === 'number' && isFinite(snapshot.gridSpacing)) {
-          settings.gridSpacing = clamp(Math.round(snapshot.gridSpacing), 18, 100);
+      function appFirebaseSetReceiveWindow() {
+        appReceiveWindowUntilMs = Date.now() + 10000;
+        appToast('受信待機中');
+        appMaybeApplyLatestSharedPackets();
+      }
+
+      function appLeaveCurrentTransport(sendGoodbye = false) {
+        if (appTransportKind === 'local') {
+          appLocalLeaveRoom();
+          return;
         }
 
-        syncSettingsUi();
-        document.body.style.background = getBgColor();
-        saveSettings();
+        if (appTransportKind === 'firebase') {
+          appFirebaseLeaveRoom();
+          return;
+        }
+
+        if (sendGoodbye) {
+          appToast('切断した');
+        }
       }
 
-      function getBgColor() {
-        return resolveModeColor(settings.bgMode, settings.bgCustom, '#ffffff', '#000000');
-      }
-
-      function getGridBaseColor() {
-        return resolveModeColor(
-          settings.gridMode,
-          settings.gridCustom,
-          darkMode ? '#262626' : '#e8e8e8',
-          darkMode ? '#262626' : '#e8e8e8'
-        );
-      }
-
-      function getTapBaseColor() {
-        return normalizeHexColor(settings.tapColor) || defaults.tapColor;
-      }
-
-      function getSwipeBaseColor() {
-        return normalizeHexColor(settings.swipeColor) || defaults.swipeColor;
-      }
-
-      function getLoopBaseColor() {
-        return normalizeHexColor(settings.loopColor) || defaults.loopColor;
-      }
-
-      function rememberPacket(id) {
-        if (!id || seenPackets.has(id)) return false;
-        seenPackets.add(id);
-        seenPacketQueue.push(id);
-        if (seenPacketQueue.length > 350) {
-          const old = seenPacketQueue.shift();
-          if (old) seenPackets.delete(old);
+      function appStoreSeenPacketId(packetId) {
+        if (!packetId) return false;
+        if (appSeenPacketIds.has(packetId)) return false;
+        appSeenPacketIds.add(packetId);
+        appSeenPacketQueue.push(packetId);
+        if (appSeenPacketQueue.length > 500) {
+          const old = appSeenPacketQueue.shift();
+          if (old) appSeenPacketIds.delete(old);
         }
         return true;
       }
 
-      function makePacket(base) {
-        return {
-          ...base,
-          id: makeId(),
-          senderId: selfPeerId,
-          senderName: getEffectiveDisplayName(),
-          roomCode: connection.roomCode || '',
-          createdAt: Date.now()
-        };
-      }
+      function appMaybeApplyLatestSharedPackets() {
+        const settingsPacket = appSharedRoomState.latestSettingsPacket;
+        if (settingsPacket && settingsPacket.id && appStoreSeenPacketId(settingsPacket.id)) {
+          appHandleSharedPacket(settingsPacket);
+        }
 
-      function pushConnectionParticipant(id, name) {
-        if (!id) return;
-        connection.participants.set(id, {
-          id,
-          name: normalizeDisplayName(name),
-          lastSeen: Date.now()
-        });
-      }
-
-      function clearConnectionParticipants() {
-        connection.participants.clear();
-        pushConnectionParticipant(selfPeerId, getEffectiveDisplayName());
-      }
-
-      function refreshConnectedState() {
-        updatePeerButtonUi();
-        if (peerMenuOpen && connectionState === 'connected') {
-          refreshPeerMenu('connected');
+        const effectPacket = appSharedRoomState.latestEffectPacket;
+        if (effectPacket && effectPacket.id && appStoreSeenPacketId(effectPacket.id)) {
+          appHandleSharedPacket(effectPacket);
         }
       }
 
-      function setConnectionSearching() {
-        connectionState = 'searching';
-        updatePeerButtonUi();
-      }
-
-      function setConnectionConnected() {
-        connectionState = 'connected';
-        updatePeerButtonUi();
-        if (peerMenuOpen) refreshPeerMenu('connected');
-      }
-
-      function setConnectionOff() {
-        connectionState = 'off';
-        updatePeerButtonUi();
-      }
-
-      function stopLocalTimers() {
-        if (localHeartbeatTimer) {
-          clearInterval(localHeartbeatTimer);
-          localHeartbeatTimer = null;
-        }
-        if (localPurgeTimer) {
-          clearInterval(localPurgeTimer);
-          localPurgeTimer = null;
-        }
-      }
-
-      function stopFirebaseTimers() {
-        if (fbHeartbeatTimer) {
-          clearInterval(fbHeartbeatTimer);
-          fbHeartbeatTimer = null;
-        }
-      }
-
-      function stopLocalConnection(sendLeave = true) {
-        if (localChannel && sendLeave) {
-          try {
-            localChannel.postMessage(makePacket({ type: 'bye' }));
-          } catch (_) {}
-        }
-
-        if (localChannel) {
-          try {
-            localChannel.close();
-          } catch (_) {}
-          localChannel = null;
-        }
-
-        window.removeEventListener('storage', onLocalStorageEvent);
-        stopLocalTimers();
-        connection.kind = 'none';
-        connection.roomCode = '';
-        connection.sendLockOwnerId = '';
-        connection.sendLockOwnerName = '';
-        connection.sendLockUntil = 0;
-        connection.latestSettings = null;
-        connection.latestSettingsAt = 0;
-        connection.latestSettingsSenderId = '';
-        connection.latestSettingsSenderName = '';
-        clearConnectionParticipants();
-        setConnectionOff();
-      }
-
-      async function stopFirebaseConnection(sendLeave = true) {
-        if (sendLeave && fbSelfParticipantRef) {
-          try {
-            await deleteDoc(fbSelfParticipantRef);
-          } catch (_) {}
-        }
-
-        if (fbRoomUnsub) {
-          try { fbRoomUnsub(); } catch (_) {}
-          fbRoomUnsub = null;
-        }
-        if (fbParticipantsUnsub) {
-          try { fbParticipantsUnsub(); } catch (_) {}
-          fbParticipantsUnsub = null;
-        }
-        if (fbEffectsUnsub) {
-          try { fbEffectsUnsub(); } catch (_) {}
-          fbEffectsUnsub = null;
-        }
-
-        stopFirebaseTimers();
-        fbRoomRef = null;
-        fbSelfParticipantRef = null;
-        connection.kind = 'none';
-        connection.roomCode = '';
-        connection.sendLockOwnerId = '';
-        connection.sendLockOwnerName = '';
-        connection.sendLockUntil = 0;
-        connection.latestSettings = null;
-        connection.latestSettingsAt = 0;
-        connection.latestSettingsSenderId = '';
-        connection.latestSettingsSenderName = '';
-        clearConnectionParticipants();
-        setConnectionOff();
-      }
-
-      function stopAllConnections(sendLeave = true) {
-        stopLocalConnection(sendLeave);
-        void stopFirebaseConnection(sendLeave);
-        receiveWindowUntil = 0;
-      }
-
-      function onLocalStorageEvent(ev) {
-        if (!ev.key || !ev.key.startsWith(LOCAL_BUS_KEY_PREFIX)) return;
-        if (!ev.newValue) return;
-        try {
-          const packet = JSON.parse(ev.newValue);
-          handleIncomingPacket(packet, 'local');
-        } catch (_) {}
-      }
-
-      function localBusKey(roomCode) {
-        return `${LOCAL_BUS_KEY_PREFIX}${roomCode}`;
-      }
-
-      function postLocalPacket(roomCode, packet) {
-        const key = localBusKey(roomCode);
-        try {
-          localChannel?.postMessage(packet);
-        } catch (_) {}
-        try {
-          localStorage.setItem(key, JSON.stringify(packet));
-        } catch (_) {}
-      }
-
-      function ensureLocalParticipantsSelf() {
-        clearConnectionParticipants();
-      }
-
-      function startLocalHeartbeat() {
-        stopLocalTimers();
-        localHeartbeatTimer = setInterval(() => {
-          if (connection.kind !== 'local' || !connection.roomCode) return;
-          postLocalPacket(connection.roomCode, makePacket({ type: 'hello' }));
-          postLocalPacket(connection.roomCode, makePacket({ type: 'keepalive' }));
-        }, 3000);
-
-        localPurgeTimer = setInterval(() => {
-          if (connection.kind !== 'local') return;
-          const now = Date.now();
-          for (const [id, item] of connection.participants.entries()) {
-            if (id === selfPeerId) continue;
-            if (now - (item.lastSeen || 0) > 15000) {
-              connection.participants.delete(id);
-            }
-          }
-          if (peerMenuOpen) renderPeerNameStrip();
-        }, 1000);
-      }
-
-      async function localConnectRoom(roomCode) {
-        stopAllConnections(false);
-        const code = sanitizeRoomCode(roomCode);
-        connection.kind = 'local';
-        connection.roomCode = code;
-        settings.lastRoomCode = code;
-        saveSettings();
-
-        clearConnectionParticipants();
-        pushConnectionParticipant(selfPeerId, getEffectiveDisplayName());
-
-        localChannel = null;
-        if ('BroadcastChannel' in window) {
-          try {
-            localChannel = new BroadcastChannel(localBusKey(code));
-            localChannel.onmessage = (ev) => handleIncomingPacket(ev.data, 'local');
-          } catch (_) {
-            localChannel = null;
-          }
-        }
-
-        window.addEventListener('storage', onLocalStorageEvent);
-        startLocalHeartbeat();
-        setConnectionSearching();
-        postLocalPacket(code, makePacket({ type: 'hello' }));
-        setConnectionConnected();
-        showToast(`ローカルで接続: ${code}`);
-      }
-
-      async function fbConnectRoom(roomCode) {
-        await stopFirebaseConnection(false);
-        const code = sanitizeRoomCode(roomCode);
-        connection.kind = 'firebase';
-        connection.roomCode = code;
-        settings.lastRoomCode = code;
-        saveSettings();
-
-        fbRoomRef = doc(db, 'rooms', code);
-        fbSelfParticipantRef = doc(db, 'rooms', code, 'participants', selfPeerId);
-
-        setConnectionSearching();
-        clearConnectionParticipants();
-        pushConnectionParticipant(selfPeerId, getEffectiveDisplayName());
-
-        await setDoc(fbRoomRef, {
-          roomCode: code,
-          updatedAt: Date.now()
-        }, { merge: true });
-
-        await setDoc(fbSelfParticipantRef, {
-          id: selfPeerId,
-          name: getEffectiveDisplayName(),
-          updatedAt: Date.now(),
-          joinedAt: Date.now()
-        }, { merge: true });
-
-        fbRoomUnsub = onSnapshot(fbRoomRef, (snap) => {
-          if (!snap.exists()) return;
-          const data = snap.data() || {};
-          connection.sendLockOwnerId = data.sendLockOwnerId || '';
-          connection.sendLockOwnerName = data.sendLockOwnerName || '';
-          connection.sendLockUntil = Number(data.sendLockUntil || 0);
-          connection.latestSettings = data.latestSettings || null;
-          connection.latestSettingsAt = Number(data.latestSettingsAt || 0);
-          connection.latestSettingsSenderId = data.latestSettingsSenderId || '';
-          connection.latestSettingsSenderName = data.latestSettingsSenderName || '';
-
-          if (Date.now() > connection.sendLockUntil && connection.sendLockOwnerId && connection.sendLockOwnerId !== selfPeerId) {
-            connection.sendLockOwnerId = '';
-            connection.sendLockOwnerName = '';
-          }
-
-          if (peerMenuOpen) refreshPeerMenu('connected');
-          maybeApplyLatestSettings();
-        });
-
-        fbParticipantsUnsub = onSnapshot(collection(db, 'rooms', code, 'participants'), (snap) => {
-          const now = Date.now();
-          const next = new Map();
-          next.set(selfPeerId, {
-            id: selfPeerId,
-            name: getEffectiveDisplayName(),
-            lastSeen: now
-          });
-
-          snap.forEach((docSnap) => {
-            const d = docSnap.data() || {};
-            const name = normalizeDisplayName(d.name || d.displayName || '名無し');
-            const lastSeen = Number(d.updatedAt || d.lastSeen || 0);
-            if (!docSnap.id) return;
-            if (docSnap.id === selfPeerId) return;
-            if (lastSeen && now - lastSeen > 15000) return;
-            next.set(docSnap.id, {
-              id: docSnap.id,
-              name,
-              lastSeen
-            });
-          });
-
-          connection.participants = next;
-          if (peerMenuOpen) renderPeerNameStrip();
-        });
-
-        fbEffectsUnsub = onSnapshot(query(collection(db, 'rooms', code, 'effects'), orderBy('createdAt', 'asc')), (snap) => {
-          snap.docChanges().forEach((change) => {
-            if (change.type !== 'added') return;
-            const data = change.doc.data() || {};
-            if (!rememberPacket(change.doc.id)) return;
-            if (data.senderId === selfPeerId) return;
-            handleIncomingPacket({
-              id: change.doc.id,
-              senderId: data.senderId,
-              senderName: data.senderName,
-              roomCode: code,
-              type: data.kind,
-              payload: data.payload,
-              createdAt: data.createdAt
-            }, 'firebase');
-          });
-        });
-
-        fbHeartbeatTimer = setInterval(async () => {
-          if (!fbSelfParticipantRef) return;
-          try {
-            await setDoc(fbSelfParticipantRef, {
-              id: selfPeerId,
-              name: getEffectiveDisplayName(),
-              updatedAt: Date.now()
-            }, { merge: true });
-          } catch (_) {}
-        }, 5000);
-
-        setConnectionConnected();
-        showToast(`Firebaseで接続: ${code}`);
-      }
-
-      function fbDisconnectRoom(sendLeave = true) {
-        if (sendLeave && fbSelfParticipantRef) {
-          void deleteDoc(fbSelfParticipantRef);
-        }
-
-        if (fbRoomUnsub) {
-          try { fbRoomUnsub(); } catch (_) {}
-          fbRoomUnsub = null;
-        }
-        if (fbParticipantsUnsub) {
-          try { fbParticipantsUnsub(); } catch (_) {}
-          fbParticipantsUnsub = null;
-        }
-        if (fbEffectsUnsub) {
-          try { fbEffectsUnsub(); } catch (_) {}
-          fbEffectsUnsub = null;
-        }
-
-        stopFirebaseTimers();
-        fbRoomRef = null;
-        fbSelfParticipantRef = null;
-      }
-
-      function handleIncomingPacket(packet, sourceKind) {
+      function appHandleSharedPacket(packet) {
         if (!packet || typeof packet !== 'object') return;
-        if (packet.senderId === selfPeerId) return;
-        if (!rememberPacket(packet.id)) return;
+        if (packet.senderId === appSelfId) return;
 
-        const now = Date.now();
-
-        if (packet.type === 'hello' || packet.type === 'keepalive') {
-          if (!packet.roomCode || packet.roomCode !== connection.roomCode) return;
-          pushConnectionParticipant(packet.senderId, packet.senderName || '名無し');
-          if (peerMenuOpen) renderPeerNameStrip();
-          if (connectionState === 'searching' && connection.kind === 'local') {
-            setConnectionConnected();
-          }
+        if (packet.kind === 'settings') {
+          appHandleIncomingSettingsPacket(packet);
           return;
         }
 
-        if (packet.type === 'bye') {
-          if (!packet.roomCode || packet.roomCode !== connection.roomCode) return;
-          connection.participants.delete(packet.senderId);
-          if (peerMenuOpen) renderPeerNameStrip();
-          return;
-        }
-
-        if (packet.type === 'send-lock') {
-          if (!packet.roomCode || packet.roomCode !== connection.roomCode) return;
-          connection.sendLockOwnerId = packet.ownerId || '';
-          connection.sendLockOwnerName = packet.ownerName || '';
-          connection.sendLockUntil = Number(packet.until || 0);
-          if (peerMenuOpen) refreshPeerMenu('connected');
-          return;
-        }
-
-        if (packet.type === 'settings') {
-          if (!packet.roomCode || packet.roomCode !== connection.roomCode) return;
-
-          connection.latestSettings = packet.payload || null;
-          connection.latestSettingsAt = Number(packet.createdAt || Date.now());
-          connection.latestSettingsSenderId = packet.senderId || '';
-          connection.latestSettingsSenderName = packet.senderName || '';
-
-          if (receiveWindowUntil > 0 && now <= receiveWindowUntil) {
-            const age = Date.now() - connection.latestSettingsAt;
-            if (age <= 10000 && packet.senderId !== selfPeerId) {
-              receiveWindowUntil = 0;
-              applySettingsSnapshot(connection.latestSettings);
-              showToast('設定を受信した');
-            }
-          }
-
-          return;
-        }
-
-        if (packet.type === 'effect') {
-          if (!packet.roomCode || packet.roomCode !== connection.roomCode) return;
-          applyIncomingEffect(packet.kind, packet.payload);
-          return;
+        if (packet.kind === 'tap' || packet.kind === 'swipe' || packet.kind === 'loop') {
+          appHandleIncomingEffectPacket(packet);
         }
       }
 
-      function applyIncomingEffect(kind, payload) {
-        if (!payload || typeof payload !== 'object') return;
+      function appHandleIncomingSettingsPacket(packet) {
+        if (!packet || typeof packet !== 'object') return;
+        if (packet.senderId === appSelfId) return;
 
-        if (kind === 'tap') {
+        const sentAtMs = Number(packet.sentAtMs) || 0;
+        const withinReceiveWindow = Date.now() <= appReceiveWindowUntilMs;
+        const withinPacketAge = Date.now() - sentAtMs <= 10000;
+
+        if (withinReceiveWindow && withinPacketAge && packet.id !== appLastAppliedSettingsPacketId) {
+          appLastAppliedSettingsPacketId = packet.id;
+          appApplySettingsSnapshot(packet.payload);
+          appToast('設定を受信した');
+        }
+      }
+
+      function appHandleIncomingEffectPacket(packet) {
+        if (!packet || typeof packet !== 'object') return;
+        if (packet.senderId === appSelfId) return;
+        if (packet.id === appLastAppliedEffectPacketId) return;
+        appLastAppliedEffectPacketId = packet.id;
+
+        const payload = packet.payload || {};
+        if (packet.kind === 'tap') {
           if (typeof payload.x === 'number' && typeof payload.y === 'number') {
-            addTapEffect(payload.x, payload.y, false);
+            appCreateTapEffect(payload.x, payload.y, false);
           }
           return;
         }
 
-        if (kind === 'swipe') {
-          const from = payload.from;
-          const to = payload.to;
-          const dir = payload.dir;
+        if (packet.kind === 'swipe') {
+          const from = payload.from || {};
+          const to = payload.to || {};
+          const dir = payload.dir || {};
           if (
-            from && to && dir &&
             typeof from.x === 'number' && typeof from.y === 'number' &&
             typeof to.x === 'number' && typeof to.y === 'number' &&
             typeof dir.x === 'number' && typeof dir.y === 'number'
           ) {
-            createSwipeEffect(from.x, from.y, dir.x * 100, dir.y * 100, false, {
+            appCreateSwipeEffect(from.x, from.y, dir.x * 100, dir.y * 100, false, {
               forceFrom: from,
               forceTo: to,
               forceRadius: typeof payload.radius === 'number' ? payload.radius : undefined
@@ -2091,179 +2105,468 @@
           return;
         }
 
-        if (kind === 'loop') {
+        if (packet.kind === 'loop') {
           if (Array.isArray(payload.points)) {
             const points = payload.points
               .filter(p => p && typeof p.x === 'number' && typeof p.y === 'number')
               .map(p => ({ x: p.x, y: p.y }));
-            if (points.length >= 3) createLoopEffect(points, false);
+            if (points.length >= 3) appCreateLoopEffect(points, false);
           }
         }
       }
 
-      function getCurrentSendLockLabel() {
-        const now = Date.now();
-        if (connection.sendLockUntil > now && connection.sendLockOwnerId && connection.sendLockOwnerId !== selfPeerId) {
-          return `${connection.sendLockOwnerName || '誰か'}が\n送信中…`;
+      function appApplySettingsSnapshot(snapshot) {
+        if (!snapshot || typeof snapshot !== 'object') return;
+
+        if (appIsValidMode(snapshot.bgMode)) appSettings.bgMode = snapshot.bgMode;
+        if (typeof snapshot.bgCustom === 'string') appSettings.bgCustom = snapshot.bgCustom;
+
+        if (typeof snapshot.tapColor === 'string') appSettings.tapColor = snapshot.tapColor;
+        if (typeof snapshot.swipeColor === 'string') appSettings.swipeColor = snapshot.swipeColor;
+        if (typeof snapshot.loopColor === 'string') appSettings.loopColor = snapshot.loopColor;
+
+        if (typeof snapshot.gridEnabled === 'boolean') appSettings.gridEnabled = snapshot.gridEnabled;
+        if (appIsValidMode(snapshot.gridMode)) appSettings.gridMode = snapshot.gridMode;
+        if (typeof snapshot.gridCustom === 'string') appSettings.gridCustom = snapshot.gridCustom;
+        if (typeof snapshot.gridSpacing === 'number' && isFinite(snapshot.gridSpacing)) {
+          appSettings.gridSpacing = appClamp(Math.round(snapshot.gridSpacing), 18, 100);
         }
-        if (connection.sendLockUntil > now && connection.sendLockOwnerId === selfPeerId) {
-          return '送信中…';
-        }
-        return '設定を\n送信';
+
+        appSyncSettingsUi();
+        appUpdateTheme();
+        appSaveSettings();
+        appRefreshPeerUi();
       }
 
-      function isSendLockedByOther() {
-        const now = Date.now();
-        return connection.sendLockUntil > now && connection.sendLockOwnerId && connection.sendLockOwnerId !== selfPeerId;
+      function appCaptureSharedSettingsSnapshot() {
+        return {
+          bgMode: appSettings.bgMode,
+          bgCustom: appSettings.bgCustom,
+          tapColor: appSettings.tapColor,
+          swipeColor: appSettings.swipeColor,
+          loopColor: appSettings.loopColor,
+          gridEnabled: appSettings.gridEnabled,
+          gridMode: appSettings.gridMode,
+          gridCustom: appSettings.gridCustom,
+          gridSpacing: appSettings.gridSpacing
+        };
       }
 
-      function maybeApplyLatestSettings() {
-        if (!connection.latestSettings) return;
-        const now = Date.now();
-        const age = now - connection.latestSettingsAt;
-        if (age <= 10000 && receiveWindowUntil > 0 && now <= receiveWindowUntil) {
-          if (connection.latestSettingsSenderId !== selfPeerId) {
-            receiveWindowUntil = 0;
-            applySettingsSnapshot(connection.latestSettings);
-            showToast('設定を受信した');
-          }
-        }
-      }
+      function appUpdateOwnPresenceNow() {
+        const name = appCurrentDisplayName();
 
-      async function sendCurrentSettings() {
-        const payload = captureSettingsSnapshot();
-
-        if (connection.kind === 'local') {
-          const lockUntil = Date.now() + 10000;
-          connection.sendLockOwnerId = selfPeerId;
-          connection.sendLockOwnerName = getEffectiveDisplayName();
-          connection.sendLockUntil = lockUntil;
-          connection.latestSettings = payload;
-          connection.latestSettingsAt = Date.now();
-          connection.latestSettingsSenderId = selfPeerId;
-          connection.latestSettingsSenderName = getEffectiveDisplayName();
-
-          postLocalPacket(connection.roomCode, makePacket({
-            type: 'send-lock',
-            ownerId: selfPeerId,
-            ownerName: getEffectiveDisplayName(),
-            until: lockUntil
-          }));
-
-          postLocalPacket(connection.roomCode, makePacket({
-            type: 'settings',
-            payload
-          }));
-
-          showToast('設定を送った');
-          if (peerMenuOpen) refreshPeerMenu('connected');
+        if (appTransportKind === 'local') {
+          appLocalMutateState((stateObj) => {
+            stateObj.members[appSelfId] = {
+              name,
+              updatedAtMs: Date.now()
+            };
+            if (stateObj.activeSenderId === appSelfId) {
+              stateObj.activeSenderName = name;
+            }
+            appLocalPruneState(stateObj);
+          });
           return;
         }
 
-        if (connection.kind === 'firebase') {
-          if (!fbRoomRef) return;
-          const lockUntil = Date.now() + 10000;
-          try {
-            await runTransaction(db, async (tx) => {
-              const snap = await tx.get(fbRoomRef);
-              const data = snap.exists() ? (snap.data() || {}) : {};
-              const until = Number(data.sendLockUntil || 0);
-              const ownerId = String(data.sendLockOwnerId || '');
-              if (until > Date.now() && ownerId && ownerId !== selfPeerId) {
-                const ownerName = String(data.sendLockOwnerName || '誰か');
-                throw new Error(`${ownerName}が送信中…`);
-              }
+        if (appTransportKind === 'firebase') {
+          if (appFirebaseSelfMemberRef) {
+            setDoc(appFirebaseSelfMemberRef, {
+              name,
+              updatedAtMs: Date.now()
+            }, { merge: true }).catch(() => {});
+          }
+          if (appSharedRoomState.activeSenderId === appSelfId && appFirebaseRoomRef) {
+            setDoc(appFirebaseRoomRef, {
+              activeSenderName: name,
+              updatedAtMs: Date.now()
+            }, { merge: true }).catch(() => {});
+          }
+        }
+      }
 
-              tx.set(fbRoomRef, {
-                roomCode: connection.roomCode,
-                sendLockOwnerId: selfPeerId,
-                sendLockOwnerName: getEffectiveDisplayName(),
-                sendLockUntil: lockUntil,
-                latestSettings: payload,
-                latestSettingsAt: Date.now(),
-                latestSettingsSenderId: selfPeerId,
-                latestSettingsSenderName: getEffectiveDisplayName(),
-                updatedAt: Date.now()
-              }, { merge: true });
+      function appStartCurrentPresenceHeartbeat() {
+        appStopCurrentPresenceHeartbeat();
+        if (appTransportKind === 'local') {
+          appLocalHeartbeatTimer = setInterval(() => {
+            if (appTransportKind !== 'local') return;
+            appUpdateOwnPresenceNow();
+          }, 2500);
+          return;
+        }
+
+        if (appTransportKind === 'firebase') {
+          appFirebaseHeartbeatTimer = setInterval(() => {
+            if (appTransportKind !== 'firebase') return;
+            appUpdateOwnPresenceNow();
+          }, 2500);
+        }
+      }
+
+      function appStopCurrentPresenceHeartbeat() {
+        if (appLocalHeartbeatTimer) {
+          clearInterval(appLocalHeartbeatTimer);
+          appLocalHeartbeatTimer = null;
+        }
+        if (appFirebaseHeartbeatTimer) {
+          clearInterval(appFirebaseHeartbeatTimer);
+          appFirebaseHeartbeatTimer = null;
+        }
+      }
+
+      function appLocalJoinTransport() {
+        appLeaveCurrentTransport(false);
+        appTransportKind = 'local';
+        appSetJoinedLabelFromLocal();
+        appUpdateOwnPresenceNow();
+        appStartCurrentPresenceHeartbeat();
+        appAttachLocalStorageListener();
+        appLocalApplyStateObject(appLocalReadState(), true);
+        appRefreshPeerUi();
+        appToast('ローカル通信で待機中');
+      }
+
+      async function appFirebaseJoinTransport() {
+        if (!firebaseDb) {
+          appToast('Firebaseが使えない');
+          return;
+        }
+
+        appLeaveCurrentTransport(false);
+        appTransportKind = 'firebase';
+        appSetJoinedLabelFromFirebase();
+        appRefreshPeerUi();
+
+        const roomKey = appFirebaseRoomKey();
+        appFirebaseRoomRef = doc(firebaseDb, 'rooms', roomKey);
+        appFirebaseMembersColRef = collection(firebaseDb, 'rooms', roomKey, 'members');
+        appFirebaseSelfMemberRef = doc(firebaseDb, 'rooms', roomKey, 'members', appSelfId);
+
+        try {
+          await setDoc(appFirebaseRoomRef, {
+            updatedAtMs: Date.now()
+          }, { merge: true });
+
+          await setDoc(appFirebaseSelfMemberRef, {
+            name: appCurrentDisplayName(),
+            updatedAtMs: Date.now(),
+            joinedAtMs: Date.now()
+          }, { merge: true });
+        } catch (err) {
+          console.warn(err);
+          appToast('Firebaseに入れなかった');
+          appTransportKind = 'none';
+          appJoinedRoomLabel = '';
+          appRefreshPeerUi();
+          return;
+        }
+
+        appFirebaseRoomUnsub = onSnapshot(appFirebaseRoomRef, (snap) => {
+          const data = snap.data() || {};
+          appSharedRoomState = {
+            activeSenderId: typeof data.activeSenderId === 'string' ? data.activeSenderId : '',
+            activeSenderName: typeof data.activeSenderName === 'string' ? data.activeSenderName : '',
+            activeSenderUntilMs: Number(data.activeSenderUntilMs) || 0,
+            latestSettingsPacket: data.latestSettingsPacket && typeof data.latestSettingsPacket === 'object' ? data.latestSettingsPacket : null,
+            latestEffectPacket: data.latestEffectPacket && typeof data.latestEffectPacket === 'object' ? data.latestEffectPacket : null
+          };
+          appMaybeApplyLatestSharedPackets();
+          appRefreshPeerUi();
+        });
+
+        appFirebaseMembersUnsub = onSnapshot(appFirebaseMembersColRef, (snap) => {
+          const now = Date.now();
+          const roster = [];
+          snap.forEach((d) => {
+            const data = d.data() || {};
+            const updatedAtMs = Number(data.updatedAtMs) || 0;
+            if (updatedAtMs && now - updatedAtMs > 10000) return;
+            roster.push({
+              id: d.id,
+              name: appNormalizeText(data.name, '名無し', 24),
+              updatedAtMs
             });
+          });
 
-            connection.sendLockOwnerId = selfPeerId;
-            connection.sendLockOwnerName = getEffectiveDisplayName();
-            connection.sendLockUntil = lockUntil;
-            connection.latestSettings = payload;
-            connection.latestSettingsAt = Date.now();
-            connection.latestSettingsSenderId = selfPeerId;
-            connection.latestSettingsSenderName = getEffectiveDisplayName();
-
-            showToast('設定を送った');
-            if (peerMenuOpen) refreshPeerMenu('connected');
-          } catch (err) {
-            showToast(err?.message || '送信できない');
+          const hasSelf = roster.some(member => member.id === appSelfId);
+          if (!hasSelf) {
+            roster.push({
+              id: appSelfId,
+              name: appCurrentDisplayName(),
+              updatedAtMs: Date.now()
+            });
           }
+
+          appMemberRoster = roster;
+          appRefreshPeerUi();
+        });
+
+        appStartCurrentPresenceHeartbeat();
+        appToast('Firebaseで待機中');
+      }
+
+      async function appFirebaseLeaveTransport() {
+        if (appTransportKind !== 'firebase') return;
+
+        appStopCurrentPresenceHeartbeat();
+
+        try {
+          if (appFirebaseSelfMemberRef) {
+            await deleteDoc(appFirebaseSelfMemberRef);
+          }
+
+          if (appSharedRoomState.activeSenderId === appSelfId && appFirebaseRoomRef) {
+            await setDoc(appFirebaseRoomRef, {
+              activeSenderId: '',
+              activeSenderName: '',
+              activeSenderUntilMs: 0,
+              updatedAtMs: Date.now()
+            }, { merge: true });
+          }
+        } catch (_) {}
+
+        if (appFirebaseRoomUnsub) {
+          try { appFirebaseRoomUnsub(); } catch (_) {}
+          appFirebaseRoomUnsub = null;
+        }
+
+        if (appFirebaseMembersUnsub) {
+          try { appFirebaseMembersUnsub(); } catch (_) {}
+          appFirebaseMembersUnsub = null;
+        }
+
+        appFirebaseRoomRef = null;
+        appFirebaseMembersColRef = null;
+        appFirebaseSelfMemberRef = null;
+
+        appTransportKind = 'none';
+        appJoinedRoomLabel = '';
+        appSharedRoomState = {
+          activeSenderId: '',
+          activeSenderName: '',
+          activeSenderUntilMs: 0,
+          latestSettingsPacket: null,
+          latestEffectPacket: null
+        };
+        appMemberRoster = [];
+        appPeerState = 'off';
+        appRefreshPeerUi();
+      }
+
+      function appLeaveCurrentTransport(sendMessage) {
+        if (appTransportKind === 'local') {
+          appStopCurrentPresenceHeartbeat();
+          if (sendMessage) appToast('切断した');
+
+          appLocalMutateState((stateObj) => {
+            if (stateObj.members && stateObj.members[appSelfId]) {
+              delete stateObj.members[appSelfId];
+            }
+            if (stateObj.activeSenderId === appSelfId) {
+              stateObj.activeSenderId = '';
+              stateObj.activeSenderName = '';
+              stateObj.activeSenderUntilMs = 0;
+            }
+            appLocalPruneState(stateObj);
+          }, false);
+
+          appTransportKind = 'none';
+          appJoinedRoomLabel = '';
+          appSharedRoomState = {
+            activeSenderId: '',
+            activeSenderName: '',
+            activeSenderUntilMs: 0,
+            latestSettingsPacket: null,
+            latestEffectPacket: null
+          };
+          appMemberRoster = [];
+          appPeerState = 'off';
+          appDetachLocalStorageListener();
+          appRefreshPeerUi();
           return;
         }
 
-        showToast('接続してない');
+        if (appTransportKind === 'firebase') {
+          appFirebaseLeaveTransport().then(() => {
+            if (sendMessage) appToast('切断した');
+          });
+          return;
+        }
+
+        appTransportKind = 'none';
+        appJoinedRoomLabel = '';
+        appPeerState = 'off';
+        appMemberRoster = [];
+        appSharedRoomState = {
+          activeSenderId: '',
+          activeSenderName: '',
+          activeSenderUntilMs: 0,
+          latestSettingsPacket: null,
+          latestEffectPacket: null
+        };
+        appRefreshPeerUi();
+        if (sendMessage) appToast('切断した');
       }
 
-      function startConnectionFlow(mode) {
-        closePeerMenu();
-        openConnectDialog(mode);
+      function appLocalWriteSharedSettings(settingsSnapshot) {
+        const packet = {
+          id: appMakeId(),
+          kind: 'settings',
+          senderId: appSelfId,
+          senderName: appCurrentDisplayName(),
+          sentAtMs: Date.now(),
+          payload: settingsSnapshot
+        };
+
+        appLocalMutateState((stateObj) => {
+          stateObj.activeSenderId = appSelfId;
+          stateObj.activeSenderName = appCurrentDisplayName();
+          stateObj.activeSenderUntilMs = Date.now() + 10000;
+          stateObj.latestSettingsPacket = packet;
+          appLocalPruneState(stateObj);
+        });
+
+        appToast('設定を送った');
       }
 
-      function startLocalFlow(roomCode) {
-        setConnectionSearching();
-        void localConnectRoom(roomCode);
+      function appLocalWriteSharedEffect(kind, payload) {
+        const packet = {
+          id: appMakeId(),
+          kind,
+          senderId: appSelfId,
+          senderName: appCurrentDisplayName(),
+          sentAtMs: Date.now(),
+          payload
+        };
+
+        appLocalMutateState((stateObj) => {
+          stateObj.latestEffectPacket = packet;
+          appLocalPruneState(stateObj);
+        }, true);
       }
 
-      function startFirebaseFlow(roomCode) {
-        setConnectionSearching();
-        void fbConnectRoom(roomCode);
+      async function appFirebaseWriteSharedEffect(kind, payload) {
+        if (!appFirebaseRoomRef) return;
+        const packet = {
+          id: appMakeId(),
+          kind,
+          senderId: appSelfId,
+          senderName: appCurrentDisplayName(),
+          sentAtMs: Date.now(),
+          payload
+        };
+
+        try {
+          await setDoc(appFirebaseRoomRef, {
+            latestEffectPacket: packet,
+            updatedAtMs: Date.now()
+          }, { merge: true });
+        } catch (_) {}
       }
 
-      function stopUiOverlays() {
-        closeConnectDialog();
-        closeQrDialog();
-        closeSettingsOverlay();
-        closePeerMenu();
+      async function appFirebaseWriteSharedSettings(settingsSnapshot) {
+        if (!firebaseDb || !appFirebaseRoomRef) {
+          appToast('Firebaseが使えない');
+          return;
+        }
+
+        const now = Date.now();
+        const packet = {
+          id: appMakeId(),
+          kind: 'settings',
+          senderId: appSelfId,
+          senderName: appCurrentDisplayName(),
+          sentAtMs: now,
+          payload: settingsSnapshot
+        };
+
+        try {
+          await runTransaction(firebaseDb, async (tx) => {
+            const snap = await tx.get(appFirebaseRoomRef);
+            const data = snap.data() || {};
+            const activeUntil = Number(data.activeSenderUntilMs) || 0;
+            const activeId = typeof data.activeSenderId === 'string' ? data.activeSenderId : '';
+
+            if (activeUntil > Date.now() && activeId && activeId !== appSelfId) {
+              const activeName = typeof data.activeSenderName === 'string' && data.activeSenderName
+                ? data.activeSenderName
+                : '他の人';
+              throw new Error(`${activeName}が送信中`);
+            }
+
+            tx.set(appFirebaseRoomRef, {
+              activeSenderId: appSelfId,
+              activeSenderName: appCurrentDisplayName(),
+              activeSenderUntilMs: now + 10000,
+              latestSettingsPacket: packet,
+              updatedAtMs: now
+            }, { merge: true });
+          });
+
+          appToast('設定を送った');
+        } catch (err) {
+          appToast(err && err.message ? err.message : '送信できなかった');
+        }
       }
 
-      function openQrImageForCurrentCode() {
-        const code = sanitizeRoomCode(qrRoomCodeInput.value || settings.lastRoomCode || makeRoomCode());
-        qrRoomCodeInput.value = code;
-        updateQrImage(code);
+      function appSetReceiveWindow() {
+        appReceiveWindowUntilMs = Date.now() + 10000;
+        appToast('受信待機中');
+        appMaybeApplyLatestSharedPackets();
       }
 
-      function addTapEffect(x, y, broadcast = true) {
-        effects.push({
+      function appSetSessionModeFromMenu(mode) {
+        if (mode === 'local') {
+          appLocalJoinTransport();
+          return;
+        }
+
+        if (mode === 'firebase') {
+          appFirebaseJoinTransport();
+          return;
+        }
+
+        if (mode === 'solo') {
+          appClosePeerMenu();
+          return;
+        }
+      }
+
+      function appStartMenuFromPeerButton() {
+        if (!appSettings.peerButtonVisible) return;
+
+        if (appPeerState === 'searching') {
+          appLeaveCurrentTransport(true);
+          return;
+        }
+
+        if (appPeerState === 'connected') {
+          appOpenPeerMenu('connected');
+          return;
+        }
+
+        appOpenPeerMenu('off');
+      }
+
+      function appAddTapEffect(x, y, broadcast = true) {
+        appEffects.push({
           type: 'tap',
           x,
           y,
-          start: nowMs(),
+          start: appNowMs(),
           duration: 650
         });
 
-        if (broadcast && connection.kind !== 'none' && connection.roomCode) {
-          if (connection.kind === 'local') {
-            postLocalPacket(connection.roomCode, makePacket({
-              type: 'effect',
-              kind: 'tap',
-              payload: { x, y }
-            }));
-          } else if (connection.kind === 'firebase' && fbRoomRef) {
-            void addDoc(collection(db, 'rooms', connection.roomCode, 'effects'), {
-              kind: 'tap',
-              payload: { x, y },
-              senderId: selfPeerId,
-              senderName: getEffectiveDisplayName(),
-              roomCode: connection.roomCode,
-              createdAt: Date.now()
-            }).catch(() => {});
+        if (broadcast) {
+          if (appTransportKind === 'local') {
+            appLocalWriteSharedEffect('tap', { x, y });
+          } else if (appTransportKind === 'firebase') {
+            appFirebaseWriteSharedEffect('tap', { x, y });
           }
         }
       }
 
-      function createSwipeEffect(startX, startY, dirX, dirY, broadcast = true, forced = null) {
+      function appCreateSwipeEffect(startX, startY, dirX, dirY, broadcast = true, forced = null) {
         const len = Math.hypot(dirX, dirY) || 1;
         dirX /= len;
         dirY /= len;
@@ -2271,8 +2574,8 @@
         const pad = 90;
         const minX = -pad;
         const minY = -pad;
-        const maxX = w + pad;
-        const maxY = h + pad;
+        const maxX = appWidth + pad;
+        const maxY = appHeight + pad;
 
         const hits = [];
 
@@ -2282,11 +2585,12 @@
           }
         }
 
+        let first;
+        let last;
+
         if (forced && forced.forceFrom && forced.forceTo) {
-          hits.push(
-            { t: 0, x: forced.forceFrom.x, y: forced.forceFrom.y },
-            { t: 1, x: forced.forceTo.x, y: forced.forceTo.y }
-          );
+          first = forced.forceFrom;
+          last = forced.forceTo;
         } else {
           if (Math.abs(dirX) > 1e-6) {
             let t = (minX - startX) / dirX;
@@ -2310,20 +2614,20 @@
           } else {
             hits.sort((a, b) => a.t - b.t);
           }
+
+          first = hits[0];
+          last = hits[hits.length - 1];
         }
 
-        const first = forced && forced.forceFrom ? forced.forceFrom : hits[0];
-        const last = forced && forced.forceTo ? forced.forceTo : hits[hits.length - 1];
-        const travel = distance(first.x, first.y, last.x, last.y);
-        const duration = clamp(460 + travel * 0.12, 520, 900);
-
+        const travel = appDistance(first.x, first.y, last.x, last.y);
+        const duration = appClamp(460 + travel * 0.12, 520, 900);
         const radius = typeof (forced && forced.forceRadius) === 'number'
           ? forced.forceRadius
-          : clamp(Math.min(w, h) * 0.045, 18, 38);
+          : appClamp(Math.min(appWidth, appHeight) * 0.045, 18, 38);
 
-        effects.push({
+        appEffects.push({
           type: 'swipe',
-          start: nowMs(),
+          start: appNowMs(),
           duration,
           from: { x: first.x, y: first.y },
           to: { x: last.x, y: last.y },
@@ -2331,81 +2635,59 @@
           radius
         });
 
-        if (broadcast && connection.kind !== 'none' && connection.roomCode) {
-          if (connection.kind === 'local') {
-            postLocalPacket(connection.roomCode, makePacket({
-              type: 'effect',
-              kind: 'swipe',
-              payload: {
-                from: { x: first.x, y: first.y },
-                to: { x: last.x, y: last.y },
-                dir: { x: dirX, y: dirY },
-                radius
-              }
-            }));
-          } else if (connection.kind === 'firebase' && fbRoomRef) {
-            void addDoc(collection(db, 'rooms', connection.roomCode, 'effects'), {
-              kind: 'swipe',
-              payload: {
-                from: { x: first.x, y: first.y },
-                to: { x: last.x, y: last.y },
-                dir: { x: dirX, y: dirY },
-                radius
-              },
-              senderId: selfPeerId,
-              senderName: getEffectiveDisplayName(),
-              roomCode: connection.roomCode,
-              createdAt: Date.now()
-            }).catch(() => {});
+        if (broadcast) {
+          if (appTransportKind === 'local') {
+            appLocalWriteSharedEffect('swipe', {
+              from: { x: first.x, y: first.y },
+              to: { x: last.x, y: last.y },
+              dir: { x: dirX, y: dirY },
+              radius
+            });
+          } else if (appTransportKind === 'firebase') {
+            appFirebaseWriteSharedEffect('swipe', {
+              from: { x: first.x, y: first.y },
+              to: { x: last.x, y: last.y },
+              dir: { x: dirX, y: dirY },
+              radius
+            });
           }
         }
       }
 
-      function createLoopEffect(points, broadcast = true) {
-        if (points.length < 3) return;
+      function appCreateLoopEffect(points, broadcast = true) {
+        if (!points || points.length < 3) return;
 
         const copy = points.map(p => ({ x: p.x, y: p.y }));
-        effects.push({
+        appEffects.push({
           type: 'loop',
-          start: nowMs(),
+          start: appNowMs(),
           duration: 420,
           points: copy
         });
 
-        if (broadcast && connection.kind !== 'none' && connection.roomCode) {
-          if (connection.kind === 'local') {
-            postLocalPacket(connection.roomCode, makePacket({
-              type: 'effect',
-              kind: 'loop',
-              payload: { points: copy }
-            }));
-          } else if (connection.kind === 'firebase' && fbRoomRef) {
-            void addDoc(collection(db, 'rooms', connection.roomCode, 'effects'), {
-              kind: 'loop',
-              payload: { points: copy },
-              senderId: selfPeerId,
-              senderName: getEffectiveDisplayName(),
-              roomCode: connection.roomCode,
-              createdAt: Date.now()
-            }).catch(() => {});
+        if (broadcast) {
+          if (appTransportKind === 'local') {
+            appLocalWriteSharedEffect('loop', { points: copy });
+          } else if (appTransportKind === 'firebase') {
+            appFirebaseWriteSharedEffect('loop', { points: copy });
           }
         }
       }
 
-      function detectLoop(points, currentX, currentY) {
-        if (points.length < LASSO_MIN_POINTS) return false;
+      function appDetectLoop(points, currentX, currentY) {
+        if (points.length < APP_LASSO_MIN_POINTS) return false;
 
         const n = points.length;
-        const safeEnd = Math.max(0, n - 1 - LASSO_IGNORE_RECENT_SEGMENTS);
+        const safeEnd = Math.max(0, n - 1 - APP_LASSO_IGNORE_RECENT_SEGMENTS);
 
         for (let i = 0; i < safeEnd - 1; i++) {
           const a = points[i];
           const b = points[i + 1];
-          const d = pointToSegmentDistance(currentX, currentY, a.x, a.y, b.x, b.y);
-          if (d <= LASSO_HIT_RADIUS) {
+          const d = appPointToSegmentDistance(currentX, currentY, a.x, a.y, b.x, b.y);
+          if (d <= APP_LASSO_HIT_RADIUS) {
             let traveled = 0;
             for (let k = i; k < n - 1; k++) {
-              traveled += distance(points[k].x, points[k].y, points[k + 1].x, points[k + 1].y);
+              traveled += appDistance(points[k].x, points[k].y, points[k + 1].x, points[k + 1].y);
               if (traveled > 40) break;
             }
             if (traveled > 40) return true;
@@ -2415,58 +2697,58 @@
         return false;
       }
 
-      function drawGrid() {
-        if (!settings.gridEnabled) return;
+      function appDrawGrid() {
+        if (!appSettings.gridEnabled) return;
 
-        const baseColor = getGridBaseColor();
-        const lineLow = hexToRgba(baseColor, 0.40) || (darkMode ? 'rgba(34,34,34,0.40)' : 'rgba(232,232,232,0.40)');
-        const lineHigh = hexToRgba(baseColor, 0.56) || (darkMode ? 'rgba(58,58,58,0.56)' : 'rgba(210,210,210,0.56)');
+        const baseColor = appGetGridBaseColor();
+        const lineLow = appHexToRgba(baseColor, 0.40) || (appIsDark ? 'rgba(34,34,34,0.40)' : 'rgba(232,232,232,0.40)');
+        const lineHigh = appHexToRgba(baseColor, 0.56) || (appIsDark ? 'rgba(58,58,58,0.56)' : 'rgba(210,210,210,0.56)');
 
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
         ctx.lineWidth = 1;
 
-        for (let x = 0; x <= w + settings.gridSpacing; x += settings.gridSpacing) {
-          const isAccent = Math.round(x / settings.gridSpacing) % 4 === 0;
+        for (let x = 0; x <= appWidth + appSettings.gridSpacing; x += appSettings.gridSpacing) {
+          const isAccent = Math.round(x / appSettings.gridSpacing) % 4 === 0;
           ctx.strokeStyle = isAccent ? lineHigh : lineLow;
           ctx.beginPath();
           ctx.moveTo(Math.floor(x) + 0.5, 0);
-          ctx.lineTo(Math.floor(x) + 0.5, h);
+          ctx.lineTo(Math.floor(x) + 0.5, appHeight);
           ctx.stroke();
         }
 
-        for (let y = 0; y <= h + settings.gridSpacing; y += settings.gridSpacing) {
-          const isAccent = Math.round(y / settings.gridSpacing) % 4 === 0;
+        for (let y = 0; y <= appHeight + appSettings.gridSpacing; y += appSettings.gridSpacing) {
+          const isAccent = Math.round(y / appSettings.gridSpacing) % 4 === 0;
           ctx.strokeStyle = isAccent ? lineHigh : lineLow;
           ctx.beginPath();
           ctx.moveTo(0, Math.floor(y) + 0.5);
-          ctx.lineTo(w, Math.floor(y) + 0.5);
+          ctx.lineTo(appWidth, Math.floor(y) + 0.5);
           ctx.stroke();
         }
 
         ctx.restore();
       }
 
-      function drawTap(effect, t) {
-        const p = clamp((t - effect.start) / effect.duration, 0, 1);
+      function appDrawTap(effect, t) {
+        const p = appClamp((t - effect.start) / effect.duration, 0, 1);
         if (p >= 1) return;
 
-        const e = easeOutCubic(p);
-        const radius = lerp(10, Math.max(w, h) * 0.22, e);
+        const e = appEaseOutCubic(p);
+        const radius = appLerp(10, Math.max(appWidth, appHeight) * 0.22, e);
         const alpha = 0.34 * Math.pow(1 - p, 1.7);
-        const baseColor = getTapBaseColor();
+        const baseColor = appGetTapBaseColor();
 
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.globalCompositeOperation = 'source-over';
         ctx.shadowBlur = radius * 0.22;
-        ctx.shadowColor = hexToRgba(baseColor, 0.55) || 'rgba(70, 255, 120, 0.55)';
+        ctx.shadowColor = appHexToRgba(baseColor, 0.55) || 'rgba(70, 255, 120, 0.55)';
 
         const g = ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, radius);
-        g.addColorStop(0.00, hexToRgba(baseColor, 0.92) || 'rgba(70, 255, 120, 0.92)');
-        g.addColorStop(0.28, hexToRgba(baseColor, 0.60) || 'rgba(60, 235, 110, 0.60)');
-        g.addColorStop(0.68, hexToRgba(baseColor, 0.25) || 'rgba(50, 220, 100, 0.25)');
-        g.addColorStop(1.00, hexToRgba(baseColor, 0.00) || 'rgba(50, 220, 100, 0)');
+        g.addColorStop(0.00, appHexToRgba(baseColor, 0.92) || 'rgba(70, 255, 120, 0.92)');
+        g.addColorStop(0.28, appHexToRgba(baseColor, 0.60) || 'rgba(60, 235, 110, 0.60)');
+        g.addColorStop(0.68, appHexToRgba(baseColor, 0.25) || 'rgba(50, 220, 100, 0.25)');
+        g.addColorStop(1.00, appHexToRgba(baseColor, 0.00) || 'rgba(50, 220, 100, 0)');
 
         ctx.fillStyle = g;
         ctx.beginPath();
@@ -2476,17 +2758,17 @@
         ctx.restore();
       }
 
-      function drawSwipe(effect, t) {
-        const p = clamp((t - effect.start) / effect.duration, 0, 1);
+      function appDrawSwipe(effect, t) {
+        const p = appClamp((t - effect.start) / effect.duration, 0, 1);
         if (p >= 1) return;
 
-        const e = easeOutCubic(p);
-        const x = lerp(effect.from.x, effect.to.x, e);
-        const y = lerp(effect.from.y, effect.to.y, e);
+        const e = appEaseOutCubic(p);
+        const x = appLerp(effect.from.x, effect.to.x, e);
+        const y = appLerp(effect.from.y, effect.to.y, e);
 
         const trailSteps = 16;
         const trailSpacing = effect.radius * 0.82;
-        const baseColor = getSwipeBaseColor();
+        const baseColor = appGetSwipeBaseColor();
 
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
@@ -2502,8 +2784,8 @@
 
           ctx.globalAlpha = a;
           ctx.shadowBlur = r * 0.35;
-          ctx.shadowColor = hexToRgba(baseColor, 0.55) || 'rgba(90, 150, 255, 0.55)';
-          ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(110, 165, 255, 1)';
+          ctx.shadowColor = appHexToRgba(baseColor, 0.55) || 'rgba(90, 150, 255, 0.55)';
+          ctx.fillStyle = appHexToRgba(baseColor, 1) || 'rgba(110, 165, 255, 1)';
           ctx.beginPath();
           ctx.arc(px, py, r, 0, Math.PI * 2);
           ctx.fill();
@@ -2511,8 +2793,8 @@
 
         ctx.globalAlpha = 0.45 * Math.pow(1 - p, 0.7);
         ctx.shadowBlur = effect.radius * 0.6;
-        ctx.shadowColor = hexToRgba(baseColor, 0.45) || 'rgba(110, 165, 255, 0.45)';
-        ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(110, 165, 255, 1)';
+        ctx.shadowColor = appHexToRgba(baseColor, 0.45) || 'rgba(110, 165, 255, 0.45)';
+        ctx.fillStyle = appHexToRgba(baseColor, 1) || 'rgba(110, 165, 255, 1)';
         ctx.beginPath();
         ctx.arc(x, y, effect.radius * 1.02, 0, Math.PI * 2);
         ctx.fill();
@@ -2520,21 +2802,21 @@
         ctx.restore();
       }
 
-      function drawLoop(effect, t) {
-        const p = clamp((t - effect.start) / effect.duration, 0, 1);
+      function appDrawLoop(effect, t) {
+        const p = appClamp((t - effect.start) / effect.duration, 0, 1);
         if (p >= 1) return;
         if (effect.points.length < 3) return;
 
         const alpha = 0.36 * Math.pow(1 - p, 2.0);
         const blur = 8 * Math.pow(1 - p, 0.55);
-        const baseColor = getLoopBaseColor();
+        const baseColor = appGetLoopBaseColor();
 
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = alpha;
         ctx.shadowBlur = blur;
-        ctx.shadowColor = hexToRgba(baseColor, 0.40) || 'rgba(255, 60, 60, 0.40)';
-        ctx.fillStyle = hexToRgba(baseColor, 1) || 'rgba(255, 78, 78, 1)';
+        ctx.shadowColor = appHexToRgba(baseColor, 0.40) || 'rgba(255, 60, 60, 0.40)';
+        ctx.fillStyle = appHexToRgba(baseColor, 1) || 'rgba(255, 78, 78, 1)';
 
         ctx.beginPath();
         ctx.moveTo(effect.points[0].x, effect.points[0].y);
@@ -2547,652 +2829,737 @@
         ctx.restore();
       }
 
-      function render() {
-        const t = nowMs();
+      function appRenderFrame() {
+        const t = appNowMs();
 
-        ctx.fillStyle = getBgColor();
-        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = appGetBgColor();
+        ctx.fillRect(0, 0, appWidth, appHeight);
 
-        drawGrid();
+        appDrawGrid();
 
-        for (let i = 0; i < effects.length; i++) {
-          const effect = effects[i];
-          if (effect.type === 'tap') drawTap(effect, t);
-          else if (effect.type === 'swipe') drawSwipe(effect, t);
-          else if (effect.type === 'loop') drawLoop(effect, t);
+        for (let i = 0; i < appEffects.length; i++) {
+          const effect = appEffects[i];
+          if (effect.type === 'tap') appDrawTap(effect, t);
+          else if (effect.type === 'swipe') appDrawSwipe(effect, t);
+          else if (effect.type === 'loop') appDrawLoop(effect, t);
         }
 
-        for (let i = effects.length - 1; i >= 0; i--) {
-          if (t - effects[i].start >= effects[i].duration) effects.splice(i, 1);
+        for (let i = appEffects.length - 1; i >= 0; i--) {
+          if (t - appEffects[i].start >= appEffects[i].duration) appEffects.splice(i, 1);
         }
 
-        if (peerMenuOpen && connectionState === 'connected') {
-          refreshPeerMenu('connected');
-        }
-
-        requestAnimationFrame(render);
+        requestAnimationFrame(appRenderFrame);
       }
 
-      function getPoint(e) {
+      function appGetPoint(e) {
         return { x: e.clientX, y: e.clientY };
       }
 
-      function applyAndSave() {
-        document.body.style.background = getBgColor();
-        syncSettingsUi();
-        updatePeerButtonUi();
-        saveSettings();
+      function appUpdateAllUiFromSettings() {
+        appSyncSettingsUi();
+        appUpdateTheme();
+        appUpdatePeerButtonUi();
+        document.body.style.background = appGetBgColor();
       }
 
-      function resetAllSettings() {
+      function appResetAllSettings() {
         const ok = window.confirm('設定を初期状態に戻します。よろしいですか？');
         if (!ok) return;
 
-        Object.assign(settings, defaults);
-        settings.displayName = effectiveDefaultName;
-        settings.lastRoomCode = makeRoomCode();
-
+        Object.assign(appSettings, appDefaults);
         try {
           localStorage.removeItem(STORAGE_KEY);
         } catch (_) {}
-
-        stopAllConnections(true);
-        applyAndSave();
-        showToast('設定をリセットした');
-      }
-
-      function maybeApplyLatestSettings() {
-        if (!connection.latestSettings) return;
-        const now = Date.now();
-        const age = now - connection.latestSettingsAt;
-        if (age <= 10000 && receiveWindowUntil > 0 && now <= receiveWindowUntil) {
-          if (connection.latestSettingsSenderId !== selfPeerId) {
-            receiveWindowUntil = 0;
-            applySettingsSnapshot(connection.latestSettings);
-            showToast('設定を受信した');
-          }
+        appUpdateAllUiFromSettings();
+        appSaveSettings();
+        if (appTransportKind !== 'none') {
+          appUpdateOwnPresenceNow();
         }
       }
 
-      function onLocalOrFirebaseNameChange() {
-        settings.displayName = normalizeDisplayName(displayNameInput.value);
-        displayNameInput.value = settings.displayName;
-        saveSettings();
-
-        if (connection.kind === 'local' && connection.roomCode) {
-          pushConnectionParticipant(selfPeerId, settings.displayName);
-          postLocalPacket(connection.roomCode, makePacket({
-            type: 'hello'
-          }));
-        } else if (connection.kind === 'firebase' && fbSelfParticipantRef) {
-          void setDoc(fbSelfParticipantRef, {
-            id: selfPeerId,
-            name: settings.displayName,
-            updatedAt: Date.now()
-          }, { merge: true }).catch(() => {});
-        }
-
-        if (peerMenuOpen) renderPeerNameStrip();
-      }
-
-      function openQrForCurrentInput() {
-        openQrImageForCurrentCode();
-      }
-
-      function connectionMenuAction(mode) {
+      function appJoinLocalOrFirebase(mode) {
         if (mode === 'local') {
-          openConnectDialog('local');
+          appLocalJoinTransport();
           return;
         }
         if (mode === 'firebase') {
-          openConnectDialog('firebase');
+          appFirebaseJoinTransport();
           return;
         }
       }
 
-      function handlePeerButtonTap() {
-        if (connectionState === 'searching') {
-          stopAllConnections(true);
-          showToast('キャンセルした');
+      function appHandlePeerButtonClick() {
+        if (!appSettings.peerButtonVisible) return;
+
+        if (appPeerState === 'searching') {
+          appLeaveCurrentTransport(true);
           return;
         }
 
-        if (connectionState === 'connected') {
-          openPeerMenu('connected');
+        if (appPeerState === 'connected') {
+          appOpenPeerMenu('connected');
           return;
         }
 
-        openPeerMenu('off');
+        appOpenPeerMenu('off');
       }
 
-      function sanitizeAndStoreRoomCode(raw) {
-        const code = sanitizeRoomCode(raw);
-        settings.lastRoomCode = code;
-        saveSettings();
-        return code;
+      function appOpenPeerMenuFromButton(mode) {
+        appMenuMode = mode;
+        appMenuOpen = true;
+        appSyncPeerMenuLocation();
+        appRefreshPeerMenuLabels();
+        peerMenuOverlay.classList.add('open');
+        peerMenuOverlay.setAttribute('aria-hidden', 'false');
       }
 
-      async function connectFromDialog() {
-        const code = sanitizeAndStoreRoomCode(roomCodeInput.value);
-        closeConnectDialog();
+      function appClosePeerMenuUi() {
+        appMenuOpen = false;
+        peerMenuOverlay.classList.remove('open');
+        peerMenuOverlay.setAttribute('aria-hidden', 'true');
+      }
 
-        if (connectionDialogMode === 'local') {
-          await localConnectRoom(code);
-        } else {
-          await fbConnectRoom(code);
+      function appCurrentMenuActiveSenderBusy() {
+        const sender = appGetActiveSenderInfo();
+        return !!sender && sender.id !== appSelfId;
+      }
+
+      function appLocalStorageStateChanged() {
+        if (appTransportKind !== 'local') return;
+        const stateObj = appLocalReadState();
+        appLocalApplyStateObject(stateObj, false);
+      }
+
+      function appLeaveAndToastIfNeeded(message) {
+        appLeaveCurrentTransport(false);
+        if (message) appToast(message);
+      }
+
+      function appOpenPeerMenu(mode) {
+        appOpenPeerMenuFromButton(mode);
+      }
+
+      function appClosePeerMenu() {
+        appClosePeerMenuUi();
+      }
+
+      function appJoinFirebaseTransport() {
+        if (!firebaseDb) {
+          appToast('Firebaseが使えない');
+          return;
         }
-      }
 
-      function openConnectDialog(mode) {
-        connectionDialogMode = mode;
-        connectTitle.textContent = mode === 'firebase' ? 'オンラインで通信' : 'Wi-Fiで通信';
-        connectText.textContent = mode === 'firebase'
-          ? '同じルームコードを入れた人同士で、Firebase経由でつながります。'
-          : '同じルームコードを入れた人同士で、ローカル通信としてつながります。';
-        roomCodeInput.value = settings.lastRoomCode || makeRoomCode();
-        connectOverlay.classList.add('open');
-        connectOverlay.setAttribute('aria-hidden', 'false');
-        roomCodeInput.focus();
-        roomCodeInput.select();
-      }
+        appLeaveCurrentTransport(false);
+        appTransportKind = 'firebase';
+        appSetJoinedLabelFromFirebase();
+        appRefreshPeerUi();
 
-      function closeConnectDialog() {
-        connectOverlay.classList.remove('open');
-        connectOverlay.setAttribute('aria-hidden', 'true');
-      }
+        const roomKey = appFirebaseRoomKey();
+        appFirebaseRoomRef = doc(firebaseDb, 'rooms', roomKey);
+        appFirebaseMembersColRef = collection(firebaseDb, 'rooms', roomKey, 'members');
+        appFirebaseSelfMemberRef = doc(firebaseDb, 'rooms', roomKey, 'members', appSelfId);
 
-      function openQrDialog() {
-        qrRoomCodeInput.value = settings.lastRoomCode || makeRoomCode();
-        openQrImageForCurrentCode();
-        qrOverlay.classList.add('open');
-        qrOverlay.setAttribute('aria-hidden', 'false');
-      }
-
-      function closeQrDialog() {
-        qrOverlay.classList.remove('open');
-        qrOverlay.setAttribute('aria-hidden', 'true');
-      }
-
-      async function localConnectRoom(roomCode) {
-        stopAllConnections(false);
-        const code = sanitizeRoomCode(roomCode);
-        connection.kind = 'local';
-        connection.roomCode = code;
-        settings.lastRoomCode = code;
-        saveSettings();
-
-        clearConnectionParticipants();
-        pushConnectionParticipant(selfPeerId, getEffectiveDisplayName());
-
-        if ('BroadcastChannel' in window) {
+        (async () => {
           try {
-            localChannel = new BroadcastChannel(`${LOCAL_BUS_KEY_PREFIX}${code}`);
-            localChannel.onmessage = (ev) => handleIncomingPacket(ev.data, 'local');
-          } catch (_) {
-            localChannel = null;
+            await setDoc(appFirebaseRoomRef, { updatedAtMs: Date.now() }, { merge: true });
+            await setDoc(appFirebaseSelfMemberRef, {
+              name: appCurrentDisplayName(),
+              updatedAtMs: Date.now(),
+              joinedAtMs: Date.now()
+            }, { merge: true });
+          } catch (err) {
+            console.warn(err);
+            appToast('Firebaseに入れなかった');
+            appTransportKind = 'none';
+            appJoinedRoomLabel = '';
+            appRefreshPeerUi();
+            return;
+          }
+
+          appFirebaseRoomUnsub = onSnapshot(appFirebaseRoomRef, (snap) => {
+            const data = snap.data() || {};
+            appSharedRoomState = {
+              activeSenderId: typeof data.activeSenderId === 'string' ? data.activeSenderId : '',
+              activeSenderName: typeof data.activeSenderName === 'string' ? data.activeSenderName : '',
+              activeSenderUntilMs: Number(data.activeSenderUntilMs) || 0,
+              latestSettingsPacket: data.latestSettingsPacket && typeof data.latestSettingsPacket === 'object' ? data.latestSettingsPacket : null,
+              latestEffectPacket: data.latestEffectPacket && typeof data.latestEffectPacket === 'object' ? data.latestEffectPacket : null
+            };
+            appMaybeApplyLatestSharedPackets();
+            appRefreshPeerUi();
+          });
+
+          appFirebaseMembersUnsub = onSnapshot(appFirebaseMembersColRef, (snap) => {
+            const now = Date.now();
+            const roster = [];
+            snap.forEach((d) => {
+              const data = d.data() || {};
+              const updatedAtMs = Number(data.updatedAtMs) || 0;
+              if (updatedAtMs && now - updatedAtMs > 10000) return;
+              roster.push({
+                id: d.id,
+                name: appNormalizeText(data.name, '名無し', 24),
+                updatedAtMs
+              });
+            });
+
+            if (!roster.some(member => member.id === appSelfId)) {
+              roster.push({
+                id: appSelfId,
+                name: appCurrentDisplayName(),
+                updatedAtMs: Date.now()
+              });
+            }
+
+            appMemberRoster = roster;
+            appRefreshPeerUi();
+          });
+
+          appStartCurrentPresenceHeartbeat();
+          appToast('Firebaseで待機中');
+        })();
+      }
+
+      function appLocalJoinTransport() {
+        appLeaveCurrentTransport(false);
+        appTransportKind = 'local';
+        appSetJoinedLabelFromLocal();
+        appAttachLocalStorageListener();
+        appUpdateOwnPresenceNow();
+        appLocalApplyStateObject(appLocalReadState(), true);
+        appStartCurrentPresenceHeartbeat();
+        appRefreshPeerUi();
+        appToast('ローカル通信で待機中');
+      }
+
+      function appCurrentPeerChoiceBusyInfo() {
+        const sender = appGetActiveSenderInfo();
+        if (!sender) return null;
+        return {
+          id: sender.id,
+          name: sender.name
+        };
+      }
+
+      function appRefreshCurrentMenuLabels() {
+        if (!appMenuOpen) return;
+        appRefreshPeerMenuLabels();
+      }
+
+      function appSetNameFromInput() {
+        appSettings.displayName = appNormalizeText(displayNameInput.value, 'あなた', 24);
+        displayNameInput.value = appSettings.displayName;
+        appSaveSettings();
+        if (appTransportKind !== 'none') {
+          appUpdateOwnPresenceNow();
+          appRefreshPeerUi();
+        }
+      }
+
+      function appSetRoomTextFromInput() {
+        appSettings.firebaseRoomText = appNormalizeText(firebaseRoomInput.value, 'room', 40);
+        firebaseRoomInput.value = appSettings.firebaseRoomText;
+        appSaveSettings();
+      }
+
+      function appSetSyncSettingFromInput(element, key, fallback, limit = 40) {
+        appSettings[key] = appNormalizeText(element.value, fallback, limit);
+        element.value = appSettings[key];
+        appSaveSettings();
+      }
+
+      function appRefreshConnectedMenuLabels() {
+        if (appMenuOpen) appRefreshPeerMenuLabels();
+      }
+
+      function appLocalIgnorePacket(packet) {
+        return !packet || typeof packet !== 'object' || packet.senderId === appSelfId;
+      }
+
+      function appIncomingPacketAlreadySeen(packet) {
+        if (!packet || typeof packet !== 'object') return true;
+        if (!packet.id) return false;
+        return !appStoreSeenPacketId(packet.id);
+      }
+
+      function appMaybeApplyLatestSharedPackets() {
+        const settingsPacket = appSharedRoomState.latestSettingsPacket;
+        if (settingsPacket && settingsPacket.id && appStoreSeenPacketId(settingsPacket.id)) {
+          appHandleSharedPacket(settingsPacket);
+        }
+
+        const effectPacket = appSharedRoomState.latestEffectPacket;
+        if (effectPacket && effectPacket.id && appStoreSeenPacketId(effectPacket.id)) {
+          appHandleSharedPacket(effectPacket);
+        }
+      }
+
+      function appSendCurrentSettings() {
+        const snapshot = appCaptureSharedSettingsSnapshot();
+        if (appTransportKind === 'local') {
+          appLocalWriteSharedSettings(snapshot);
+          return;
+        }
+        if (appTransportKind === 'firebase') {
+          appFirebaseWriteSharedSettings(snapshot);
+          return;
+        }
+      }
+
+      function appSendCurrentEffect(kind, payload) {
+        if (appTransportKind === 'local') {
+          appLocalWriteSharedEffect(kind, payload);
+          return;
+        }
+        if (appTransportKind === 'firebase') {
+          appFirebaseWriteSharedEffect(kind, payload);
+          return;
+        }
+      }
+
+      function appSyncPeerButtonLabelsForConnectedState() {
+        if (appMenuOpen) appRefreshPeerMenuLabels();
+      }
+
+      function appOnPeerChoiceLocal() {
+        appClosePeerMenu();
+        appJoinLocalTransport();
+      }
+
+      function appOnPeerChoiceFirebase() {
+        appClosePeerMenu();
+        appJoinFirebaseTransport();
+      }
+
+      function appOnPeerChoiceSolo() {
+        appClosePeerMenu();
+      }
+
+      function appOnPeerChoiceDisconnect() {
+        appClosePeerMenu();
+        appLeaveAndToastIfNeeded('切断した');
+      }
+
+      function appOnPeerChoiceSend() {
+        appClosePeerMenu();
+        appSendCurrentSettings();
+      }
+
+      function appOnPeerChoiceReceive() {
+        appClosePeerMenu();
+        appSetReceiveWindow();
+      }
+
+      function appSyncPeerMenuLocationNow() {
+        const rect = peerButton.getBoundingClientRect();
+        const stageRect = peerMenuStage.getBoundingClientRect();
+        const stageW = stageRect.width || window.innerWidth;
+        const stageH = stageRect.height || window.innerHeight;
+
+        const anchorX = rect.left + rect.width / 2 - stageW / 2;
+        const anchorY = rect.top + rect.height / 2 - stageH / 2;
+
+        const applyVars = (button, toX, toY) => {
+          button.style.setProperty('--from-x', `${anchorX}px`);
+          button.style.setProperty('--from-y', `${anchorY}px`);
+          button.style.setProperty('--to-x', `${toX}px`);
+          button.style.setProperty('--to-y', `${toY}px`);
+        };
+
+        applyVars(peerChoice1, 0, -118);
+        applyVars(peerChoice2, -118, 108);
+        applyVars(peerChoice3, 118, 108);
+      }
+
+      function appCheckSharedRoomJoinCounts() {
+        appRefreshPeerUi();
+      }
+
+      function appInitMenuChoiceHandlers() {
+        peerChoice1.onclick = () => {
+          if (appMenuMode === 'off') {
+            appOnPeerChoiceLocal();
+            return;
+          }
+          appOnPeerChoiceDisconnect();
+        };
+
+        peerChoice2.onclick = () => {
+          if (appMenuMode === 'off') {
+            appOnPeerChoiceFirebase();
+            return;
+          }
+          appOnPeerChoiceSend();
+        };
+
+        peerChoice3.onclick = () => {
+          if (appMenuMode === 'off') {
+            appOnPeerChoiceSolo();
+            return;
+          }
+          appOnPeerChoiceReceive();
+        };
+      }
+
+      function appRebuildPeerMenuTextByState() {
+        appRefreshPeerMenuLabels();
+      }
+
+      function appUpdateDisplayNamePresenceMaybe() {
+        if (!appSettings.peerButtonVisible) return;
+        appUpdateOwnPresenceNow();
+        if (appTransportKind !== 'none') appRefreshPeerUi();
+      }
+
+      function appUpdateFirebaseRoomTextSetting() {
+        appSettings.firebaseRoomText = appNormalizeText(firebaseRoomInput.value, 'room', 40);
+        firebaseRoomInput.value = appSettings.firebaseRoomText;
+        appSaveSettings();
+      }
+
+      function appApplyUiDependencies() {
+        const commEnabled = appSettings.peerButtonVisible;
+        commConfigBlock.classList.toggle('disabled', !commEnabled);
+        displayNameInput.disabled = !commEnabled;
+        firebaseRoomInput.disabled = !commEnabled;
+      }
+
+      function appInitUiEvents() {
+        openSettings.addEventListener('click', appOpenSettings);
+        closeSettings.addEventListener('click', appCloseSettings);
+
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) appCloseSettings();
+        });
+
+        peerButton.addEventListener('click', appHandlePeerButtonClick);
+
+        peerMenuOverlay.addEventListener('click', (e) => {
+          if (e.target === peerMenuOverlay) appClosePeerMenu();
+        });
+
+        bgMode.addEventListener('change', () => {
+          appSettings.bgMode = bgMode.value;
+          bgCustomWrap.classList.toggle('hidden', appSettings.bgMode !== 'custom');
+          appSaveSettings();
+          appUpdateAllUiFromSettings();
+        });
+
+        bgCustomInput.addEventListener('input', () => {
+          appSettings.bgCustom = bgCustomInput.value.trim();
+          appSaveSettings();
+          appUpdateAllUiFromSettings();
+        });
+
+        tapColorInput.addEventListener('input', () => {
+          appSettings.tapColor = tapColorInput.value.trim();
+          appSaveSettings();
+        });
+
+        swipeColorInput.addEventListener('input', () => {
+          appSettings.swipeColor = swipeColorInput.value.trim();
+          appSaveSettings();
+        });
+
+        loopColorInput.addEventListener('input', () => {
+          appSettings.loopColor = loopColorInput.value.trim();
+          appSaveSettings();
+        });
+
+        gridToggle.addEventListener('change', () => {
+          appSettings.gridEnabled = gridToggle.checked;
+          gridDetails.classList.toggle('disabled', !appSettings.gridEnabled);
+          appSaveSettings();
+        });
+
+        gridMode.addEventListener('change', () => {
+          appSettings.gridMode = gridMode.value;
+          gridCustomWrap.classList.toggle('hidden', appSettings.gridMode !== 'custom');
+          appSaveSettings();
+        });
+
+        gridCustomInput.addEventListener('input', () => {
+          appSettings.gridCustom = gridCustomInput.value.trim();
+          appSaveSettings();
+        });
+
+        spacingRange.addEventListener('input', () => {
+          appSettings.gridSpacing = appClamp(Number(spacingRange.value) || 36, 18, 100);
+          spacingValue.textContent = String(appSettings.gridSpacing);
+          appSaveSettings();
+        });
+
+        peerButtonToggle.addEventListener('change', () => {
+          appSettings.peerButtonVisible = peerButtonToggle.checked;
+          appApplyUiDependencies();
+          if (!appSettings.peerButtonVisible) {
+            appLeaveCurrentTransport(false);
+          }
+          appUpdatePeerButtonUi();
+          appSaveSettings();
+        });
+
+        displayNameInput.addEventListener('input', () => {
+          appSettings.displayName = appNormalizeText(displayNameInput.value, 'あなた', 24);
+          displayNameInput.value = appSettings.displayName;
+          appSaveSettings();
+          appUpdateDisplayNamePresenceMaybe();
+          appRefreshPeerUi();
+        });
+
+        firebaseRoomInput.addEventListener('input', () => {
+          appSettings.firebaseRoomText = appNormalizeText(firebaseRoomInput.value, 'room', 40);
+          firebaseRoomInput.value = appSettings.firebaseRoomText;
+          appSaveSettings();
+        });
+
+        resetSettings.addEventListener('click', appResetAllSettings);
+
+        peerChoice1.addEventListener('click', () => {});
+        peerChoice2.addEventListener('click', () => {});
+        peerChoice3.addEventListener('click', () => {});
+
+        window.addEventListener('resize', () => {
+          appResizeCanvas();
+          appRefreshPeerUi();
+        });
+
+        window.addEventListener('beforeunload', () => {
+          if (appTransportKind !== 'none') {
+            appLeaveCurrentTransport(false);
+          }
+        });
+
+        window.addEventListener('storage', (ev) => {
+          if (ev.key !== LOCAL_STATE_KEY) return;
+          if (appTransportKind !== 'local') return;
+          const stateObj = appLocalReadState();
+          appLocalApplyStateObject(stateObj, false);
+        });
+
+        const darkMql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+        if (darkMql) {
+          if (typeof darkMql.addEventListener === 'function') {
+            darkMql.addEventListener('change', () => {
+              appUpdateTheme();
+              appRefreshPeerUi();
+            });
+          } else if (typeof darkMql.addListener === 'function') {
+            darkMql.addListener(() => {
+              appUpdateTheme();
+              appRefreshPeerUi();
+            });
           }
         }
 
-        window.addEventListener('storage', onLocalStorageEvent);
-        startLocalHeartbeat();
-        setConnectionSearching();
-        postLocalPacket(code, makePacket({ type: 'hello' }));
-        setConnectionConnected();
-        refreshConnectedState();
-        showToast(`ローカルで接続: ${code}`);
-      }
+        canvas.addEventListener('pointerdown', (e) => {
+          if (overlay.classList.contains('open')) return;
+          if (peerMenuOverlay.classList.contains('open')) return;
+          if (appActivePointerId !== null) return;
 
-      async function fbConnectRoom(roomCode) {
-        await stopFirebaseConnection(false);
-        const code = sanitizeRoomCode(roomCode);
-        connection.kind = 'firebase';
-        connection.roomCode = code;
-        settings.lastRoomCode = code;
-        saveSettings();
+          appActivePointerId = e.pointerId;
+          canvas.setPointerCapture(appActivePointerId);
 
-        fbRoomRef = doc(db, 'rooms', code);
-        fbSelfParticipantRef = doc(db, 'rooms', code, 'participants', selfPeerId);
+          const p = appGetPoint(e);
+          appPointerDownTime = appNowMs();
+          appPointerDownPos = { x: p.x, y: p.y };
+          appLastPos = { x: p.x, y: p.y };
+          appStrokePoints = [p];
+          appPointerHadLoop = false;
 
-        clearConnectionParticipants();
-        pushConnectionParticipant(selfPeerId, getEffectiveDisplayName());
+          e.preventDefault();
+        }, { passive: false });
 
-        setConnectionSearching();
+        canvas.addEventListener('pointermove', (e) => {
+          if (appActivePointerId !== e.pointerId) return;
 
-        await setDoc(fbRoomRef, {
-          roomCode: code,
-          updatedAt: Date.now()
-        }, { merge: true });
+          const p = appGetPoint(e);
+          const t = appNowMs();
 
-        await setDoc(fbSelfParticipantRef, {
-          id: selfPeerId,
-          name: getEffectiveDisplayName(),
-          updatedAt: Date.now(),
-          joinedAt: Date.now()
-        }, { merge: true });
+          if (appDistance(p.x, p.y, appLastPos.x, appLastPos.y) >= 2.2) {
+            appStrokePoints.push(p);
+            appLastPos = p;
+          }
 
-        fbRoomUnsub = onSnapshot(fbRoomRef, (snap) => {
-          if (!snap.exists()) return;
-          const data = snap.data() || {};
-          connection.sendLockOwnerId = data.sendLockOwnerId || '';
-          connection.sendLockOwnerName = data.sendLockOwnerName || '';
-          connection.sendLockUntil = Number(data.sendLockUntil || 0);
-          connection.latestSettings = data.latestSettings || null;
-          connection.latestSettingsAt = Number(data.latestSettingsAt || 0);
-          connection.latestSettingsSenderId = data.latestSettingsSenderId || '';
-          connection.latestSettingsSenderName = data.latestSettingsSenderName || '';
-
-          maybeApplyLatestSettings();
-          if (peerMenuOpen) refreshPeerMenu('connected');
-        });
-
-        fbParticipantsUnsub = onSnapshot(collection(db, 'rooms', code, 'participants'), (snap) => {
-          const now = Date.now();
-          const next = new Map();
-          next.set(selfPeerId, {
-            id: selfPeerId,
-            name: getEffectiveDisplayName(),
-            lastSeen: now
-          });
-
-          snap.forEach((docSnap) => {
-            const d = docSnap.data() || {};
-            const name = normalizeDisplayName(d.name || d.displayName || '名無し');
-            const lastSeen = Number(d.updatedAt || d.lastSeen || 0);
-            if (!docSnap.id || docSnap.id === selfPeerId) return;
-            if (lastSeen && now - lastSeen > 15000) return;
-            next.set(docSnap.id, {
-              id: docSnap.id,
-              name,
-              lastSeen
-            });
-          });
-
-          connection.participants = next;
-          if (peerMenuOpen) renderPeerNameStrip();
-        });
-
-        fbEffectsUnsub = onSnapshot(query(collection(db, 'rooms', code, 'effects'), orderBy('createdAt', 'asc')), (snap) => {
-          snap.docChanges().forEach((change) => {
-            if (change.type !== 'added') return;
-            if (!rememberPacket(change.doc.id)) return;
-            const data = change.doc.data() || {};
-            if (data.senderId === selfPeerId) return;
-            applyIncomingEffect(data.kind, data.payload);
-          });
-        });
-
-        stopFirebaseTimers();
-        fbHeartbeatTimer = setInterval(async () => {
-          if (!fbSelfParticipantRef) return;
-          try {
-            await setDoc(fbSelfParticipantRef, {
-              id: selfPeerId,
-              name: getEffectiveDisplayName(),
-              updatedAt: Date.now()
-            }, { merge: true });
-          } catch (_) {}
-        }, 5000);
-
-        setConnectionConnected();
-        refreshConnectedState();
-        showToast(`Firebaseで接続: ${code}`);
-      }
-
-      function startLocalHeartbeat() {
-        stopLocalTimers();
-        localHeartbeatTimer = setInterval(() => {
-          if (connection.kind !== 'local' || !connection.roomCode) return;
-          postLocalPacket(connection.roomCode, makePacket({ type: 'hello' }));
-          postLocalPacket(connection.roomCode, makePacket({ type: 'keepalive' }));
-        }, 3000);
-
-        localPurgeTimer = setInterval(() => {
-          if (connection.kind !== 'local') return;
-          const now = Date.now();
-          for (const [id, item] of connection.participants.entries()) {
-            if (id === selfPeerId) continue;
-            if (now - (item.lastSeen || 0) > 15000) {
-              connection.participants.delete(id);
+          if (t - appLastLoopAt >= APP_LASSO_COOLDOWN) {
+            if (appDetectLoop(appStrokePoints, p.x, p.y)) {
+              appCreateLoopEffect(appStrokePoints);
+              appLastLoopAt = t;
+              appPointerHadLoop = true;
+              appStrokePoints = [p];
             }
           }
-          if (peerMenuOpen) renderPeerNameStrip();
-        }, 1000);
-      }
 
-      function stopLocalTimers() {
-        if (localHeartbeatTimer) {
-          clearInterval(localHeartbeatTimer);
-          localHeartbeatTimer = null;
-        }
-        if (localPurgeTimer) {
-          clearInterval(localPurgeTimer);
-          localPurgeTimer = null;
-        }
-      }
+          e.preventDefault();
+        }, { passive: false });
 
-      function stopFirebaseTimers() {
-        if (fbHeartbeatTimer) {
-          clearInterval(fbHeartbeatTimer);
-          fbHeartbeatTimer = null;
-        }
-      }
+        function finishPointer(e) {
+          if (appActivePointerId !== e.pointerId) return;
 
-      function postLocalPacket(roomCode, packet) {
-        const key = `${LOCAL_BUS_KEY_PREFIX}${roomCode}`;
-        try {
-          localChannel?.postMessage(packet);
-        } catch (_) {}
-        try {
-          localStorage.setItem(key, JSON.stringify(packet));
-        } catch (_) {}
-      }
+          const p = appGetPoint(e);
+          const elapsed = appNowMs() - appPointerDownTime;
+          const totalMove = appDistance(appPointerDownPos.x, appPointerDownPos.y, p.x, p.y);
 
-      function onLocalStorageEvent(ev) {
-        if (!ev.key || !ev.key.startsWith(LOCAL_BUS_KEY_PREFIX)) return;
-        if (!ev.newValue) return;
-        try {
-          const packet = JSON.parse(ev.newValue);
-          handleIncomingPacket(packet, 'local');
-        } catch (_) {}
-      }
-
-      function stopLocalConnection(sendLeave = true) {
-        if (localChannel && sendLeave && connection.roomCode) {
-          try {
-            localChannel.postMessage(makePacket({ type: 'bye' }));
-          } catch (_) {}
-        }
-
-        if (localChannel) {
-          try {
-            localChannel.close();
-          } catch (_) {}
-          localChannel = null;
-        }
-
-        window.removeEventListener('storage', onLocalStorageEvent);
-        stopLocalTimers();
-
-        connection.kind = 'none';
-        connection.roomCode = '';
-        connection.sendLockOwnerId = '';
-        connection.sendLockOwnerName = '';
-        connection.sendLockUntil = 0;
-        connection.latestSettings = null;
-        connection.latestSettingsAt = 0;
-        connection.latestSettingsSenderId = '';
-        connection.latestSettingsSenderName = '';
-        clearConnectionParticipants();
-        setConnectionOff();
-      }
-
-      async function stopFirebaseConnection(sendLeave = true) {
-        if (sendLeave && fbSelfParticipantRef) {
-          try {
-            await deleteDoc(fbSelfParticipantRef);
-          } catch (_) {}
-        }
-
-        if (fbRoomUnsub) {
-          try { fbRoomUnsub(); } catch (_) {}
-          fbRoomUnsub = null;
-        }
-        if (fbParticipantsUnsub) {
-          try { fbParticipantsUnsub(); } catch (_) {}
-          fbParticipantsUnsub = null;
-        }
-        if (fbEffectsUnsub) {
-          try { fbEffectsUnsub(); } catch (_) {}
-          fbEffectsUnsub = null;
-        }
-
-        stopFirebaseTimers();
-
-        fbRoomRef = null;
-        fbSelfParticipantRef = null;
-        connection.kind = 'none';
-        connection.roomCode = '';
-        connection.sendLockOwnerId = '';
-        connection.sendLockOwnerName = '';
-        connection.sendLockUntil = 0;
-        connection.latestSettings = null;
-        connection.latestSettingsAt = 0;
-        connection.latestSettingsSenderId = '';
-        connection.latestSettingsSenderName = '';
-        clearConnectionParticipants();
-        setConnectionOff();
-      }
-
-      function stopAllConnections(sendLeave = true) {
-        stopLocalConnection(sendLeave);
-        void stopFirebaseConnection(sendLeave);
-        receiveWindowUntil = 0;
-      }
-
-      function openConnectionMenuFromButton() {
-        if (!settings.peerButtonVisible) return;
-
-        if (connectionState === 'searching') {
-          stopAllConnections(true);
-          showToast('キャンセルした');
-          return;
-        }
-
-        if (connectionState === 'connected') {
-          openPeerMenu('connected');
-          startPeerMenuTicker();
-          return;
-        }
-
-        openPeerMenu('off');
-        startPeerMenuTicker();
-      }
-
-      function handlePeerMenuClickOutside(e) {
-        if (e.target === peerMenuOverlay) closePeerMenu();
-      }
-
-      function handleConnectionOverlayClickOutside(e) {
-        if (e.target === connectOverlay) closeConnectDialog();
-      }
-
-      function handleQrOverlayClickOutside(e) {
-        if (e.target === qrOverlay) closeQrDialog();
-      }
-
-      function finishPointer(e) {
-        if (activePointerId !== e.pointerId) return;
-
-        const p = getPoint(e);
-        const elapsed = nowMs() - pointerDownTime;
-        const totalMove = distance(pointerDownPos.x, pointerDownPos.y, p.x, p.y);
-
-        if (!pointerHadLoop) {
-          if (totalMove <= TAP_MAX_DISTANCE && elapsed <= TAP_MAX_TIME) {
-            addTapEffect(p.x, p.y);
-          } else if (totalMove >= SWIPE_MIN_DISTANCE) {
-            const dx = p.x - pointerDownPos.x;
-            const dy = p.y - pointerDownPos.y;
-            createSwipeEffect(p.x, p.y, dx, dy);
+          if (!appPointerHadLoop) {
+            if (totalMove <= APP_TAP_MAX_DISTANCE && elapsed <= APP_TAP_MAX_TIME) {
+              appAddTapEffect(p.x, p.y, true);
+            } else if (totalMove >= APP_SWIPE_MIN_DISTANCE) {
+              const dx = p.x - appPointerDownPos.x;
+              const dy = p.y - appPointerDownPos.y;
+              appCreateSwipeEffect(p.x, p.y, dx, dy, true);
+            }
           }
+
+          appActivePointerId = null;
+          appStrokePoints = [];
+          appPointerHadLoop = false;
+
+          e.preventDefault();
         }
 
-        activePointerId = null;
-        strokePoints = [];
-        pointerHadLoop = false;
-
-        e.preventDefault();
+        canvas.addEventListener('pointerup', finishPointer, { passive: false });
+        canvas.addEventListener('pointercancel', finishPointer, { passive: false });
+        canvas.addEventListener('lostpointercapture', () => {
+          appActivePointerId = null;
+          appStrokePoints = [];
+          appPointerHadLoop = false;
+        });
       }
 
-      canvas.addEventListener('pointerdown', (e) => {
-        if (settingsOverlay.classList.contains('open')) return;
-        if (peerMenuOverlay.classList.contains('open')) return;
-        if (connectOverlay.classList.contains('open')) return;
-        if (qrOverlay.classList.contains('open')) return;
-        if (activePointerId !== null) return;
+      function appSetupFirebaseListenersIfNeeded() {
+        // listeners are created on join
+      }
 
-        activePointerId = e.pointerId;
-        canvas.setPointerCapture(activePointerId);
+      function appApplyCurrentSettingsUiAndState() {
+        appSyncSettingsUi();
+        appApplyUiDependencies();
+        appUpdateTheme();
+        document.body.style.background = appGetBgColor();
+        appUpdatePeerButtonUi();
+        appRefreshPeerUi();
+      }
 
-        const p = getPoint(e);
-        pointerDownTime = nowMs();
-        pointerDownPos = { x: p.x, y: p.y };
-        lastPos = { x: p.x, y: p.y };
-        strokePoints = [p];
-        pointerHadLoop = false;
+      function appInit() {
+        appLoadSettings();
+        appUpdateTheme();
+        appResizeCanvas();
+        appApplyCurrentSettingsUiAndState();
+        appInitMenuChoiceHandlers();
+        appInitUiEvents();
+        appAttachLocalStorageListener();
+        requestAnimationFrame(appRenderFrame);
+      }
 
-        e.preventDefault();
-      }, { passive: false });
+      function appApplyCurrentRoomStateFromLocalOrFirebase(stateObj, modeLabel) {
+        appSharedRoomState = {
+          activeSenderId: stateObj.activeSenderId || '',
+          activeSenderName: stateObj.activeSenderName || '',
+          activeSenderUntilMs: Number(stateObj.activeSenderUntilMs) || 0,
+          latestSettingsPacket: stateObj.latestSettingsPacket || null,
+          latestEffectPacket: stateObj.latestEffectPacket || null
+        };
+        appJoinedRoomLabel = modeLabel;
+        appMaybeApplyLatestSharedPackets();
+        appRefreshPeerUi();
+      }
 
-      canvas.addEventListener('pointermove', (e) => {
-        if (activePointerId !== e.pointerId) return;
+      function appLocalApplyStateObject(stateObj, fromSelf = false) {
+        appLocalPruneState(stateObj);
+        appSharedRoomState = {
+          activeSenderId: stateObj.activeSenderId || '',
+          activeSenderName: stateObj.activeSenderName || '',
+          activeSenderUntilMs: Number(stateObj.activeSenderUntilMs) || 0,
+          latestSettingsPacket: stateObj.latestSettingsPacket || null,
+          latestEffectPacket: stateObj.latestEffectPacket || null
+        };
 
-        const p = getPoint(e);
-        const t = nowMs();
+        appMemberRoster = Object.entries(stateObj.members || {}).map(([id, member]) => ({
+          id,
+          name: appNormalizeText(member && member.name, '名無し', 24),
+          updatedAtMs: Number(member && member.updatedAtMs) || 0
+        }));
 
-        if (distance(p.x, p.y, lastPos.x, lastPos.y) >= 2.2) {
-          strokePoints.push(p);
-          lastPos = p;
-        }
+        appMaybeApplyLatestSharedPackets();
+        appRefreshPeerUi();
 
-        if (t - lastLoopAt >= LASSO_COOLDOWN) {
-          if (detectLoop(strokePoints, p.x, p.y)) {
-            createLoopEffect(strokePoints);
-            lastLoopAt = t;
-            pointerHadLoop = true;
-            strokePoints = [p];
-          }
-        }
-
-        e.preventDefault();
-      }, { passive: false });
-
-      canvas.addEventListener('pointerup', finishPointer, { passive: false });
-      canvas.addEventListener('pointercancel', finishPointer, { passive: false });
-      canvas.addEventListener('lostpointercapture', () => {
-        activePointerId = null;
-        strokePoints = [];
-        pointerHadLoop = false;
-      });
-
-      openSettings.addEventListener('click', openSettingsOverlay);
-      closeSettings.addEventListener('click', closeSettingsOverlay);
-      settingsOverlay.addEventListener('click', (e) => {
-        if (e.target === settingsOverlay) closeSettingsOverlay();
-      });
-
-      peerButton.addEventListener('click', openConnectionMenuFromButton);
-      peerMenuOverlay.addEventListener('click', handlePeerMenuClickOutside);
-
-      connectCancelButton.addEventListener('click', closeConnectDialog);
-      connectOverlay.addEventListener('click', handleConnectionOverlayClickOutside);
-      connectStartButton.addEventListener('click', () => {
-        void connectFromDialog();
-      });
-      roomCodeInput.addEventListener('change', () => {
-        settings.lastRoomCode = sanitizeAndStoreRoomCode(roomCodeInput.value);
-      });
-
-      qrCloseButton.addEventListener('click', closeQrDialog);
-      qrOverlay.addEventListener('click', handleQrOverlayClickOutside);
-      qrRoomCodeInput.addEventListener('input', openQrImageForCurrentCode);
-
-      bgMode.addEventListener('change', () => {
-        settings.bgMode = bgMode.value;
-        bgCustomWrap.classList.toggle('hidden', settings.bgMode !== 'custom');
-        applyAndSave();
-      });
-
-      bgCustomInput.addEventListener('input', () => {
-        settings.bgCustom = bgCustomInput.value.trim();
-        applyAndSave();
-      });
-
-      displayNameInput.addEventListener('input', () => {
-        onLocalOrFirebaseNameChange();
-      });
-
-      tapColorInput.addEventListener('input', () => {
-        settings.tapColor = tapColorInput.value.trim();
-        saveSettings();
-      });
-
-      swipeColorInput.addEventListener('input', () => {
-        settings.swipeColor = swipeColorInput.value.trim();
-        saveSettings();
-      });
-
-      loopColorInput.addEventListener('input', () => {
-        settings.loopColor = loopColorInput.value.trim();
-        saveSettings();
-      });
-
-      gridToggle.addEventListener('change', () => {
-        settings.gridEnabled = gridToggle.checked;
-        gridDetails.classList.toggle('disabled', !settings.gridEnabled);
-        saveSettings();
-      });
-
-      gridMode.addEventListener('change', () => {
-        settings.gridMode = gridMode.value;
-        gridCustomWrap.classList.toggle('hidden', settings.gridMode !== 'custom');
-        saveSettings();
-      });
-
-      gridCustomInput.addEventListener('input', () => {
-        settings.gridCustom = gridCustomInput.value.trim();
-        saveSettings();
-      });
-
-      spacingRange.addEventListener('input', () => {
-        settings.gridSpacing = clamp(Number(spacingRange.value) || 36, 18, 100);
-        spacingValue.textContent = String(settings.gridSpacing);
-        saveSettings();
-      });
-
-      peerButtonToggle.addEventListener('change', () => {
-        settings.peerButtonVisible = peerButtonToggle.checked;
-        if (!settings.peerButtonVisible) {
-          stopAllConnections(true);
-        }
-        updateDisplayNameEnabledState();
-        updatePeerButtonUi();
-        saveSettings();
-      });
-
-      resetSettings.addEventListener('click', resetAllSettings);
-
-      const darkMql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-
-      loadSettings();
-      if (!settings.displayName) settings.displayName = effectiveDefaultName;
-      if (!settings.lastRoomCode) settings.lastRoomCode = makeRoomCode();
-
-      displayNameInput.value = getEffectiveDisplayName();
-      roomCodeInput.value = settings.lastRoomCode;
-      qrRoomCodeInput.value = settings.lastRoomCode;
-
-      updateTheme();
-      resize();
-      syncSettingsUi();
-      document.body.style.background = getBgColor();
-      updatePeerButtonUi();
-      updateDisplayNameEnabledState();
-
-      if (darkMql) {
-        if (typeof darkMql.addEventListener === 'function') {
-          darkMql.addEventListener('change', updateTheme);
-        } else if (typeof darkMql.addListener === 'function') {
-          darkMql.addListener(updateTheme);
+        if (fromSelf && appTransportKind === 'local') {
+          appUpdateOwnPresenceNow();
         }
       }
 
-      window.addEventListener('resize', resize);
-      window.addEventListener('beforeunload', () => {
-        stopAllConnections(true);
+      function appSyncLocalStateNowAndApply() {
+        if (appTransportKind !== 'local') return;
+        const stateObj = appLocalReadState();
+        appLocalApplyStateObject(stateObj, false);
+      }
+
+      function appUpdatePeerMenuOnStateChange() {
+        if (!appMenuOpen) return;
+        appRefreshPeerMenuLabels();
+      }
+
+      function appGetRosterCount() {
+        return appBuildRosterForDisplay().filter(member => member.id !== appSelfId).length;
+      }
+
+      function appRefreshPeerUiFull() {
+        appRefreshPeerUi();
+        appUpdatePeerMenuOnStateChange();
+      }
+
+      // Wire up peer menu actions now that functions exist
+      peerChoice1.onclick = () => {
+        if (appMenuMode === 'off') {
+          appOnPeerChoiceLocal();
+        } else {
+          appOnPeerChoiceDisconnect();
+        }
+      };
+      peerChoice2.onclick = () => {
+        if (appMenuMode === 'off') {
+          appOnPeerChoiceFirebase();
+        } else {
+          appOnPeerChoiceSend();
+        }
+      };
+      peerChoice3.onclick = () => {
+        if (appMenuMode === 'off') {
+          appOnPeerChoiceSolo();
+        } else {
+          appOnPeerChoiceReceive();
+        }
+      };
+
+      // Keep labels consistent even when state changes
+      const originalRefreshPeerUi = appRefreshPeerUi;
+      appRefreshPeerUi = function () {
+        originalRefreshPeerUi();
+        if (appMenuOpen) {
+          appRefreshPeerMenuLabels();
+        }
+      };
+
+      // Update visible names when input changes while connected
+      const originalUpdateOwnPresenceNow = appUpdateOwnPresenceNow;
+      appUpdateOwnPresenceNow = function () {
+        originalUpdateOwnPresenceNow();
+        appRefreshPeerUi();
+      };
+
+      // Scroll/resize safety for menu position
+      window.addEventListener('resize', () => {
+        if (appMenuOpen) {
+          appSyncPeerMenuLocationNow();
+        }
       });
 
-      requestAnimationFrame(render);
+      // Peer button open/close behavior
+      peerButton.addEventListener('click', appHandlePeerButtonClick);
+
+      // Use existing settings UI input handlers
+      appInit();
+
+      // Extra safety: expose nothing
     })();
   </script>
 </body>
